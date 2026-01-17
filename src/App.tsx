@@ -1,13 +1,13 @@
 /**
  * App.tsx - Main application component for Frontend Demo
- * 
+ *
  * This component sets up the React Router routing structure with multi-language support.
  * It handles:
  * - Language-based routing (e.g., /en/login, /sk/prihlasenie, /cz/prihlaseni)
  * - Protected routes (require authentication)
  * - Guest-only routes (redirect if authenticated)
  * - Route translations for i18n support
- * 
+ *
  * Routing structure:
  * - Root (/) redirects to default language
  * - /:lang routes handle language-specific paths
@@ -34,10 +34,10 @@ import './styles/toast.scss';
 
 /**
  * Helper function to get all translated route paths for a given English route
- * 
+ *
  * This function retrieves all possible translations of a route name across all supported languages.
  * For example, 'login' returns ['login', 'prihlasenie', 'prihlaseni'] for en, sk, cz.
- * 
+ *
  * @param englishRoute - The English route name (e.g., 'login', 'register', 'homepage')
  * @returns Array of all translated route paths
  */
@@ -49,7 +49,7 @@ const getRoutePaths = (englishRoute: string): string[] => {
 
 /**
  * Main App component
- * 
+ *
  * Sets up the routing structure with:
  * - AppProvider: Provides application-wide context (theme, language, etc.)
  * - AuthProvider: Manages authentication state and user session
@@ -62,9 +62,9 @@ function App() {
 
   // Get all possible translations for each route
   // This allows routes to work in all supported languages
-  const loginPaths = getRoutePaths('login');        // ['login', 'prihlasenie', 'prihlaseni']
-  const registerPaths = getRoutePaths('register');  // ['register', 'registracia', 'registrace']
-  const homepagePaths = getRoutePaths('homepage');  // ['homepage', 'domov', 'domu']
+  const loginPaths = getRoutePaths('login'); // ['login', 'prihlasenie', 'prihlaseni']
+  const registerPaths = getRoutePaths('register'); // ['register', 'registracia', 'registrace']
+  const homepagePaths = getRoutePaths('homepage'); // ['homepage', 'domov', 'domu']
 
   return (
     <AppProvider>

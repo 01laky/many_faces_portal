@@ -1,13 +1,13 @@
 /**
  * main.tsx - Application entry point for Frontend Demo
- * 
+ *
  * This is the first file executed when the application starts.
  * It performs:
  * - Environment validation and configuration
  * - API client setup
  * - Internationalization (i18n) initialization
  * - React application rendering
- * 
+ *
  * Initialization order:
  * 1. Import styles and configuration modules
  * 2. Validate environment variables
