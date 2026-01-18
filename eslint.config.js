@@ -7,10 +7,10 @@ import prettier from 'eslint-config-prettier'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'node_modules', '.yarn/**/*', '.pnp.*']),
+  globalIgnores(['dist', 'node_modules']),
   {
     files: ['**/*.{ts,tsx}'],
-    ignores: ['src/api/**/*', '.yarn/**/*', '.pnp.*'], // Ignore generated API files, Yarn SDKs, and PnP files
+    ignores: ['src/api/**/*'], // Ignore generated API files
     extends: [
       js.configs.recommended,
       ...tseslint.configs.recommended,
