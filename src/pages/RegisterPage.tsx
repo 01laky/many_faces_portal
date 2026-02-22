@@ -3,10 +3,14 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Container, Row, Col } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { logger } from '../utils/logger';
 import { FormField } from '../components/radix/FormField';
 import { Input } from '../components/radix/Input';
 import { Button } from '../components/radix/Button';
+import { OAuth2Service } from '../api/services/OAuth2Service';
+import { useLocalizedLink } from '../hooks/useLocalizedLink';
 import './RegisterPage.scss';
 
 interface RegisterFormData {
@@ -18,6 +22,8 @@ interface RegisterFormData {
 
 export function RegisterPage() {
   const { t } = useTranslation('common');
+  const navigate = useNavigate();
+  const getLocalizedPath = useLocalizedLink();
 
   // Create validation schema with yup
   const validationSchema = yup.object({
@@ -52,13 +58,38 @@ export function RegisterPage() {
   const onSubmit = async (data: RegisterFormData) => {
     try {
       logger.info('Register form submitted', { email: data.email });
-      // TODO: Implement registration logic with API
-      // For now, just log
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Call OAuth2 registration API
+      await OAuth2Service.postApiOauth2Register({
+        requestBody: {
+          email: data.email,
+          password: data.password,
+          firstName: data.firstName,
+          lastName: data.lastName,
+        },
+      });
+
       logger.info('Registration successful', { email: data.email });
-    } catch (error) {
+      toast.success(t('pages.register.success') || 'Registration successful! Please login.');
+
+      // Redirect to login page after successful registration
+      const loginPath = getLocalizedPath('/login');
+      navigate(loginPath, { replace: true });
+    } catch (error: unknown) {
       logger.error('Registration failed', error);
-      // Error will be shown via toast or other error handling mechanism
+
+      // Extract error message
+      let errorMessage = t('pages.register.error') || 'Registration failed. Please try again.';
+      const err = error as { body?: { message?: string; error?: string }; message?: string } | null;
+      if (err?.body?.message) {
+        errorMessage = err.body.message;
+      } else if (err?.body?.error) {
+        errorMessage = err.body.error;
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+
+      toast.error(errorMessage);
     }
   };
 

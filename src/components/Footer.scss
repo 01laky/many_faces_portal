@@ -1,0 +1,57 @@
+// Footer Styles — matching Header toolbar design
+@import '../styles/AnimatedGradient.scss';
+
+.app-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 1000;
+  width: 100%;
+  overflow: hidden;
+  // Glass base — subtle translucent tint
+  background: rgba(10, 10, 30, 0.15);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+  // Gradient overlay via CSS custom properties
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gradient-bg, rgba(13, 110, 253, 0.45));
+    background-size: var(--gradient-size, auto);
+    animation: var(--gradient-animation, none);
+    opacity: 0.82;
+    pointer-events: none;
+  }
+}
+
+// Thin glass accent borders
+.footer-border-top,
+.footer-border-bottom {
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.footer-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.25rem;
+  position: relative; // stack above ::before
+}
+
+.footer-text {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 768px) {
+  .footer-main {
+    padding: 0.5rem 0.75rem;
+  }
+}

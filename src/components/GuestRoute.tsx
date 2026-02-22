@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useFaceConfig } from '../contexts/FaceConfigContext';
 import { useLocalizedLink } from '../hooks/useLocalizedLink';
 
 interface GuestRouteProps {
@@ -12,6 +13,7 @@ interface GuestRouteProps {
  */
 export function GuestRoute({ children }: GuestRouteProps) {
   const { isAuthenticated, isLoading } = useAuth();
+  const { getFaceHomePath } = useFaceConfig();
   const getLocalizedPath = useLocalizedLink();
 
   // Show nothing while checking authentication
@@ -19,9 +21,9 @@ export function GuestRoute({ children }: GuestRouteProps) {
     return null;
   }
 
-  // If user is authenticated, redirect to homepage
+  // If user is authenticated, redirect to face home page
   if (isAuthenticated) {
-    return <Navigate to={getLocalizedPath('/homepage')} replace />;
+    return <Navigate to={getLocalizedPath(getFaceHomePath())} replace />;
   }
 
   // If user is not authenticated, show the route

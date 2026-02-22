@@ -1,0 +1,92 @@
+.story-grid-component {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 4px;
+}
+
+.story-grid-items {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 6px;
+  overflow: hidden;
+  align-content: start;
+  justify-items: center;
+}
+
+.story-grid-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.story-grid-ring {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  padding: 2px;
+  background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+
+  &.seen {
+    background: #ccc;
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+  }
+}
+
+.story-grid-card-name {
+  font-size: 0.58rem;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 72px;
+  text-align: center;
+}
+
+.story-grid-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 4px 0 2px;
+  flex-shrink: 0;
+
+  button {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 26px;
+    height: 26px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    &:hover:not(:disabled) {
+      background: #f0f0f0;
+    }
+  }
+
+  span {
+    font-size: 0.75rem;
+    color: #666;
+  }
+}

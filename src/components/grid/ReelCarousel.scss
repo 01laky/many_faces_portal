@@ -1,0 +1,110 @@
+.reel-carousel-component {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  padding: 4px 0;
+}
+
+.reel-carousel-nav {
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  z-index: 2;
+
+  &:disabled {
+    opacity: 0.25;
+    cursor: default;
+  }
+
+  &:hover:not(:disabled) {
+    background: #f0f0f0;
+  }
+}
+
+.reel-carousel-track {
+  flex: 1;
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0 6px;
+}
+
+.reel-carousel-card {
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
+  position: relative;
+  height: 100%;
+  max-height: calc(100% - 20px);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.reel-carousel-card-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 4px 6px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.reel-carousel-card-likes {
+  font-size: 0.62rem;
+  color: #fff;
+  font-weight: 600;
+}
+
+.reel-carousel-card-author {
+  font-size: 0.55rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.reel-carousel-dots {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+}
+
+.reel-carousel-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: none;
+  background: #ccc;
+  cursor: pointer;
+  padding: 0;
+
+  &.active {
+    background: #333;
+  }
+
+  &:hover {
+    background: #999;
+  }
+}

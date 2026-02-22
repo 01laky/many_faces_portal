@@ -1,0 +1,90 @@
+.album-grid-component {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 4px;
+}
+
+.album-grid-items {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 6px;
+  overflow: hidden;
+  align-content: start;
+}
+
+.album-grid-card {
+  border-radius: 4px;
+  overflow: hidden;
+  background: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+
+  img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.album-grid-card-info {
+  padding: 4px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.album-grid-card-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #222;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.album-grid-card-count {
+  font-size: 0.65rem;
+  color: #888;
+}
+
+.album-grid-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 4px 0 2px;
+  flex-shrink: 0;
+
+  button {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 26px;
+    height: 26px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    &:hover:not(:disabled) {
+      background: #f0f0f0;
+    }
+  }
+
+  span {
+    font-size: 0.75rem;
+    color: #666;
+  }
+}

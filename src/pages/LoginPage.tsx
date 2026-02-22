@@ -6,6 +6,7 @@ import { Container, Row, Col } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
+import { useFaceConfig } from '../contexts/FaceConfigContext';
 import { logger } from '../utils/logger';
 import { useLocalizedLink } from '../hooks/useLocalizedLink';
 import { FormField } from '../components/radix/FormField';
@@ -25,6 +26,7 @@ export function LoginPage() {
   const location = useLocation();
   // const { lang } = useParams<{ lang: string }>(); // Removed unused variable
   const getLocalizedPath = useLocalizedLink();
+  const { getFaceHomePath } = useFaceConfig();
 
   // Create validation schema with yup
   const validationSchema = yup.object({
@@ -48,7 +50,7 @@ export function LoginPage() {
   });
 
   // Redirect if already authenticated
-  const from = (location.state as { from?: string })?.from || getLocalizedPath('/homepage');
+  const from = (location.state as { from?: string })?.from || getLocalizedPath(getFaceHomePath());
 
   if (isAuthenticated) {
     navigate(from, { replace: true });
@@ -60,9 +62,9 @@ export function LoginPage() {
       await login(data.email, data.password);
       logger.info('Login successful, redirecting', { email: data.email });
       toast.success(t('pages.login.success') || 'Login successful!');
-      // Redirect to homepage after successful login
-      const homepagePath = getLocalizedPath('/homepage');
-      navigate(homepagePath, { replace: true });
+      // Redirect to face home page after successful login
+      const faceHomePath = getLocalizedPath(getFaceHomePath());
+      navigate(faceHomePath, { replace: true });
     } catch (error) {
       logger.error('Login failed', error);
       // Extract error message from error

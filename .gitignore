@@ -20,6 +20,11 @@ dist-ssr
 # Generated API files
 openapi.json
 
+# Cypress
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
+
 # Environment variables
 .env
 .env.local

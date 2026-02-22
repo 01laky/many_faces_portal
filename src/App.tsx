@@ -1,45 +1,37 @@
 /**
  * App.tsx - Main application component for Frontend Demo
  *
- * This component sets up the React Router routing structure with multi-language support.
- * It handles:
- * - Language-based routing (e.g., /en/login, /sk/prihlasenie, /cz/prihlaseni)
- * - Protected routes (require authentication)
- * - Guest-only routes (redirect if authenticated)
- * - Route translations for i18n support
- *
- * Routing structure:
- * - Root (/) redirects to default language
- * - /:lang routes handle language-specific paths
- * - Each route can have multiple translations (login, prihlasenie, prihlaseni)
+ * Dynamic routing based on faces configuration from the backend.
+ * Each face has pages with route translations per language.
+ * Only one face is active at a time — authenticated users can switch faces.
+ * Public faces are shown to anonymous users, private faces to authenticated ones.
  */
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { AppProvider } from './contexts/AppContext';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { FaceConfigProvider, useFaceConfig } from './contexts/FaceConfigContext';
 import { LanguageRouter } from './components/LanguageRouter';
 import { Header } from './components/Header';
+import { Footer } from './components/Footer';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { GuestRoute } from './components/GuestRoute';
+import { FacePageView } from './components/FacePageView';
 import { HomePage } from './pages/HomePage';
 import { HomePageProtected } from './pages/HomePageProtected';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { ChatPage } from './pages/ChatPage';
 import { logger } from './utils/logger';
 import { supportedLanguages } from './i18n/config';
 import { getAllRouteTranslations } from './utils/routeTranslations';
+import type { FaceConfig, PageConfig } from './api/types/facesConfig';
 import i18n from './i18n/config';
 import './styles/toast.scss';
 
 /**
- * Helper function to get all translated route paths for a given English route
- *
- * This function retrieves all possible translations of a route name across all supported languages.
- * For example, 'login' returns ['login', 'prihlasenie', 'prihlaseni'] for en, sk, cz.
- *
- * @param englishRoute - The English route name (e.g., 'login', 'register', 'homepage')
- * @returns Array of all translated route paths
+ * Helper: get all translated route paths for a static English route key
  */
 const getRoutePaths = (englishRoute: string): string[] => {
   return getAllRouteTranslations(englishRoute, (key: string, options?: { lng?: string }) => {
@@ -48,48 +40,107 @@ const getRoutePaths = (englishRoute: string): string[] => {
 };
 
 /**
- * Main App component
- *
- * Sets up the routing structure with:
- * - AppProvider: Provides application-wide context (theme, language, etc.)
- * - AuthProvider: Manages authentication state and user session
- * - BrowserRouter: Enables client-side routing
- * - Routes: Defines all application routes with language support
- * - ToastContainer: Displays toast notifications
+ * Build all route paths for a page within a face.
+ * Returns array of paths like: ["public/home", "public/domov"]
+ * using routeTranslations from the page config.
  */
-function App() {
-  logger.info('App component mounted');
+function buildFacePagePaths(face: FaceConfig, page: PageConfig): string[] {
+  const basePath = page.path.startsWith('/') ? page.path.slice(1) : page.path;
+  const paths: string[] = [`${face.index}/${basePath}`];
 
-  // Get all possible translations for each route
-  // This allows routes to work in all supported languages
-  const loginPaths = getRoutePaths('login'); // ['login', 'prihlasenie', 'prihlaseni']
-  const registerPaths = getRoutePaths('register'); // ['register', 'registracia', 'registrace']
-  const homepagePaths = getRoutePaths('homepage'); // ['homepage', 'domov', 'domu']
+  // Add translated route paths for each language
+  for (const rt of page.routeTranslations) {
+    const translatedPath = rt.translatedRoute.startsWith('/')
+      ? rt.translatedRoute.slice(1)
+      : rt.translatedRoute;
+    if (translatedPath && translatedPath !== basePath) {
+      paths.push(`${face.index}/${translatedPath}`);
+    }
+  }
+
+  return paths;
+}
+
+/**
+ * Inner component that renders routes based on the selected face.
+ * Must be inside FaceConfigProvider + AuthProvider.
+ */
+function AppRoutes() {
+  const { isAuthenticated } = useAuth();
+  const { selectedFace, isLoading, error } = useFaceConfig();
+
+  logger.info('AppRoutes render', {
+    isAuthenticated,
+    selectedFaceId: selectedFace?.id,
+    selectedFaceIndex: selectedFace?.index,
+  });
+
+  // Static route translations
+  const loginPaths = getRoutePaths('login');
+  const registerPaths = getRoutePaths('register');
+  const homepagePaths = getRoutePaths('homepage');
+  const chatPaths = getRoutePaths('chat');
+
+  if (isLoading) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          fontSize: '18px',
+        }}
+      >
+        Loading routes configuration...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          flexDirection: 'column',
+          gap: '16px',
+        }}
+      >
+        <div style={{ fontSize: '18px', color: 'red' }}>Failed to load routes configuration</div>
+        <div style={{ fontSize: '14px', color: '#666' }}>{error.message}</div>
+      </div>
+    );
+  }
+
+  // Build face page routes for the selected face
+  const faceRoutes: Array<{ key: string; path: string; isPublic: boolean; page: PageConfig }> = [];
+  if (selectedFace) {
+    for (const page of selectedFace.pages) {
+      const paths = buildFacePagePaths(selectedFace, page);
+      for (const path of paths) {
+        faceRoutes.push({
+          key: `${selectedFace.id}-${page.id}-${path}`,
+          path,
+          isPublic: selectedFace.isPublic,
+          page,
+        });
+      }
+    }
+  }
 
   return (
-    <AppProvider>
-      <AuthProvider>
-        <BrowserRouter>
-          {/* Header component - shown on all pages */}
-          <Header />
+    <BrowserRouter>
+      <div className="app-layout">
+        <Header />
+        <main className="app-content">
           <Routes>
-            {/* 
-              Root path redirects to default language (first language in supportedLanguages array)
-              Example: / -> /en
-            */}
             <Route path="/" element={<Navigate to={`/${supportedLanguages[0]}`} replace />} />
 
-            {/* 
-              Language-based routes - all routes are prefixed with language code
-              Example: /en/login, /sk/prihlasenie, /cz/prihlaseni
-              LanguageRouter component handles language detection and validation
-            */}
             <Route path="/:lang" element={<LanguageRouter />}>
-              {/* 
-                Index route (homepage) - guest only
-                GuestRoute redirects to protected homepage if user is already authenticated
-                Example: /en -> shows HomePage (guest) or redirects to /en/homepage (authenticated)
-              */}
+              {/* Index — guest landing or redirect to homepage */}
               <Route
                 index
                 element={
@@ -99,11 +150,28 @@ function App() {
                 }
               />
 
-              {/* 
-                Login route with all language translations - guest only
-                GuestRoute prevents authenticated users from accessing login page
-                Maps all login translations: /en/login, /sk/prihlasenie, /cz/prihlaseni
-              */}
+              {/* === Face page routes (dynamic, from selected face) === */}
+              {faceRoutes.map((fr) =>
+                fr.isPublic ? (
+                  // Public face routes — visible without auth
+                  <Route key={fr.key} path={fr.path} element={<FacePageView page={fr.page} />} />
+                ) : (
+                  // Private face routes — require authentication
+                  <Route
+                    key={fr.key}
+                    path={fr.path}
+                    element={
+                      <ProtectedRoute>
+                        <FacePageView page={fr.page} />
+                      </ProtectedRoute>
+                    }
+                  />
+                )
+              )}
+
+              {/* === Static routes === */}
+
+              {/* Login — guest only */}
               {loginPaths.map((path) => (
                 <Route
                   key={path}
@@ -116,11 +184,7 @@ function App() {
                 />
               ))}
 
-              {/* 
-                Register route with all language translations - guest only
-                GuestRoute prevents authenticated users from accessing register page
-                Maps all register translations: /en/register, /sk/registracia, /cz/registrace
-              */}
+              {/* Register — guest only */}
               {registerPaths.map((path) => (
                 <Route
                   key={path}
@@ -133,11 +197,7 @@ function App() {
                 />
               ))}
 
-              {/* 
-                Protected homepage route with all language translations
-                ProtectedRoute requires authentication - redirects to login if not authenticated
-                Maps all homepage translations: /en/homepage, /sk/domov, /cz/domu
-              */}
+              {/* Homepage — protected */}
               {homepagePaths.map((path) => (
                 <Route
                   key={path}
@@ -150,37 +210,52 @@ function App() {
                 />
               ))}
 
-              {/* 
-                Catch-all route for invalid paths within language context
-                Redirects to parent route (language root)
-                Example: /en/invalid-path -> /en
-              */}
+              {/* Chat — protected */}
+              {chatPaths.map((path) => (
+                <Route
+                  key={path}
+                  path={path}
+                  element={
+                    <ProtectedRoute>
+                      <ChatPage />
+                    </ProtectedRoute>
+                  }
+                />
+              ))}
+
+              {/* Catch-all within language */}
               <Route path="*" element={<Navigate to=".." replace />} />
             </Route>
 
-            {/* 
-              Global catch-all route - redirects any invalid path to default language
-              Example: /invalid-path -> /en
-            */}
+            {/* Global catch-all */}
             <Route path="*" element={<Navigate to={`/${supportedLanguages[0]}`} replace />} />
           </Routes>
-        </BrowserRouter>
-        {/* 
-          Toast notification container - displays success/error messages
-          Configured to show at top-center, auto-close after 5 seconds
-        */}
-        <ToastContainer
-          position="top-center"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
+        </main>
+        <Footer />
+      </div>
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+    </BrowserRouter>
+  );
+}
+
+function App() {
+  return (
+    <AppProvider>
+      <AuthProvider>
+        <FaceConfigProvider>
+          <AppRoutes />
+        </FaceConfigProvider>
       </AuthProvider>
     </AppProvider>
   );

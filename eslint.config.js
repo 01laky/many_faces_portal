@@ -7,7 +7,7 @@ import prettier from 'eslint-config-prettier'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'node_modules']),
+  globalIgnores(['dist', 'node_modules', '.yarn/**/*', 'cypress/**/*', 'cypress.config.ts']),
   {
     files: ['**/*.{ts,tsx}'],
     ignores: ['src/api/**/*'], // Ignore generated API files

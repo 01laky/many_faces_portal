@@ -9,7 +9,8 @@
   "routes": {
     "login": "prihlasenie",
     "register": "registracia",
-    "homepage": "domov"
+    "homepage": "domov",
+    "chat": "chat"
   },
   "pages": {
     "login": {
@@ -52,15 +53,32 @@
       "welcome": "Vitajte",
       "description": "Toto je chránená stránka. Iba prihlásení používatelia k nej majú prístup."
     },
+    "chat": {
+      "title": "AI Chat",
+      "placeholder": "Napíšte správu...",
+      "send": "Odoslať",
+      "connecting": "Pripájanie...",
+      "connected": "Pripojené",
+      "disconnected": "Odpojené",
+      "you": "Vy",
+      "ai": "AI"
+    },
     "logout": {
       "successMessage": "Odhlásenie úspešné",
       "errorMessage": "Odhlásenie zlyhalo. Skúste to znova."
     }
+  },
+  "face": {
+    "select": "Vybrať face",
+    "current": "Aktuálny: {{face}}"
   },
   "language": {
     "select": "Vyberte jazyk",
     "en": "Angličtina",
     "sk": "Slovenčina",
     "cz": "Čeština"
+  },
+  "footer": {
+    "rights": "Všetky práva vyhradené."
   }
 }

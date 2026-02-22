@@ -9,7 +9,8 @@
   "routes": {
     "login": "login",
     "register": "register",
-    "homepage": "homepage"
+    "homepage": "homepage",
+    "chat": "chat"
   },
   "pages": {
     "login": {
@@ -52,15 +53,32 @@
       "welcome": "Welcome",
       "description": "This is a protected page. Only authenticated users can access it."
     },
+    "chat": {
+      "title": "AI Chat",
+      "placeholder": "Type a message...",
+      "send": "Send",
+      "connecting": "Connecting...",
+      "connected": "Connected",
+      "disconnected": "Disconnected",
+      "you": "You",
+      "ai": "AI"
+    },
     "logout": {
       "successMessage": "Logged out successfully",
       "errorMessage": "Logout failed. Please try again."
     }
+  },
+  "face": {
+    "select": "Select Face",
+    "current": "Current: {{face}}"
   },
   "language": {
     "select": "Select Language",
     "en": "English",
     "sk": "Slovak",
     "cz": "Czech"
+  },
+  "footer": {
+    "rights": "All rights reserved."
   }
 }
