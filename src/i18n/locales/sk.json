@@ -161,6 +161,15 @@
     "noNotifications": "Zatiaľ žiadne notifikácie"
   },
   "common": {
-    "back": "Späť"
+    "back": "Späť",
+    "faceRoleSelect": {
+      "chooseRole": "Vyberte svoju rolu v tomto face",
+      "selectPlaceholder": "Vyberte rolu",
+      "confirm": "Potvrdiť",
+      "loading": "Načítavam role...",
+      "saving": "Ukladám...",
+      "loadError": "Nepodarilo sa načítať role",
+      "saveError": "Nepodarilo sa uložiť rolu"
+    }
   }
 }

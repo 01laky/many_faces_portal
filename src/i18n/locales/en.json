@@ -161,6 +161,15 @@
     "noNotifications": "No notifications yet"
   },
   "common": {
-    "back": "Back"
+    "back": "Back",
+    "faceRoleSelect": {
+      "chooseRole": "Choose your role in this face",
+      "selectPlaceholder": "Select role",
+      "confirm": "Confirm",
+      "loading": "Loading roles...",
+      "saving": "Saving...",
+      "loadError": "Failed to load roles",
+      "saveError": "Failed to save role"
+    }
   }
 }

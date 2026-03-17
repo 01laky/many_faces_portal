@@ -12,18 +12,23 @@ import { logger } from '../../utils/logger';
 
 /**
  * Fetch faces configuration from backend
- * 
- * GET /api/faces/config - Returns all faces with their pages
- * This endpoint is public (no authentication required)
- * 
+ *
+ * GET /api/faces/config - Returns all faces with their pages.
+ * When token is provided, response includes myFaceRoleId/myFaceRoleName per face.
+ *
+ * @param token - Optional auth token to include current user's face roles
  * @returns Promise with faces configuration array
- * @throws Error if request fails
  */
-export async function getFacesConfig(): Promise<FacesConfigResponse> {
+export async function getFacesConfig(token?: string | null): Promise<FacesConfigResponse> {
   try {
-    const response = await axios.get<FacesConfigResponse>(`${env.apiUrl}/api/faces/config`);
-    
-    // Ensure response.data is not null
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    const response = await axios.get<FacesConfigResponse>(`${env.apiUrl}/api/faces/config`, {
+      headers: Object.keys(headers).length > 0 ? headers : undefined,
+    });
+
     const data = response.data || [];
     
     logger.info('Faces config loaded', {

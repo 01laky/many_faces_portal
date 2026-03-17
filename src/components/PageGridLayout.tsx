@@ -2,12 +2,13 @@
  * PageGridLayout - Read-only display of a page's grid layout
  *
  * Renders grid items from the page's gridSchema JSON.
- * Non-editable, non-draggable, with black 2px borders on grid items.
+ * Each item is wrapped in ComponentBlock (header, footer, slide-out) with unified style.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { ResponsiveGridLayout, useContainerWidth, verticalCompactor } from 'react-grid-layout';
 import type { LayoutItem, ResponsiveLayouts } from 'react-grid-layout';
+import { ComponentBlock } from './ComponentBlock';
 import {
   Album,
   AlbumGrid,
@@ -35,7 +36,31 @@ import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import './PageGridLayout.scss';
 
-type GridComponentType =
+const HAS_FOOTER: Record<GridComponentType, boolean> = {
+  album: false,
+  albumGrid: true,
+  albumCarousel: true,
+  ad: false,
+  adGrid: true,
+  adCarousel: true,
+  blog: false,
+  blogGrid: true,
+  blogCarousel: true,
+  chatRoom: false,
+  chatRoomGrid: true,
+  chatRoomCarousel: true,
+  userProfile: false,
+  userProfileGrid: true,
+  userProfileCarousel: true,
+  reel: false,
+  reelGrid: true,
+  reelCarousel: true,
+  story: false,
+  storyGrid: true,
+  storyCarousel: true,
+};
+
+export type GridComponentType =
   | 'album'
   | 'albumGrid'
   | 'albumCarousel'
@@ -68,6 +93,10 @@ interface GridItem {
   minH?: number;
   label?: string;
   componentType?: GridComponentType;
+  /** Title shown in component header (from admin) */
+  title?: string | null;
+  /** Icon key for header (from admin) */
+  icon?: string | null;
 }
 
 interface GridSchema {
@@ -111,8 +140,55 @@ export function PageGridLayout({ gridSchemaJson }: PageGridLayoutProps) {
     };
   }, [schema]);
 
+  const [pagination, setPagination] = useState<
+    Record<string, { page: number; totalPages: number }>
+  >({});
+
+  const handlePageChange = useCallback(
+    (itemId: string) => (page: number, totalPages: number) => {
+      setPagination((prev) => ({ ...prev, [itemId]: { page, totalPages } }));
+    },
+    []
+  );
+
   if (!schema || !schema.items || schema.items.length === 0) {
     return null;
+  }
+
+  function renderChild(
+    item: GridItem,
+    paginationState: { page: number; totalPages: number } | undefined,
+    onPageChange: (page: number, totalPages: number) => void
+  ) {
+    const ct = item.componentType;
+    const controlled = ct && HAS_FOOTER[ct];
+    const page = paginationState?.page ?? 0;
+    const totalPages = Math.max(1, paginationState?.totalPages ?? 1);
+    const onChange = controlled ? onPageChange : undefined;
+    if (ct === 'album') return <Album />;
+    if (ct === 'albumGrid')
+      return <AlbumGrid page={page} totalPages={totalPages} onPageChange={onChange} />;
+    if (ct === 'albumCarousel')
+      return <AlbumCarousel page={page} totalPages={totalPages} onPageChange={onChange} />;
+    if (ct === 'ad') return <Ad />;
+    if (ct === 'adGrid') return <AdGrid />;
+    if (ct === 'adCarousel') return <AdCarousel />;
+    if (ct === 'blog') return <Blog />;
+    if (ct === 'blogGrid') return <BlogGrid />;
+    if (ct === 'blogCarousel') return <BlogCarousel />;
+    if (ct === 'chatRoom') return <ChatRoom />;
+    if (ct === 'chatRoomGrid') return <ChatRoomGrid />;
+    if (ct === 'chatRoomCarousel') return <ChatRoomCarousel />;
+    if (ct === 'userProfile') return <UserProfile />;
+    if (ct === 'userProfileGrid') return <UserProfileGrid />;
+    if (ct === 'userProfileCarousel') return <UserProfileCarousel />;
+    if (ct === 'reel') return <Reel />;
+    if (ct === 'reelGrid') return <ReelGrid />;
+    if (ct === 'reelCarousel') return <ReelCarousel />;
+    if (ct === 'story') return <Story />;
+    if (ct === 'storyGrid') return <StoryGrid />;
+    if (ct === 'storyCarousel') return <StoryCarousel />;
+    return <span className="page-grid-item-label">{item.label || item.i}</span>;
   }
 
   return (
@@ -129,34 +205,43 @@ export function PageGridLayout({ gridSchemaJson }: PageGridLayoutProps) {
         compactor={verticalCompactor}
         margin={[8, 8]}
       >
-        {schema.items.map((item) => (
-          <div key={item.i} className="page-grid-item">
-            {item.componentType === 'album' && <Album />}
-            {item.componentType === 'albumGrid' && <AlbumGrid />}
-            {item.componentType === 'albumCarousel' && <AlbumCarousel />}
-            {item.componentType === 'ad' && <Ad />}
-            {item.componentType === 'adGrid' && <AdGrid />}
-            {item.componentType === 'adCarousel' && <AdCarousel />}
-            {item.componentType === 'blog' && <Blog />}
-            {item.componentType === 'blogGrid' && <BlogGrid />}
-            {item.componentType === 'blogCarousel' && <BlogCarousel />}
-            {item.componentType === 'chatRoom' && <ChatRoom />}
-            {item.componentType === 'chatRoomGrid' && <ChatRoomGrid />}
-            {item.componentType === 'chatRoomCarousel' && <ChatRoomCarousel />}
-            {item.componentType === 'userProfile' && <UserProfile />}
-            {item.componentType === 'userProfileGrid' && <UserProfileGrid />}
-            {item.componentType === 'userProfileCarousel' && <UserProfileCarousel />}
-            {item.componentType === 'reel' && <Reel />}
-            {item.componentType === 'reelGrid' && <ReelGrid />}
-            {item.componentType === 'reelCarousel' && <ReelCarousel />}
-            {item.componentType === 'story' && <Story />}
-            {item.componentType === 'storyGrid' && <StoryGrid />}
-            {item.componentType === 'storyCarousel' && <StoryCarousel />}
-            {!item.componentType && (
-              <span className="page-grid-item-label">{item.label || item.i}</span>
-            )}
-          </div>
-        ))}
+        {schema.items.map((item) => {
+          const ct = item.componentType;
+          const hasFooter = ct ? HAS_FOOTER[ct] : false;
+          const paginationState = pagination[item.i];
+          const page = paginationState?.page ?? 0;
+          const totalPages = Math.max(1, paginationState?.totalPages ?? 1);
+          const setPage = (delta: number) => {
+            setPagination((prev) => {
+              const cur = prev[item.i] ?? { page: 0, totalPages: 1 };
+              const nextPage = Math.max(0, Math.min(cur.totalPages - 1, cur.page + delta));
+              return { ...prev, [item.i]: { ...cur, page: nextPage } };
+            });
+          };
+          if (!ct) {
+            return (
+              <div key={item.i} className="page-grid-item">
+                <span className="page-grid-item-label">{item.label || item.i}</span>
+              </div>
+            );
+          }
+          return (
+            <div key={item.i} className="page-grid-item">
+              <ComponentBlock
+                componentId={item.i}
+                componentType={ct}
+                title={item.title ?? item.label}
+                icon={item.icon}
+                page={page}
+                totalPages={totalPages}
+                onPrev={hasFooter ? () => setPage(-1) : undefined}
+                onNext={hasFooter ? () => setPage(1) : undefined}
+              >
+                {renderChild(item, paginationState, handlePageChange(item.i))}
+              </ComponentBlock>
+            </div>
+          );
+        })}
       </ResponsiveGridLayout>
     </div>
   );

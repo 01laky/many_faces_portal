@@ -33,7 +33,7 @@ interface FaceConfigContextType {
 const FaceConfigContext = createContext<FaceConfigContextType | undefined>(undefined);
 
 export function FaceConfigProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, token } = useAuth();
   const [allFaces, setAllFaces] = useState<FacesConfigResponse>([]);
   const [selectedFaceId, setSelectedFaceId] = useState<number | null>(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -46,7 +46,7 @@ export function FaceConfigProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true);
       setError(null);
-      const config = await getFacesConfig();
+      const config = await getFacesConfig(isAuthenticated ? (token ?? undefined) : undefined);
       setAllFaces(config);
       logger.info('Faces config loaded', {
         faceCount: config.length,
@@ -58,7 +58,7 @@ export function FaceConfigProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, token]);
 
   // Load config on mount
   useEffect(() => {

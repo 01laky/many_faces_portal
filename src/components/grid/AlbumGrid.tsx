@@ -29,10 +29,18 @@ function generateAlbums(total: number): AlbumData[] {
 
 const ALL_ALBUMS = generateAlbums(48);
 
-export function AlbumGrid() {
+export interface AlbumGridProps {
+  page?: number;
+  totalPages?: number;
+  onPageChange?: (page: number, totalPages: number) => void;
+}
+
+export function AlbumGrid({ page: controlledPage, onPageChange }: AlbumGridProps = {}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [itemsPerPage, setItemsPerPage] = useState(6);
-  const [page, setPage] = useState(0);
+  const [internalPage, setInternalPage] = useState(0);
+  const isControlled = onPageChange != null;
+  const page = isControlled && controlledPage !== undefined ? controlledPage : internalPage;
 
   const calcItems = useCallback(() => {
     if (!containerRef.current) return;
@@ -61,6 +69,24 @@ export function AlbumGrid() {
     [clampedPage, itemsPerPage]
   );
 
+  useEffect(() => {
+    onPageChange?.(clampedPage, totalPages);
+  }, [clampedPage, totalPages, onPageChange]);
+
+  const setPage = useCallback(
+    (value: number | ((prev: number) => number)) => {
+      const next =
+        typeof value === 'function'
+          ? value(isControlled ? (controlledPage ?? 0) : internalPage)
+          : value;
+      if (isControlled) onPageChange?.(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
+      else setInternalPage(next);
+    },
+    [isControlled, controlledPage, internalPage, totalPages, onPageChange]
+  );
+
+  const showInternalPagination = !isControlled;
+
   return (
     <div className="album-grid-component" ref={containerRef}>
       <div className="album-grid-items">
@@ -74,7 +100,7 @@ export function AlbumGrid() {
           </div>
         ))}
       </div>
-      {totalPages > 1 && (
+      {showInternalPagination && totalPages > 1 && (
         <div className="album-grid-pagination">
           <button disabled={clampedPage === 0} onClick={() => setPage((p) => p - 1)}>
             ‹

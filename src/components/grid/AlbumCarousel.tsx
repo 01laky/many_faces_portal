@@ -28,10 +28,23 @@ function generateAlbums(total: number): AlbumData[] {
 
 const ALL_ALBUMS = generateAlbums(30);
 
-export function AlbumCarousel() {
+export interface AlbumCarouselProps {
+  /** Controlled page (0-based). When provided with onPageChange, footer nav is used. */
+  page?: number;
+  totalPages?: number;
+  onPageChange?: (page: number, totalPages: number) => void;
+}
+
+export function AlbumCarousel({
+  page: controlledPage,
+  totalPages: _totalPages,
+  onPageChange,
+}: AlbumCarouselProps = {}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [visibleCount, setVisibleCount] = useState(3);
-  const [page, setPage] = useState(0);
+  const [internalPage, setInternalPage] = useState(0);
+  const isControlled = onPageChange != null;
+  const page = isControlled && controlledPage !== undefined ? controlledPage : internalPage;
 
   const calcVisible = useCallback(() => {
     if (!containerRef.current) return;
@@ -56,15 +69,35 @@ export function AlbumCarousel() {
     [clampedPage, visibleCount]
   );
 
+  useEffect(() => {
+    onPageChange?.(clampedPage, totalPages);
+  }, [clampedPage, totalPages, onPageChange]);
+
+  const setPage = useCallback(
+    (value: number | ((prev: number) => number)) => {
+      const next =
+        typeof value === 'function'
+          ? value(isControlled ? (controlledPage ?? 0) : internalPage)
+          : value;
+      if (isControlled) onPageChange?.(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
+      else setInternalPage(next);
+    },
+    [isControlled, controlledPage, internalPage, totalPages, onPageChange]
+  );
+
+  const showInternalNav = !isControlled;
+
   return (
     <div className="album-carousel-component" ref={containerRef}>
-      <button
-        className="album-carousel-nav album-carousel-prev"
-        disabled={clampedPage === 0}
-        onClick={() => setPage((p) => p - 1)}
-      >
-        ‹
-      </button>
+      {showInternalNav && (
+        <button
+          className="album-carousel-nav album-carousel-prev"
+          disabled={clampedPage === 0}
+          onClick={() => setPage((p) => p - 1)}
+        >
+          ‹
+        </button>
+      )}
 
       <div className="album-carousel-track">
         {visibleAlbums.map((album) => (
@@ -78,15 +111,17 @@ export function AlbumCarousel() {
         ))}
       </div>
 
-      <button
-        className="album-carousel-nav album-carousel-next"
-        disabled={clampedPage >= totalPages - 1}
-        onClick={() => setPage((p) => p + 1)}
-      >
-        ›
-      </button>
+      {showInternalNav && (
+        <button
+          className="album-carousel-nav album-carousel-next"
+          disabled={clampedPage >= totalPages - 1}
+          onClick={() => setPage((p) => p + 1)}
+        >
+          ›
+        </button>
+      )}
 
-      {totalPages > 1 && (
+      {showInternalNav && totalPages > 1 && (
         <div className="album-carousel-dots">
           {Array.from({ length: totalPages }, (_, i) => (
             <button

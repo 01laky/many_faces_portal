@@ -161,6 +161,15 @@
     "noNotifications": "Zatím žádná oznámení"
   },
   "common": {
-    "back": "Zpět"
+    "back": "Zpět",
+    "faceRoleSelect": {
+      "chooseRole": "Vyberte svou roli v tomto face",
+      "selectPlaceholder": "Vyberte roli",
+      "confirm": "Potvrdit",
+      "loading": "Načítání rolí...",
+      "saving": "Ukládám...",
+      "loadError": "Nepodařilo se načíst role",
+      "saveError": "Nepodařilo se uložit roli"
+    }
   }
 }

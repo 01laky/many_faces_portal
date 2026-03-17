@@ -35,7 +35,15 @@ export interface FaceConfig {
   color?: string | null;
   gradientSettings?: string | null;
   isPublic: boolean;
+  /** Current user's face role (only when authenticated) */
+  myFaceRoleId?: number | null;
+  myFaceRoleName?: string | null;
   pages: PageConfig[];
+}
+
+export interface FaceRoleOption {
+  id: number;
+  name: string;
 }
 
 export type FacesConfigResponse = FaceConfig[];

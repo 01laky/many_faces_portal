@@ -46,7 +46,7 @@ export function FriendRequestsTab({ token }: { token: string }) {
   const [searchInput, setSearchInput] = useState('');
   const [addFriendPage, setAddFriendPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  const searchDebounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const listWrapperRef = useRef<HTMLDivElement>(null);
 
   const loadRequests = useCallback(async () => {

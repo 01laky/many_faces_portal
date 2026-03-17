@@ -55,6 +55,7 @@ import { useAnimatedGradientStyle, parseGradientSettings } from './hooks/useAnim
 import { FriendRequestsTab } from './components/FriendRequestsTab';
 import { MessengerTab } from './components/MessengerTab';
 import { NotificationsTab } from './components/NotificationsTab';
+import { FaceRoleSelectPanel, shouldShowFaceRolePanel } from './components/FaceRoleSelectPanel';
 import { logger } from './utils/logger';
 import { supportedLanguages } from './i18n/config';
 import { getAllRouteTranslations } from './utils/routeTranslations';
@@ -180,7 +181,7 @@ function AppRoutes() {
   const { isAuthenticated, token, logout } = useAuth();
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
-  const { availableFaces, selectedFace, selectFace, isLoading, error } = useFaceConfig();
+  const { availableFaces, selectedFace, selectFace, isLoading, error, reload } = useFaceConfig();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState<string>('settings');
   const gradientVars = useAnimatedGradientStyle(selectedFace?.gradientSettings);
@@ -258,6 +259,9 @@ function AppRoutes() {
           setSettingsOpen((s) => !s);
         }}
       />
+      {isAuthenticated && token && selectedFace && shouldShowFaceRolePanel(selectedFace) && (
+        <FaceRoleSelectPanel face={selectedFace} token={token} onRoleSet={() => reload()} />
+      )}
       <div className="app-content-area">
         <div
           className={`settings-panel ${settingsOpen ? 'settings-panel--open' : ''}`}

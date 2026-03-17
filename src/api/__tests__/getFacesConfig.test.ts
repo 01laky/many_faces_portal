@@ -117,7 +117,10 @@ describe('getFacesConfig', () => {
     const result = await getFacesConfig();
 
     // Assert
-    expect(mockedAxios.get).toHaveBeenCalledWith(`${env.apiUrl}/api/faces/config`);
+    expect(mockedAxios.get).toHaveBeenCalledWith(
+      `${env.apiUrl}/api/faces/config`,
+      expect.objectContaining({})
+    );
     expect(result).toEqual(mockFacesConfig);
     expect(result).toHaveLength(2);
     expect(result[0].index).toBe('public');
