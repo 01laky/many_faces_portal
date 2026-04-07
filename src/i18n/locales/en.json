@@ -190,6 +190,12 @@
   "componentList": {
     "notFound": "Component not found"
   },
+  "albumDetail": {
+    "notFound": "Album not found",
+    "comments": "Comments",
+    "writeComment": "Write a comment...",
+    "noComments": "No comments yet"
+  },
   "common": {
     "back": "Back",
     "faceRoleSelect": {

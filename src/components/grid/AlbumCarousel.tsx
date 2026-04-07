@@ -5,6 +5,8 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import './AlbumCarousel.scss';
 
 const CARD_WIDTH = 160;
@@ -41,6 +43,8 @@ export function AlbumCarousel({
   onPageChange,
 }: AlbumCarouselProps = {}) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const getLocalizedPath = useLocalizedLink();
   const [visibleCount, setVisibleCount] = useState(3);
   const [internalPage, setInternalPage] = useState(0);
   const isControlled = onPageChange != null;
@@ -101,7 +105,17 @@ export function AlbumCarousel({
 
       <div className="album-carousel-track">
         {visibleAlbums.map((album) => (
-          <div key={album.id} className="album-carousel-card" style={{ width: CARD_WIDTH }}>
+          <div
+            key={album.id}
+            className="album-carousel-card"
+            style={{ width: CARD_WIDTH }}
+            onClick={() => navigate(getLocalizedPath(`/album/${album.id}`))}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') navigate(getLocalizedPath(`/album/${album.id}`));
+            }}
+          >
             <img src={album.cover} alt={album.title} loading="lazy" />
             <div className="album-carousel-card-info">
               <span className="album-carousel-card-title">{album.title}</span>

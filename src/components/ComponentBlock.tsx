@@ -36,6 +36,8 @@ import { useFaceConfig } from '../contexts/FaceConfigContext';
 import { useAnimatedGradientStyle } from '../hooks/useAnimatedGradient';
 import { useLocalizedLink } from '../hooks/useLocalizedLink';
 import { COMPONENT_TYPE_ID } from '../constants/componentTypeIds';
+import { AlbumForm } from './grid/AlbumForm';
+import type { AlbumItem } from '../api/services/AlbumsService';
 import type { GridComponentType } from './PageGridLayout';
 import './ComponentBlock.scss';
 
@@ -85,6 +87,8 @@ function setStoredSettings(componentId: string, data: { autoplay?: boolean }) {
   }
 }
 
+const ALBUM_COMPONENT_TYPES: GridComponentType[] = ['album', 'albumGrid', 'albumCarousel'];
+
 export interface ComponentBlockProps {
   componentId: string;
   componentType: GridComponentType;
@@ -99,6 +103,9 @@ export interface ComponentBlockProps {
   onPlayPause?: (playing: boolean) => void;
   /** Initial playing from localStorage */
   autoplayFromStorage?: boolean;
+  /** Album to edit (opens panel in edit mode) */
+  editAlbum?: AlbumItem | null;
+  onAlbumSaved?: (album: AlbumItem) => void;
 }
 
 export function ComponentBlock({
@@ -112,6 +119,8 @@ export function ComponentBlock({
   onNext,
   onPlayPause,
   autoplayFromStorage = false,
+  editAlbum,
+  onAlbumSaved,
 }: ComponentBlockProps) {
   const { selectedFace } = useFaceConfig();
   const gradientVars = useAnimatedGradientStyle(selectedFace?.gradientSettings);
@@ -122,6 +131,7 @@ export function ComponentBlock({
   const title = titleProp ?? defaults.title;
   const hasFooter = defaults.hasFooter;
 
+  const isAlbumType = ALBUM_COMPONENT_TYPES.includes(componentType);
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelTab, setPanelTab] = useState<'create' | 'settings'>('create');
   const [playing, setPlaying] = useState(autoplayFromStorage);
@@ -131,6 +141,14 @@ export function ComponentBlock({
     setPanelTab(tab);
     setPanelOpen(true);
   }, []);
+
+  const handleAlbumSaved = useCallback(
+    (album: AlbumItem) => {
+      setPanelOpen(false);
+      onAlbumSaved?.(album);
+    },
+    [onAlbumSaved]
+  );
 
   const closePanel = useCallback(() => setPanelOpen(false), []);
 
@@ -252,22 +270,29 @@ export function ComponentBlock({
         aria-hidden={!panelOpen}
       >
         <div className="component-block-panel-header">
-          <nav className="component-block-panel-tabs">
-            <button
-              type="button"
-              className={`component-block-panel-tab ${panelTab === 'create' ? 'component-block-panel-tab--active' : ''}`}
-              onClick={() => setPanelTab('create')}
-            >
-              Create new
-            </button>
-            <button
-              type="button"
-              className={`component-block-panel-tab ${panelTab === 'settings' ? 'component-block-panel-tab--active' : ''}`}
-              onClick={() => setPanelTab('settings')}
-            >
-              Settings
-            </button>
-          </nav>
+          {!isAlbumType && (
+            <nav className="component-block-panel-tabs">
+              <button
+                type="button"
+                className={`component-block-panel-tab ${panelTab === 'create' ? 'component-block-panel-tab--active' : ''}`}
+                onClick={() => setPanelTab('create')}
+              >
+                Create new
+              </button>
+              <button
+                type="button"
+                className={`component-block-panel-tab ${panelTab === 'settings' ? 'component-block-panel-tab--active' : ''}`}
+                onClick={() => setPanelTab('settings')}
+              >
+                Settings
+              </button>
+            </nav>
+          )}
+          {isAlbumType && (
+            <span className="component-block-panel-tab component-block-panel-tab--active">
+              {editAlbum ? 'Edit Album' : 'Create Album'}
+            </span>
+          )}
           <button
             type="button"
             className="component-block-panel-close"
@@ -278,7 +303,10 @@ export function ComponentBlock({
           </button>
         </div>
         <div className="component-block-panel-body">
-          {panelTab === 'create' && (
+          {isAlbumType && (
+            <AlbumForm editAlbum={editAlbum} onSaved={handleAlbumSaved} onCancel={closePanel} />
+          )}
+          {!isAlbumType && panelTab === 'create' && (
             <div className="component-block-panel-section">
               <h3 className="component-block-panel-heading">Create new {defaults.title}</h3>
               <p className="component-block-panel-desc">
@@ -292,7 +320,7 @@ export function ComponentBlock({
               />
             </div>
           )}
-          {panelTab === 'settings' && (
+          {!isAlbumType && panelTab === 'settings' && (
             <div className="component-block-panel-section">
               <h3 className="component-block-panel-heading">Component settings</h3>
               <p className="component-block-panel-desc">

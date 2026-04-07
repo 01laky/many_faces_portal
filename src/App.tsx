@@ -38,6 +38,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import { UsersPage } from './pages/UsersPage';
 import { UserDetailPage } from './pages/UserDetailPage';
 import { ComponentListPage } from './pages/ComponentListPage';
+import { AlbumDetailPage } from './pages/AlbumDetailPage';
 import {
   X,
   Globe,
@@ -625,6 +626,16 @@ function AppRoutes() {
                 element={
                   <ProtectedRoute>
                     <ComponentListPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Album detail — protected */}
+              <Route
+                path="album/:id"
+                element={
+                  <ProtectedRoute>
+                    <AlbumDetailPage />
                   </ProtectedRoute>
                 }
               />

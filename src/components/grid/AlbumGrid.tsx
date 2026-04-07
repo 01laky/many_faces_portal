@@ -6,6 +6,8 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import './AlbumGrid.scss';
 
 const ALBUM_CARD_MIN_W = 140;
@@ -37,6 +39,8 @@ export interface AlbumGridProps {
 
 export function AlbumGrid({ page: controlledPage, onPageChange }: AlbumGridProps = {}) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const getLocalizedPath = useLocalizedLink();
   const [itemsPerPage, setItemsPerPage] = useState(6);
   const [internalPage, setInternalPage] = useState(0);
   const isControlled = onPageChange != null;
@@ -91,7 +95,16 @@ export function AlbumGrid({ page: controlledPage, onPageChange }: AlbumGridProps
     <div className="album-grid-component" ref={containerRef}>
       <div className="album-grid-items">
         {visibleAlbums.map((album) => (
-          <div key={album.id} className="album-grid-card">
+          <div
+            key={album.id}
+            className="album-grid-card"
+            onClick={() => navigate(getLocalizedPath(`/album/${album.id}`))}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') navigate(getLocalizedPath(`/album/${album.id}`));
+            }}
+          >
             <img src={album.cover} alt={album.title} loading="lazy" />
             <div className="album-grid-card-info">
               <span className="album-grid-card-title">{album.title}</span>

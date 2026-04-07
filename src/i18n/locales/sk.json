@@ -190,6 +190,12 @@
   "componentList": {
     "notFound": "Komponent nenájdený"
   },
+  "albumDetail": {
+    "notFound": "Album nebol nájdený",
+    "comments": "Komentáre",
+    "writeComment": "Napíšte komentár...",
+    "noComments": "Zatiaľ žiadne komentáre"
+  },
   "common": {
     "back": "Späť",
     "faceRoleSelect": {
