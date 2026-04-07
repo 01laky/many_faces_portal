@@ -5,6 +5,8 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import './BlogGrid.scss';
 
 const CARD_MIN_W = 180;
@@ -42,6 +44,8 @@ const ALL_POSTS = generatePosts(36);
 
 export function BlogGrid() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const getLocalizedPath = useLocalizedLink();
   const [itemsPerPage, setItemsPerPage] = useState(4);
   const [page, setPage] = useState(0);
 
@@ -75,7 +79,16 @@ export function BlogGrid() {
     <div className="blog-grid-component" ref={containerRef}>
       <div className="blog-grid-items">
         {visiblePosts.map((post) => (
-          <div key={post.id} className="blog-grid-card">
+          <div
+            key={post.id}
+            className="blog-grid-card"
+            onClick={() => navigate(getLocalizedPath(`/blog/${post.id}`))}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') navigate(getLocalizedPath(`/blog/${post.id}`));
+            }}
+          >
             <img src={post.image} alt={post.title} loading="lazy" />
             <div className="blog-grid-card-info">
               <span className="blog-grid-card-date">{post.date}</span>

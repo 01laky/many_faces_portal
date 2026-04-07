@@ -196,6 +196,12 @@
     "writeComment": "Napište komentář...",
     "noComments": "Zatím žádné komentáře"
   },
+  "blogDetail": {
+    "notFound": "Blog nebyl nalezen",
+    "comments": "Komentáře",
+    "writeComment": "Napište komentář...",
+    "noComments": "Zatím žádné komentáře"
+  },
   "common": {
     "back": "Zpět",
     "faceRoleSelect": {

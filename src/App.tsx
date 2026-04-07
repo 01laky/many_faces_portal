@@ -39,6 +39,7 @@ import { UsersPage } from './pages/UsersPage';
 import { UserDetailPage } from './pages/UserDetailPage';
 import { ComponentListPage } from './pages/ComponentListPage';
 import { AlbumDetailPage } from './pages/AlbumDetailPage';
+import { BlogDetailPage } from './pages/BlogDetailPage';
 import {
   X,
   Globe,
@@ -636,6 +637,16 @@ function AppRoutes() {
                 element={
                   <ProtectedRoute>
                     <AlbumDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Blog detail — protected */}
+              <Route
+                path="blog/:id"
+                element={
+                  <ProtectedRoute>
+                    <BlogDetailPage />
                   </ProtectedRoute>
                 }
               />

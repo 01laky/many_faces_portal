@@ -37,7 +37,9 @@ import { useAnimatedGradientStyle } from '../hooks/useAnimatedGradient';
 import { useLocalizedLink } from '../hooks/useLocalizedLink';
 import { COMPONENT_TYPE_ID } from '../constants/componentTypeIds';
 import { AlbumForm } from './grid/AlbumForm';
+import { BlogForm } from './grid/BlogForm';
 import type { AlbumItem } from '../api/services/AlbumsService';
+import type { BlogItem } from '../api/services/BlogsService';
 import type { GridComponentType } from './PageGridLayout';
 import './ComponentBlock.scss';
 
@@ -88,6 +90,7 @@ function setStoredSettings(componentId: string, data: { autoplay?: boolean }) {
 }
 
 const ALBUM_COMPONENT_TYPES: GridComponentType[] = ['album', 'albumGrid', 'albumCarousel'];
+const BLOG_COMPONENT_TYPES: GridComponentType[] = ['blog', 'blogGrid', 'blogCarousel'];
 
 export interface ComponentBlockProps {
   componentId: string;
@@ -106,6 +109,9 @@ export interface ComponentBlockProps {
   /** Album to edit (opens panel in edit mode) */
   editAlbum?: AlbumItem | null;
   onAlbumSaved?: (album: AlbumItem) => void;
+  /** Blog to edit (opens panel in edit mode) */
+  editBlog?: BlogItem | null;
+  onBlogSaved?: (blog: BlogItem) => void;
 }
 
 export function ComponentBlock({
@@ -121,6 +127,8 @@ export function ComponentBlock({
   autoplayFromStorage = false,
   editAlbum,
   onAlbumSaved,
+  editBlog,
+  onBlogSaved,
 }: ComponentBlockProps) {
   const { selectedFace } = useFaceConfig();
   const gradientVars = useAnimatedGradientStyle(selectedFace?.gradientSettings);
@@ -132,6 +140,7 @@ export function ComponentBlock({
   const hasFooter = defaults.hasFooter;
 
   const isAlbumType = ALBUM_COMPONENT_TYPES.includes(componentType);
+  const isBlogType = BLOG_COMPONENT_TYPES.includes(componentType);
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelTab, setPanelTab] = useState<'create' | 'settings'>('create');
   const [playing, setPlaying] = useState(autoplayFromStorage);
@@ -148,6 +157,14 @@ export function ComponentBlock({
       onAlbumSaved?.(album);
     },
     [onAlbumSaved]
+  );
+
+  const handleBlogSaved = useCallback(
+    (blog: BlogItem) => {
+      setPanelOpen(false);
+      onBlogSaved?.(blog);
+    },
+    [onBlogSaved]
   );
 
   const closePanel = useCallback(() => setPanelOpen(false), []);
@@ -270,7 +287,7 @@ export function ComponentBlock({
         aria-hidden={!panelOpen}
       >
         <div className="component-block-panel-header">
-          {!isAlbumType && (
+          {!isAlbumType && !isBlogType && (
             <nav className="component-block-panel-tabs">
               <button
                 type="button"
@@ -293,6 +310,11 @@ export function ComponentBlock({
               {editAlbum ? 'Edit Album' : 'Create Album'}
             </span>
           )}
+          {isBlogType && (
+            <span className="component-block-panel-tab component-block-panel-tab--active">
+              {editBlog ? 'Edit Blog' : 'Create Blog'}
+            </span>
+          )}
           <button
             type="button"
             className="component-block-panel-close"
@@ -306,7 +328,10 @@ export function ComponentBlock({
           {isAlbumType && (
             <AlbumForm editAlbum={editAlbum} onSaved={handleAlbumSaved} onCancel={closePanel} />
           )}
-          {!isAlbumType && panelTab === 'create' && (
+          {isBlogType && (
+            <BlogForm editBlog={editBlog} onSaved={handleBlogSaved} onCancel={closePanel} />
+          )}
+          {!isAlbumType && !isBlogType && panelTab === 'create' && (
             <div className="component-block-panel-section">
               <h3 className="component-block-panel-heading">Create new {defaults.title}</h3>
               <p className="component-block-panel-desc">
@@ -320,7 +345,7 @@ export function ComponentBlock({
               />
             </div>
           )}
-          {!isAlbumType && panelTab === 'settings' && (
+          {!isAlbumType && !isBlogType && panelTab === 'settings' && (
             <div className="component-block-panel-section">
               <h3 className="component-block-panel-heading">Component settings</h3>
               <p className="component-block-panel-desc">

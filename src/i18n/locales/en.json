@@ -196,6 +196,12 @@
     "writeComment": "Write a comment...",
     "noComments": "No comments yet"
   },
+  "blogDetail": {
+    "notFound": "Blog not found",
+    "comments": "Comments",
+    "writeComment": "Write a comment...",
+    "noComments": "No comments yet"
+  },
   "common": {
     "back": "Back",
     "faceRoleSelect": {

@@ -5,6 +5,8 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import './BlogCarousel.scss';
 
 const CARD_WIDTH = 200;
@@ -38,6 +40,8 @@ const ALL_POSTS = generatePosts(24);
 
 export function BlogCarousel() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const getLocalizedPath = useLocalizedLink();
   const [visibleCount, setVisibleCount] = useState(2);
   const [page, setPage] = useState(0);
 
@@ -76,7 +80,17 @@ export function BlogCarousel() {
 
       <div className="blog-carousel-track">
         {visiblePosts.map((post) => (
-          <div key={post.id} className="blog-carousel-card" style={{ width: CARD_WIDTH }}>
+          <div
+            key={post.id}
+            className="blog-carousel-card"
+            style={{ width: CARD_WIDTH }}
+            onClick={() => navigate(getLocalizedPath(`/blog/${post.id}`))}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') navigate(getLocalizedPath(`/blog/${post.id}`));
+            }}
+          >
             <img src={post.image} alt={post.title} loading="lazy" />
             <div className="blog-carousel-card-info">
               <span className="blog-carousel-card-date">{post.date}</span>
