@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
@@ -27,6 +27,15 @@ export function WallTicketCreateTopPanel({
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (ev: KeyboardEvent) => {
+      if (ev.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,8 +59,8 @@ export function WallTicketCreateTopPanel({
       setDescription('');
       onCreated?.();
       onClose();
-    } catch {
-      toast.error(t('wallTickets.createError'));
+    } catch (err) {
+      toast.error(err instanceof Error && err.message ? err.message : t('wallTickets.createError'));
     } finally {
       setSaving(false);
     }

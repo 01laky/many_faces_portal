@@ -203,13 +203,13 @@ export function Header({
               </span>
             </div>
             <div className="header-actions">
-              <button className="header-action-btn" type="button" title="Info">
+              <button className="header-action-btn" type="button" title={t('header.info')}>
                 <Info size={16} />
               </button>
               <button
                 className="header-action-btn"
                 type="button"
-                title="Settings"
+                title={t('header.settings')}
                 onClick={onSettingsToggle}
               >
                 <Settings size={16} />
@@ -217,7 +217,7 @@ export function Header({
               <button
                 className="header-action-btn"
                 type="button"
-                title="Menu"
+                title={t('header.menu')}
                 onClick={onMenuToggle}
               >
                 <Menu size={16} />
@@ -270,7 +270,7 @@ export function Header({
           ) : (
             <div className="header-profile header-profile--guest">
               <div className="header-profile-info">
-                <span className="header-profile-status">Guest</span>
+                <span className="header-profile-status">{t('header.guest')}</span>
               </div>
               <div className="header-profile-avatar">
                 <Globe size={24} />
@@ -283,9 +283,9 @@ export function Header({
         <button
           className="header-burger"
           type="button"
-          title="Menu"
+          title={t('header.menu')}
           onClick={onMenuToggle}
-          aria-label="Menu"
+          aria-label={t('header.menu')}
         >
           <Menu size={22} />
         </button>

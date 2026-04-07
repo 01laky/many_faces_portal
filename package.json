@@ -25,6 +25,9 @@
     "prepare": "husky"
   },
   "packageManager": "yarn@4.12.0",
+  "engines": {
+    "node": ">=22.14.0"
+  },
   "lint-staged": {
     "*.{ts,tsx}": [
       "eslint --fix",

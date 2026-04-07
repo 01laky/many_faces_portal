@@ -260,6 +260,22 @@
       "denied": "Zamietnutý"
     }
   },
+  "settingsPanel": {
+    "tabSettings": "Nastavenia",
+    "tabFriendRequests": "Žiadosti o priateľstvo",
+    "tabMessenger": "Správy",
+    "tabNotifications": "Notifikácie",
+    "tabFaces": "Face",
+    "tabPages": "Stránky",
+    "closePanel": "Zavrieť nastavenia",
+    "language": "Jazyk"
+  },
+  "header": {
+    "info": "Info",
+    "settings": "Nastavenia",
+    "menu": "Menu",
+    "guest": "Hosť"
+  },
   "faceProfiles": {
     "headerTitle": "Profily vo face",
     "listTitle": "Profily v tomto face",

@@ -260,6 +260,22 @@
       "denied": "Denied"
     }
   },
+  "settingsPanel": {
+    "tabSettings": "Settings",
+    "tabFriendRequests": "Friend requests",
+    "tabMessenger": "Messenger",
+    "tabNotifications": "Notifications",
+    "tabFaces": "Faces",
+    "tabPages": "Pages",
+    "closePanel": "Close settings",
+    "language": "Language"
+  },
+  "header": {
+    "info": "Info",
+    "settings": "Settings",
+    "menu": "Menu",
+    "guest": "Guest"
+  },
   "faceProfiles": {
     "headerTitle": "Face profiles",
     "listTitle": "Profiles in this face",

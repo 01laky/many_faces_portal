@@ -55,9 +55,11 @@ export function WallTicketDetailPanel({
           setEditDescription(d.description);
           setEditing(false);
         }
-      } catch {
+      } catch (err) {
         if (!cancelled) {
-          toast.error(t('wallTickets.loadError'));
+          toast.error(
+            err instanceof Error && err.message ? err.message : t('wallTickets.loadError')
+          );
           onClose();
         }
       } finally {
@@ -68,6 +70,15 @@ export function WallTicketDetailPanel({
       cancelled = true;
     };
   }, [open, ticketId, token, faceId, t, onClose]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (ev: KeyboardEvent) => {
+      if (ev.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
 
   if (!open || !ticketId) return null;
 
@@ -89,8 +100,8 @@ export function WallTicketDetailPanel({
         await likeWallTicket(token, faceId, detail.id);
       }
       await refresh();
-    } catch {
-      toast.error(t('wallTickets.likeError'));
+    } catch (err) {
+      toast.error(err instanceof Error && err.message ? err.message : t('wallTickets.likeError'));
     }
   };
 
@@ -101,8 +112,10 @@ export function WallTicketDetailPanel({
       await addWallTicketComment(token, faceId, detail.id, commentText.trim());
       setCommentText('');
       await refresh();
-    } catch {
-      toast.error(t('wallTickets.commentError'));
+    } catch (err) {
+      toast.error(
+        err instanceof Error && err.message ? err.message : t('wallTickets.commentError')
+      );
     }
   };
 
@@ -118,8 +131,8 @@ export function WallTicketDetailPanel({
       toast.success(t('wallTickets.saveSuccess'));
       setEditing(false);
       await refresh();
-    } catch {
-      toast.error(t('wallTickets.saveError'));
+    } catch (err) {
+      toast.error(err instanceof Error && err.message ? err.message : t('wallTickets.saveError'));
     } finally {
       setSaving(false);
     }
@@ -133,8 +146,8 @@ export function WallTicketDetailPanel({
       toast.success(t('wallTickets.deleted'));
       onChanged?.();
       onClose();
-    } catch {
-      toast.error(t('wallTickets.deleteError'));
+    } catch (err) {
+      toast.error(err instanceof Error && err.message ? err.message : t('wallTickets.deleteError'));
     }
   };
 

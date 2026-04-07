@@ -38,9 +38,9 @@ export function WallTicketsSection({ refreshKey = 0 }: WallTicketsSectionProps) 
           setTotalPages(Math.max(1, res.totalPages));
           setError(null);
         }
-      } catch {
+      } catch (err) {
         if (!cancelled) {
-          setError(t('wallTickets.loadError'));
+          setError(err instanceof Error && err.message ? err.message : t('wallTickets.loadError'));
           setItems([]);
         }
       } finally {

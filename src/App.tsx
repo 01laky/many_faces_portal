@@ -48,6 +48,7 @@ import { StoriesListPage } from './pages/StoriesListPage';
 import { StoriesCreateTopPanel } from './components/StoriesCreateTopPanel';
 import { WallTicketCreateTopPanel } from './components/WallTicketCreateTopPanel';
 import { pathnameMatchesWallPage } from './utils/faceWallPage';
+import { useWallHostViewer } from './hooks/useWallHostViewer';
 import {
   X,
   Globe,
@@ -307,6 +308,21 @@ function AppRoutes() {
     Boolean(selectedFace) &&
     (location.pathname === storiesHomePath || location.pathname.startsWith(storiesHomePath + '/'));
 
+  const { canShowWallCreate } = useWallHostViewer({
+    enabled: Boolean(isWallPage && isAuthenticated && token && selectedFace),
+    token,
+    faceId: selectedFace?.id,
+  });
+
+  useEffect(() => {
+    if (!settingsOpen) return;
+    const onKey = (ev: KeyboardEvent) => {
+      if (ev.key === 'Escape') setSettingsOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [settingsOpen]);
+
   // First visit to a private face: open slide-out panel with Face role tab by default (deferred to avoid setState-in-effect lint)
   useEffect(() => {
     if (!selectedFace || selectedFace.isPublic) return;
@@ -402,7 +418,7 @@ function AppRoutes() {
           isAuthenticated && token && isStoriesPage ? () => setStoriesCreateOpen(true) : undefined
         }
         onWallTicketCreate={
-          isAuthenticated && token && selectedFace && isWallPage
+          isAuthenticated && token && selectedFace && isWallPage && canShowWallCreate
             ? () => setWallCreateOpen(true)
             : undefined
         }
@@ -435,7 +451,7 @@ function AppRoutes() {
                 onClick={() => setSettingsTab('settings')}
                 type="button"
               >
-                Settings
+                {t('settingsPanel.tabSettings')}
               </button>
               {isAuthenticated && (
                 <button
@@ -465,7 +481,7 @@ function AppRoutes() {
                     type="button"
                   >
                     <UserRound size={16} />
-                    <span>Friend Requests</span>
+                    <span>{t('settingsPanel.tabFriendRequests')}</span>
                   </button>
                   <button
                     className={`settings-tab ${settingsTab === 'messenger' ? 'settings-tab--active' : ''}`}
@@ -473,7 +489,7 @@ function AppRoutes() {
                     type="button"
                   >
                     <MessageCircle size={16} />
-                    <span>Messenger</span>
+                    <span>{t('settingsPanel.tabMessenger')}</span>
                   </button>
                   <button
                     className={`settings-tab ${settingsTab === 'notifications' ? 'settings-tab--active' : ''}`}
@@ -481,7 +497,7 @@ function AppRoutes() {
                     type="button"
                   >
                     <Bell size={16} />
-                    <span>Notifications</span>
+                    <span>{t('settingsPanel.tabNotifications')}</span>
                   </button>
                   <button
                     className={`settings-tab ${settingsTab === 'blockList' ? 'settings-tab--active' : ''}`}
@@ -506,21 +522,21 @@ function AppRoutes() {
                 onClick={() => setSettingsTab('faces')}
                 type="button"
               >
-                Faces
+                {t('settingsPanel.tabFaces')}
               </button>
               <button
                 className={`settings-tab ${settingsTab === 'pages' ? 'settings-tab--active' : ''}`}
                 onClick={() => setSettingsTab('pages')}
                 type="button"
               >
-                Pages
+                {t('settingsPanel.tabPages')}
               </button>
             </nav>
             <button
               className="settings-panel-close"
               onClick={handleClosePanel}
               type="button"
-              aria-label="Close settings"
+              aria-label={t('settingsPanel.closePanel')}
             >
               <X size={20} />
             </button>
@@ -541,7 +557,7 @@ function AppRoutes() {
               <div className="settings-section">
                 <label className="settings-label">
                   <Globe size={18} />
-                  Language
+                  {t('settingsPanel.language')}
                 </label>
                 <LanguageSwitcher />
                 {isAuthenticated && (

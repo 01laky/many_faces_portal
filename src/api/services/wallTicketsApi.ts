@@ -1,5 +1,8 @@
 import { env } from '../../config/env';
 import { authAwareFetch } from '../utils/authAwareFetch';
+import { getApiErrorMessage } from '../../utils/apiErrorMessage';
+
+const REQ_FAILED = 'Request failed';
 
 async function apiFetch(path: string, options: RequestInit & { token?: string }) {
   const token = options.token;
@@ -75,7 +78,7 @@ export async function fetchWallTickets(
     `/api/faces/${faceId}/wall-tickets?page=${page}&pageSize=${pageSize}`,
     { method: 'GET', token }
   );
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) throw new Error(await getApiErrorMessage(res, REQ_FAILED));
   return res.json() as Promise<WallTicketListResponse>;
 }
 
@@ -85,7 +88,7 @@ export async function fetchWallTicketDetail(
   ticketId: number
 ): Promise<WallTicketDetail> {
   const res = await apiFetch(`/api/faces/${faceId}/wall-tickets/${ticketId}`, { method: 'GET', token });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) throw new Error(await getApiErrorMessage(res, REQ_FAILED));
   return res.json() as Promise<WallTicketDetail>;
 }
 
@@ -99,7 +102,7 @@ export async function createWallTicket(
     token,
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) throw new Error(await getApiErrorMessage(res, REQ_FAILED));
   return res.json() as Promise<{ id: number; title: string; status: string; createdAt: string }>;
 }
 
@@ -114,12 +117,12 @@ export async function updateWallTicket(
     token,
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) throw new Error(await getApiErrorMessage(res, REQ_FAILED));
 }
 
 export async function deleteWallTicket(token: string, faceId: number, ticketId: number): Promise<void> {
   const res = await apiFetch(`/api/faces/${faceId}/wall-tickets/${ticketId}`, { method: 'DELETE', token });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) throw new Error(await getApiErrorMessage(res, REQ_FAILED));
 }
 
 export async function likeWallTicket(token: string, faceId: number, ticketId: number): Promise<void> {
@@ -127,7 +130,7 @@ export async function likeWallTicket(token: string, faceId: number, ticketId: nu
     method: 'POST',
     token,
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) throw new Error(await getApiErrorMessage(res, REQ_FAILED));
 }
 
 export async function unlikeWallTicket(token: string, faceId: number, ticketId: number): Promise<void> {
@@ -135,7 +138,7 @@ export async function unlikeWallTicket(token: string, faceId: number, ticketId: 
     method: 'DELETE',
     token,
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) throw new Error(await getApiErrorMessage(res, REQ_FAILED));
 }
 
 export async function addWallTicketComment(
@@ -149,6 +152,6 @@ export async function addWallTicketComment(
     token,
     body: JSON.stringify({ content }),
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) throw new Error(await getApiErrorMessage(res, REQ_FAILED));
   return res.json() as Promise<WallTicketComment>;
 }
