@@ -225,6 +225,41 @@
     "publishSuccess": "Story publikována",
     "publishError": "Nepodařilo se publikovat story"
   },
+  "wallTickets": {
+    "headerCreateTitle": "Nový příspěvek na zeď",
+    "newTicket": "Nový ticket",
+    "title": "Název",
+    "description": "Popis",
+    "submit": "Odeslat",
+    "titleRequired": "Zadejte název",
+    "descriptionRequired": "Zadejte popis",
+    "createSuccess": "Ticket byl vytvořen",
+    "createError": "Nepodařilo se vytvořit ticket",
+    "loading": "Načítám…",
+    "loadError": "Nepodařilo se načíst zeď",
+    "empty": "Zatím tu nejsou žádné tickety.",
+    "loginRequired": "Přihlaste se pro zobrazení zdi a přispívání.",
+    "detailTitle": "Ticket",
+    "close": "Zavřít",
+    "prev": "Předchozí",
+    "next": "Další",
+    "newComment": "Komentář",
+    "commentPlaceholder": "Napište komentář (max 255 znaků)",
+    "postComment": "Odeslat",
+    "frozenHint": "Po moderaci zamčeno",
+    "likeError": "Nepodařilo se upravit líbí se",
+    "commentError": "Nepodařilo se přidat komentář",
+    "saveSuccess": "Uloženo",
+    "saveError": "Nepodařilo se uložit",
+    "confirmDelete": "Trvale smazat tento ticket?",
+    "deleted": "Ticket smazán",
+    "deleteError": "Nepodařilo se smazat ticket",
+    "status": {
+      "active": "Aktivní",
+      "approved": "Schválený",
+      "denied": "Zamítnutý"
+    }
+  },
   "faceProfiles": {
     "headerTitle": "Profily ve face",
     "listTitle": "Profily v tomto face",
@@ -267,6 +302,10 @@
   },
   "common": {
     "back": "Zpět",
+    "cancel": "Zrušit",
+    "save": "Uložit",
+    "delete": "Smazat",
+    "close": "Zavřít",
     "faceRoleSelect": {
       "tabTitle": "Role ve face",
       "chooseRole": "Vyberte svou roli v tomto face",

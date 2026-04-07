@@ -46,6 +46,8 @@ import { FaceProfilesListPage } from './pages/FaceProfilesListPage';
 import { FaceProfileDetailPage } from './pages/FaceProfileDetailPage';
 import { StoriesListPage } from './pages/StoriesListPage';
 import { StoriesCreateTopPanel } from './components/StoriesCreateTopPanel';
+import { WallTicketCreateTopPanel } from './components/WallTicketCreateTopPanel';
+import { pathnameMatchesWallPage } from './utils/faceWallPage';
 import {
   X,
   Globe,
@@ -295,7 +297,15 @@ function AppRoutes() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState<string>('settings');
   const [storiesCreateOpen, setStoriesCreateOpen] = useState(false);
+  const [wallCreateOpen, setWallCreateOpen] = useState(false);
+  const [wallRefreshKey, setWallRefreshKey] = useState(0);
+  const location = useLocation();
   const gradientVars = useAnimatedGradientStyle(selectedFace?.gradientSettings);
+  const isWallPage = pathnameMatchesWallPage(location.pathname, selectedFace);
+  const storiesHomePath = selectedFace ? getLocalizedPath(`/${selectedFace.index}/stories`) : '';
+  const isStoriesPage =
+    Boolean(selectedFace) &&
+    (location.pathname === storiesHomePath || location.pathname.startsWith(storiesHomePath + '/'));
 
   // First visit to a private face: open slide-out panel with Face role tab by default (deferred to avoid setState-in-effect lint)
   useEffect(() => {
@@ -388,13 +398,29 @@ function AppRoutes() {
           setSettingsTab('profile');
           setSettingsOpen(true);
         }}
-        onStoriesCreate={isAuthenticated && token ? () => setStoriesCreateOpen(true) : undefined}
+        onStoriesCreate={
+          isAuthenticated && token && isStoriesPage ? () => setStoriesCreateOpen(true) : undefined
+        }
+        onWallTicketCreate={
+          isAuthenticated && token && selectedFace && isWallPage
+            ? () => setWallCreateOpen(true)
+            : undefined
+        }
       />
       {isAuthenticated && token && (
         <StoriesCreateTopPanel
           open={storiesCreateOpen}
           onClose={() => setStoriesCreateOpen(false)}
           token={token}
+        />
+      )}
+      {isAuthenticated && token && selectedFace && (
+        <WallTicketCreateTopPanel
+          open={wallCreateOpen}
+          onClose={() => setWallCreateOpen(false)}
+          token={token}
+          faceId={selectedFace.id}
+          onCreated={() => setWallRefreshKey((k) => k + 1)}
         />
       )}
       <div className="app-content-area">
@@ -629,7 +655,11 @@ function AppRoutes() {
                   <Route
                     key={fr.key}
                     path={fr.path}
-                    element={publicElement ?? <FacePageView page={fr.page} />}
+                    element={
+                      publicElement ?? (
+                        <FacePageView page={fr.page} wallRefreshKey={wallRefreshKey} />
+                      )
+                    }
                   />
                 ) : (
                   // Private face routes — require authentication
@@ -638,7 +668,7 @@ function AppRoutes() {
                     path={fr.path}
                     element={
                       <ProtectedRoute>
-                        <FacePageView page={fr.page} />
+                        <FacePageView page={fr.page} wallRefreshKey={wallRefreshKey} />
                       </ProtectedRoute>
                     }
                   />

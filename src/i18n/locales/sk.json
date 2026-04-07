@@ -225,6 +225,41 @@
     "publishSuccess": "Story publikovaná",
     "publishError": "Nepodarilo sa publikovať story"
   },
+  "wallTickets": {
+    "headerCreateTitle": "Nový príspevok na stenu",
+    "newTicket": "Nový ticket",
+    "title": "Názov",
+    "description": "Popis",
+    "submit": "Odoslať",
+    "titleRequired": "Zadajte názov",
+    "descriptionRequired": "Zadajte popis",
+    "createSuccess": "Ticket bol vytvorený",
+    "createError": "Nepodarilo sa vytvoriť ticket",
+    "loading": "Načítavam…",
+    "loadError": "Nepodarilo sa načítať stenu",
+    "empty": "Zatiaľ tu nie sú žiadne tickety.",
+    "loginRequired": "Prihláste sa, aby ste videli stenu a mohli prispievať.",
+    "detailTitle": "Ticket",
+    "close": "Zavrieť",
+    "prev": "Predchádzajúca",
+    "next": "Ďalšia",
+    "newComment": "Komentár",
+    "commentPlaceholder": "Napíšte komentár (max 255 znakov)",
+    "postComment": "Odoslať",
+    "frozenHint": "Po moderácii zamrznuté",
+    "likeError": "Nepodarilo sa upraviť páči sa",
+    "commentError": "Nepodarilo sa pridať komentár",
+    "saveSuccess": "Uložené",
+    "saveError": "Nepodarilo sa uložiť",
+    "confirmDelete": "Natrvalo zmazať tento ticket?",
+    "deleted": "Ticket zmazaný",
+    "deleteError": "Nepodarilo sa zmazať ticket",
+    "status": {
+      "active": "Aktívny",
+      "approved": "Schválený",
+      "denied": "Zamietnutý"
+    }
+  },
   "faceProfiles": {
     "headerTitle": "Profily vo face",
     "listTitle": "Profily v tomto face",
@@ -267,6 +302,10 @@
   },
   "common": {
     "back": "Späť",
+    "cancel": "Zrušiť",
+    "save": "Uložiť",
+    "delete": "Zmazať",
+    "close": "Zavrieť",
     "faceRoleSelect": {
       "tabTitle": "Rola vo face",
       "chooseRole": "Vyberte svoju rolu v tomto face",

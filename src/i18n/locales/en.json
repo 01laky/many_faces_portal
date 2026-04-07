@@ -225,6 +225,41 @@
     "publishSuccess": "Story published",
     "publishError": "Could not publish story"
   },
+  "wallTickets": {
+    "headerCreateTitle": "New wall ticket",
+    "newTicket": "New ticket",
+    "title": "Title",
+    "description": "Description",
+    "submit": "Submit",
+    "titleRequired": "Enter a title",
+    "descriptionRequired": "Enter a description",
+    "createSuccess": "Ticket created",
+    "createError": "Could not create ticket",
+    "loading": "Loading…",
+    "loadError": "Failed to load wall",
+    "empty": "No tickets yet.",
+    "loginRequired": "Sign in to view and post on the wall.",
+    "detailTitle": "Ticket",
+    "close": "Close",
+    "prev": "Previous",
+    "next": "Next",
+    "newComment": "Comment",
+    "commentPlaceholder": "Write a comment (max 255 characters)",
+    "postComment": "Post",
+    "frozenHint": "Frozen after moderation",
+    "likeError": "Could not update like",
+    "commentError": "Could not post comment",
+    "saveSuccess": "Saved",
+    "saveError": "Could not save",
+    "confirmDelete": "Delete this ticket permanently?",
+    "deleted": "Ticket deleted",
+    "deleteError": "Could not delete ticket",
+    "status": {
+      "active": "Active",
+      "approved": "Approved",
+      "denied": "Denied"
+    }
+  },
   "faceProfiles": {
     "headerTitle": "Face profiles",
     "listTitle": "Profiles in this face",
@@ -267,6 +302,10 @@
   },
   "common": {
     "back": "Back",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "close": "Close",
     "faceRoleSelect": {
       "tabTitle": "Face role",
       "chooseRole": "Choose your role in this face",

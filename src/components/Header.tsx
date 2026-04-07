@@ -21,6 +21,7 @@ import {
   Plus,
 } from 'lucide-react';
 import { getPageIcon } from '../utils/pageIcons';
+import { pathnameMatchesWallPage } from '../utils/faceWallPage';
 import type { FaceConfig } from '../api/types/facesConfig';
 import './Header.scss';
 
@@ -31,6 +32,8 @@ interface HeaderProps {
   onProfileClick?: () => void;
   /** Open top panel to create a new story */
   onStoriesCreate?: () => void;
+  /** Open top panel to create a wall ticket (face wall page) */
+  onWallTicketCreate?: () => void;
 }
 
 /** Resolve current face page name from pathname and face config */
@@ -54,6 +57,7 @@ export function Header({
   onMenuToggle,
   onProfileClick,
   onStoriesCreate,
+  onWallTicketCreate,
 }: HeaderProps) {
   const { t } = useTranslation('common');
   const getLocalizedPath = useLocalizedLink();
@@ -75,6 +79,7 @@ export function Header({
 
   const currentPageName = getCurrentPageName(location.pathname, selectedFace);
   const faceIndexDisplay = selectedFace?.index ?? '—';
+  const isWallPage = pathnameMatchesWallPage(location.pathname, selectedFace);
 
   return (
     <header className="app-header" style={gradientVars}>
@@ -170,6 +175,16 @@ export function Header({
                     className="header-page-icon"
                     title={t('stories.headerCreateTitle')}
                     onClick={onStoriesCreate}
+                  >
+                    <Plus size={20} />
+                  </button>
+                )}
+                {selectedFace && onWallTicketCreate && isWallPage && (
+                  <button
+                    type="button"
+                    className="header-page-icon"
+                    title={t('wallTickets.headerCreateTitle')}
+                    onClick={onWallTicketCreate}
                   >
                     <Plus size={20} />
                   </button>
