@@ -34,6 +34,21 @@ export async function fetchFaceProfiles(
   return data;
 }
 
+/** Loads every profile page (100 per request) for grid pagination in the layout. */
+export async function fetchAllFaceProfilesForFace(
+  faceId: number,
+  token: string | undefined,
+  maxPages = 50
+): Promise<FaceProfileListItem[]> {
+  const all: FaceProfileListItem[] = [];
+  for (let page = 1; page <= maxPages; page++) {
+    const { items, totalCount } = await fetchFaceProfiles(faceId, token, page, 100);
+    all.push(...items);
+    if (all.length >= totalCount || items.length === 0) break;
+  }
+  return all;
+}
+
 export interface FaceProfileDetail {
   userId: string;
   displayName: string | null;

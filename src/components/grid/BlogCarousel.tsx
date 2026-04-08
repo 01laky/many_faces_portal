@@ -1,49 +1,50 @@
 /**
- * BlogCarousel - Paginated horizontal carousel of blog post cards
- *
- * The number of visible items recalculates based on container width.
+ * BlogCarousel - Blog posts carousel for the current face (API-backed)
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
+import { getBlogs, type BlogItem } from '../../api/services/BlogsService';
 import './BlogCarousel.scss';
 
 const CARD_WIDTH = 200;
 const CARD_GAP = 8;
 
-interface BlogData {
-  id: number;
-  title: string;
-  date: string;
-  image: string;
+function blogCover(blog: BlogItem): string {
+  const first = blog.images?.[0]?.imageUrl;
+  if (first) return first;
+  return `https://picsum.photos/seed/blogcar${blog.id}/400/250`;
 }
 
-function generatePosts(total: number): BlogData[] {
-  const titles = [
-    'Getting Started with React 19',
-    'TypeScript Best Practices',
-    'CSS Grid Deep Dive',
-    'Building Accessible UIs',
-    'Server Components Explained',
-    'Testing Strategies',
-  ];
-  return Array.from({ length: total }, (_, i) => ({
-    id: i + 1,
-    title: titles[i % titles.length],
-    date: `${(i % 28) + 1} Feb 2025`,
-    image: `https://picsum.photos/seed/blogC${i + 1}/400/250`,
-  }));
+export interface BlogCarouselProps {
+  page?: number;
+  totalPages?: number;
+  onPageChange?: (page: number, totalPages: number) => void;
 }
 
-const ALL_POSTS = generatePosts(24);
-
-export function BlogCarousel() {
+export function BlogCarousel({
+  page: controlledPage,
+  totalPages: _totalPages,
+  onPageChange,
+}: BlogCarouselProps = {}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
-  const [visibleCount, setVisibleCount] = useState(2);
-  const [page, setPage] = useState(0);
+  const { token } = useAuth();
+  const { selectedFace } = useFaceConfig();
+  const faceId = selectedFace?.id;
+
+  const [posts, setPosts] = useState<BlogItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(3);
+  const [internalPage, setInternalPage] = useState(0);
+  const isControlled = onPageChange != null;
+  const page = isControlled && controlledPage !== undefined ? controlledPage : internalPage;
 
   const calcVisible = useCallback(() => {
     if (!containerRef.current) return;
@@ -61,22 +62,94 @@ export function BlogCarousel() {
     return () => ro.disconnect();
   }, [calcVisible]);
 
-  const totalPages = Math.ceil(ALL_POSTS.length / visibleCount);
+  useEffect(() => {
+    if (!token || faceId == null) {
+      setPosts([]);
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setLoadError(false);
+      try {
+        const list = await getBlogs(token, faceId);
+        if (!cancelled) setPosts(list);
+      } catch {
+        if (!cancelled) {
+          setLoadError(true);
+          setPosts([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [token, faceId]);
+
+  const totalPages = Math.max(1, Math.ceil(posts.length / visibleCount));
   const clampedPage = Math.min(page, Math.max(0, totalPages - 1));
   const visiblePosts = useMemo(
-    () => ALL_POSTS.slice(clampedPage * visibleCount, (clampedPage + 1) * visibleCount),
-    [clampedPage, visibleCount]
+    () => posts.slice(clampedPage * visibleCount, (clampedPage + 1) * visibleCount),
+    [posts, clampedPage, visibleCount]
   );
+
+  useEffect(() => {
+    onPageChange?.(clampedPage, totalPages);
+  }, [clampedPage, totalPages, onPageChange]);
+
+  const setPage = useCallback(
+    (value: number | ((prev: number) => number)) => {
+      const next =
+        typeof value === 'function'
+          ? value(isControlled ? (controlledPage ?? 0) : internalPage)
+          : value;
+      if (isControlled) onPageChange?.(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
+      else setInternalPage(next);
+    },
+    [isControlled, controlledPage, internalPage, totalPages, onPageChange]
+  );
+
+  const showInternalNav = !isControlled;
+
+  if (!token || faceId == null) {
+    return (
+      <div className="blog-carousel-component blog-carousel-component--message" ref={containerRef}>
+        <p>Sign in to see blog posts.</p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="blog-carousel-component blog-carousel-component--message" ref={containerRef}>
+        <Loader2 size={28} aria-label="Loading" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="blog-carousel-component blog-carousel-component--message" ref={containerRef}>
+        <p>Could not load posts.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="blog-carousel-component" ref={containerRef}>
-      <button
-        className="blog-carousel-nav blog-carousel-prev"
-        disabled={clampedPage === 0}
-        onClick={() => setPage((p) => p - 1)}
-      >
-        ‹
-      </button>
+      {showInternalNav && (
+        <button
+          type="button"
+          className="blog-carousel-nav blog-carousel-prev"
+          disabled={clampedPage === 0}
+          onClick={() => setPage((p) => p - 1)}
+        >
+          ‹
+        </button>
+      )}
 
       <div className="blog-carousel-track">
         {visiblePosts.map((post) => (
@@ -91,28 +164,31 @@ export function BlogCarousel() {
               if (e.key === 'Enter') navigate(getLocalizedPath(`/blog/${post.id}`));
             }}
           >
-            <img src={post.image} alt={post.title} loading="lazy" />
+            <img src={blogCover(post)} alt={post.title} loading="lazy" />
             <div className="blog-carousel-card-info">
-              <span className="blog-carousel-card-date">{post.date}</span>
               <span className="blog-carousel-card-title">{post.title}</span>
             </div>
           </div>
         ))}
       </div>
 
-      <button
-        className="blog-carousel-nav blog-carousel-next"
-        disabled={clampedPage >= totalPages - 1}
-        onClick={() => setPage((p) => p + 1)}
-      >
-        ›
-      </button>
+      {showInternalNav && (
+        <button
+          type="button"
+          className="blog-carousel-nav blog-carousel-next"
+          disabled={clampedPage >= totalPages - 1}
+          onClick={() => setPage((p) => p + 1)}
+        >
+          ›
+        </button>
+      )}
 
-      {totalPages > 1 && (
+      {showInternalNav && totalPages > 1 && (
         <div className="blog-carousel-dots">
           {Array.from({ length: totalPages }, (_, i) => (
             <button
               key={i}
+              type="button"
               className={`blog-carousel-dot ${i === clampedPage ? 'active' : ''}`}
               onClick={() => setPage(i)}
             />

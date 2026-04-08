@@ -173,23 +173,35 @@ export function PageGridLayout({ gridSchemaJson }: PageGridLayoutProps) {
     if (ct === 'albumCarousel')
       return <AlbumCarousel page={page} totalPages={totalPages} onPageChange={onChange} />;
     if (ct === 'ad') return <Ad />;
-    if (ct === 'adGrid') return <AdGrid />;
-    if (ct === 'adCarousel') return <AdCarousel />;
+    if (ct === 'adGrid')
+      return <AdGrid page={page} totalPages={totalPages} onPageChange={onChange} />;
+    if (ct === 'adCarousel')
+      return <AdCarousel page={page} totalPages={totalPages} onPageChange={onChange} />;
     if (ct === 'blog') return <Blog />;
-    if (ct === 'blogGrid') return <BlogGrid />;
-    if (ct === 'blogCarousel') return <BlogCarousel />;
+    if (ct === 'blogGrid')
+      return <BlogGrid page={page} totalPages={totalPages} onPageChange={onChange} />;
+    if (ct === 'blogCarousel')
+      return <BlogCarousel page={page} totalPages={totalPages} onPageChange={onChange} />;
     if (ct === 'chatRoom') return <ChatRoom boundChatRoomId={item.boundChatRoomId} />;
-    if (ct === 'chatRoomGrid') return <ChatRoomGrid />;
-    if (ct === 'chatRoomCarousel') return <ChatRoomCarousel />;
+    if (ct === 'chatRoomGrid')
+      return <ChatRoomGrid page={page} totalPages={totalPages} onPageChange={onChange} />;
+    if (ct === 'chatRoomCarousel')
+      return <ChatRoomCarousel page={page} totalPages={totalPages} onPageChange={onChange} />;
     if (ct === 'userProfile') return <UserProfile />;
-    if (ct === 'userProfileGrid') return <UserProfileGrid />;
-    if (ct === 'userProfileCarousel') return <UserProfileCarousel />;
+    if (ct === 'userProfileGrid')
+      return <UserProfileGrid page={page} totalPages={totalPages} onPageChange={onChange} />;
+    if (ct === 'userProfileCarousel')
+      return <UserProfileCarousel page={page} totalPages={totalPages} onPageChange={onChange} />;
     if (ct === 'reel') return <Reel />;
-    if (ct === 'reelGrid') return <ReelGrid />;
-    if (ct === 'reelCarousel') return <ReelCarousel />;
+    if (ct === 'reelGrid')
+      return <ReelGrid page={page} totalPages={totalPages} onPageChange={onChange} />;
+    if (ct === 'reelCarousel')
+      return <ReelCarousel page={page} totalPages={totalPages} onPageChange={onChange} />;
     if (ct === 'story') return <Story />;
-    if (ct === 'storyGrid') return <StoryGrid />;
-    if (ct === 'storyCarousel') return <StoryCarousel />;
+    if (ct === 'storyGrid')
+      return <StoryGrid page={page} totalPages={totalPages} onPageChange={onChange} />;
+    if (ct === 'storyCarousel')
+      return <StoryCarousel page={page} totalPages={totalPages} onPageChange={onChange} />;
     return <span className="page-grid-item-label">{item.label || item.i}</span>;
   }
 

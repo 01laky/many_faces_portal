@@ -1,51 +1,41 @@
 /**
- * StoryGrid - Paginated grid of story circles
- *
- * The number of visible items recalculates based on the container size.
+ * StoryGrid - Published stories for the current face (API-backed)
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { useFaceConfig } from '../../contexts/FaceConfigContext';
+import { useLocalizedLink } from '../../hooks/useLocalizedLink';
+import { fetchStoriesForFace, type StoryListItem } from '../../api/services/storiesApi';
+import { storyRingImageUrl } from './gridDisplayHelpers';
 import './StoryGrid.scss';
 
 const CARD_MIN_W = 90;
 const CARD_MIN_H = 110;
 
-interface StoryData {
-  id: number;
-  username: string;
-  avatar: string;
-  seen: boolean;
+export interface StoryGridProps {
+  page?: number;
+  totalPages?: number;
+  onPageChange?: (page: number, totalPages: number) => void;
 }
 
-function generateStories(total: number): StoryData[] {
-  const names = [
-    'jane_d',
-    'john_s',
-    'anna_k',
-    'peter_m',
-    'maria_l',
-    'tom_h',
-    'sara_b',
-    'mike_w',
-    'eva_n',
-    'david_r',
-    'lucia_p',
-    'martin_c',
-  ];
-  return Array.from({ length: total }, (_, i) => ({
-    id: i + 1,
-    username: names[i % names.length],
-    avatar: `https://picsum.photos/seed/story${i + 1}/100/100`,
-    seen: i % 3 === 0,
-  }));
-}
-
-const ALL_STORIES = generateStories(48);
-
-export function StoryGrid() {
+export function StoryGrid({ page: controlledPage, onPageChange }: StoryGridProps = {}) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const getLocalizedPath = useLocalizedLink();
+  const { token } = useAuth();
+  const { selectedFace } = useFaceConfig();
+  const faceId = selectedFace?.id;
+  const faceIndex = selectedFace?.index;
+
+  const [stories, setStories] = useState<StoryListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(8);
-  const [page, setPage] = useState(0);
+  const [internalPage, setInternalPage] = useState(0);
+  const isControlled = onPageChange != null;
+  const page = isControlled && controlledPage !== undefined ? controlledPage : internalPage;
 
   const calcItems = useCallback(() => {
     if (!containerRef.current) return;
@@ -66,34 +56,113 @@ export function StoryGrid() {
     return () => ro.disconnect();
   }, [calcItems]);
 
-  const totalPages = Math.ceil(ALL_STORIES.length / itemsPerPage);
+  useEffect(() => {
+    if (!token || faceId == null) {
+      setStories([]);
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setLoadError(false);
+      try {
+        const list = await fetchStoriesForFace(token, faceId);
+        if (!cancelled) setStories(list);
+      } catch {
+        if (!cancelled) {
+          setLoadError(true);
+          setStories([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [token, faceId]);
+
+  const totalPages = Math.max(1, Math.ceil(stories.length / itemsPerPage));
   const clampedPage = Math.min(page, Math.max(0, totalPages - 1));
   const visibleStories = useMemo(
-    () => ALL_STORIES.slice(clampedPage * itemsPerPage, (clampedPage + 1) * itemsPerPage),
-    [clampedPage, itemsPerPage]
+    () => stories.slice(clampedPage * itemsPerPage, (clampedPage + 1) * itemsPerPage),
+    [stories, clampedPage, itemsPerPage]
   );
+
+  useEffect(() => {
+    onPageChange?.(clampedPage, totalPages);
+  }, [clampedPage, totalPages, onPageChange]);
+
+  const setPage = useCallback(
+    (value: number | ((prev: number) => number)) => {
+      const next =
+        typeof value === 'function'
+          ? value(isControlled ? (controlledPage ?? 0) : internalPage)
+          : value;
+      if (isControlled) onPageChange?.(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
+      else setInternalPage(next);
+    },
+    [isControlled, controlledPage, internalPage, totalPages, onPageChange]
+  );
+
+  const showInternalPagination = !isControlled;
+  const listHref = faceIndex ? getLocalizedPath(`${faceIndex}/stories`) : '#';
+
+  if (!token || faceId == null || !faceIndex) {
+    return (
+      <div className="story-grid-component story-grid-component--message" ref={containerRef}>
+        <p>Sign in to see stories.</p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="story-grid-component story-grid-component--message" ref={containerRef}>
+        <Loader2 size={28} aria-label="Loading" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="story-grid-component story-grid-component--message" ref={containerRef}>
+        <p>Could not load stories.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="story-grid-component" ref={containerRef}>
       <div className="story-grid-items">
         {visibleStories.map((story) => (
-          <div key={story.id} className="story-grid-card">
-            <div className={`story-grid-ring ${story.seen ? 'seen' : ''}`}>
-              <img src={story.avatar} alt={story.username} loading="lazy" />
+          <Link key={story.id} className="story-grid-card" to={listHref}>
+            <div className="story-grid-ring">
+              <img
+                src={storyRingImageUrl(story.id, story.coverUrl)}
+                alt={story.title}
+                loading="lazy"
+              />
             </div>
-            <span className="story-grid-card-name">{story.username}</span>
-          </div>
+            <span className="story-grid-card-name">{story.creatorName || 'Story'}</span>
+          </Link>
         ))}
       </div>
-      {totalPages > 1 && (
+      {stories.length === 0 && <p className="story-grid-empty">No active stories.</p>}
+      {showInternalPagination && totalPages > 1 && (
         <div className="story-grid-pagination">
-          <button disabled={clampedPage === 0} onClick={() => setPage((p) => p - 1)}>
+          <button type="button" disabled={clampedPage === 0} onClick={() => setPage((p) => p - 1)}>
             ‹
           </button>
           <span>
             {clampedPage + 1} / {totalPages}
           </span>
-          <button disabled={clampedPage >= totalPages - 1} onClick={() => setPage((p) => p + 1)}>
+          <button
+            type="button"
+            disabled={clampedPage >= totalPages - 1}
+            onClick={() => setPage((p) => p + 1)}
+          >
             ›
           </button>
         </div>

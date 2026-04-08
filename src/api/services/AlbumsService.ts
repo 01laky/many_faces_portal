@@ -64,8 +64,9 @@ export interface UpdateAlbumDto {
 
 // ── Albums CRUD ──
 
-export async function getAlbums(token: string): Promise<AlbumItem[]> {
-  const res = await apiFetch('/api/Albums', { method: 'GET', token });
+export async function getAlbums(token: string, faceId?: number): Promise<AlbumItem[]> {
+  const q = faceId != null ? `?faceId=${encodeURIComponent(String(faceId))}` : '';
+  const res = await apiFetch(`/api/Albums${q}`, { method: 'GET', token });
   if (!res.ok) throw new Error('Failed to fetch albums');
   return res.json();
 }

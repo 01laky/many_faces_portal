@@ -82,6 +82,21 @@ export async function fetchWallTickets(
   return res.json() as Promise<WallTicketListResponse>;
 }
 
+/** Loads all wall-ticket pages (pageSize 100) for client-side grid/carousel pagination. */
+export async function fetchAllWallTicketsForFace(
+  token: string,
+  faceId: number,
+  maxPages = 50
+): Promise<WallTicketListItem[]> {
+  const all: WallTicketListItem[] = [];
+  for (let page = 1; page <= maxPages; page++) {
+    const res = await fetchWallTickets(token, faceId, page, 100);
+    all.push(...res.items);
+    if (all.length >= res.totalCount || res.items.length === 0) break;
+  }
+  return all;
+}
+
 export async function fetchWallTicketDetail(
   token: string,
   faceId: number,

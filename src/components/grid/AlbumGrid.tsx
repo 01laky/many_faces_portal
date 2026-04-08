@@ -1,35 +1,19 @@
 /**
- * AlbumGrid - Paginated grid of album cards
- *
- * The number of visible items recalculates based on the container size.
- * Uses a ref-based resize observer to measure the container.
+ * AlbumGrid - Paginated grid of album cards (API, current face)
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
+import { getAlbums, type AlbumItem } from '../../api/services/AlbumsService';
+import { albumCoverPlaceholderUrl } from './gridDisplayHelpers';
 import './AlbumGrid.scss';
 
 const ALBUM_CARD_MIN_W = 140;
 const ALBUM_CARD_MIN_H = 160;
-
-interface AlbumData {
-  id: number;
-  title: string;
-  cover: string;
-  count: number;
-}
-
-function generateAlbums(total: number): AlbumData[] {
-  return Array.from({ length: total }, (_, i) => ({
-    id: i + 1,
-    title: `Album ${i + 1}`,
-    cover: `https://picsum.photos/seed/album${i + 1}/300/300`,
-    count: Math.floor(Math.random() * 50) + 5,
-  }));
-}
-
-const ALL_ALBUMS = generateAlbums(48);
 
 export interface AlbumGridProps {
   page?: number;
@@ -41,6 +25,13 @@ export function AlbumGrid({ page: controlledPage, onPageChange }: AlbumGridProps
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
+  const { token } = useAuth();
+  const { selectedFace } = useFaceConfig();
+  const faceId = selectedFace?.id;
+
+  const [albums, setAlbums] = useState<AlbumItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(6);
   const [internalPage, setInternalPage] = useState(0);
   const isControlled = onPageChange != null;
@@ -66,11 +57,38 @@ export function AlbumGrid({ page: controlledPage, onPageChange }: AlbumGridProps
     return () => ro.disconnect();
   }, [calcItems]);
 
-  const totalPages = Math.ceil(ALL_ALBUMS.length / itemsPerPage);
+  useEffect(() => {
+    if (!token || faceId == null) {
+      setAlbums([]);
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setLoadError(false);
+      try {
+        const list = await getAlbums(token, faceId);
+        if (!cancelled) setAlbums(list);
+      } catch {
+        if (!cancelled) {
+          setLoadError(true);
+          setAlbums([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [token, faceId]);
+
+  const totalPages = Math.max(1, Math.ceil(albums.length / itemsPerPage));
   const clampedPage = Math.min(page, Math.max(0, totalPages - 1));
   const visibleAlbums = useMemo(
-    () => ALL_ALBUMS.slice(clampedPage * itemsPerPage, (clampedPage + 1) * itemsPerPage),
-    [clampedPage, itemsPerPage]
+    () => albums.slice(clampedPage * itemsPerPage, (clampedPage + 1) * itemsPerPage),
+    [albums, clampedPage, itemsPerPage]
   );
 
   useEffect(() => {
@@ -91,6 +109,30 @@ export function AlbumGrid({ page: controlledPage, onPageChange }: AlbumGridProps
 
   const showInternalPagination = !isControlled;
 
+  if (!token || faceId == null) {
+    return (
+      <div className="album-grid-component album-grid-component--message" ref={containerRef}>
+        <p>Sign in to see albums.</p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="album-grid-component album-grid-component--message" ref={containerRef}>
+        <Loader2 size={28} className="album-grid-spinner" aria-label="Loading" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="album-grid-component album-grid-component--message" ref={containerRef}>
+        <p>Could not load albums.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="album-grid-component" ref={containerRef}>
       <div className="album-grid-items">
@@ -105,23 +147,30 @@ export function AlbumGrid({ page: controlledPage, onPageChange }: AlbumGridProps
               if (e.key === 'Enter') navigate(getLocalizedPath(`/album/${album.id}`));
             }}
           >
-            <img src={album.cover} alt={album.title} loading="lazy" />
+            <img src={albumCoverPlaceholderUrl(album.id)} alt={album.title} loading="lazy" />
             <div className="album-grid-card-info">
               <span className="album-grid-card-title">{album.title}</span>
-              <span className="album-grid-card-count">{album.count} photos</span>
+              <span className="album-grid-card-count">
+                ♥ {album.likesCount} · 💬 {album.commentsCount}
+              </span>
             </div>
           </div>
         ))}
       </div>
+      {albums.length === 0 && <p className="album-grid-empty">No albums for this face yet.</p>}
       {showInternalPagination && totalPages > 1 && (
         <div className="album-grid-pagination">
-          <button disabled={clampedPage === 0} onClick={() => setPage((p) => p - 1)}>
+          <button type="button" disabled={clampedPage === 0} onClick={() => setPage((p) => p - 1)}>
             ‹
           </button>
           <span>
             {clampedPage + 1} / {totalPages}
           </span>
-          <button disabled={clampedPage >= totalPages - 1} onClick={() => setPage((p) => p + 1)}>
+          <button
+            type="button"
+            disabled={clampedPage >= totalPages - 1}
+            onClick={() => setPage((p) => p + 1)}
+          >
             ›
           </button>
         </div>
