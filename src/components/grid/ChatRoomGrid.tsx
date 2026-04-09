@@ -2,7 +2,7 @@
  * ChatRoomGrid - Paginated grid of chat room cards (API-backed)
  */
 
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -11,10 +11,12 @@ import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import { COMPONENT_TYPE_ID } from '../../constants/componentTypeIds';
 import { listChatRooms, type FaceChatRoomDto } from '../../api/services/ChatRoomsService';
 import { ChatRoomCard } from './ChatRoomCard';
+import {
+  useStablePaginationEmit,
+  useSyncedPaginationReport,
+} from '../../hooks/usePaginationParentSync';
+import { useFillGridPagination } from '../../hooks/useFillGridPagination';
 import './ChatRoomGrid.scss';
-
-const CARD_MIN_W = 180;
-const CARD_MIN_H = 100;
 
 export interface ChatRoomGridProps {
   page?: number;
@@ -23,17 +25,23 @@ export interface ChatRoomGridProps {
 }
 
 export function ChatRoomGrid({ page: controlledPage, onPageChange }: ChatRoomGridProps = {}) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const itemsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
   const { token } = useAuth();
   const { selectedFace } = useFaceConfig();
   const [rooms, setRooms] = useState<FaceChatRoomDto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [itemsPerPage, setItemsPerPage] = useState(4);
   const [internalPage, setInternalPage] = useState(0);
   const isControlled = onPageChange != null;
   const page = isControlled && controlledPage !== undefined ? controlledPage : internalPage;
+
+  const observeGrid = Boolean(selectedFace) && Boolean(token) && !loading;
+  const { itemsPerPage, gridCols } = useFillGridPagination(itemsRef, observeGrid, isControlled, {
+    gap: 6,
+    minColWidth: 160,
+    fixedCardHeightPx: 54,
+  });
 
   useEffect(() => {
     if (!selectedFace || !token) {
@@ -58,25 +66,6 @@ export function ChatRoomGrid({ page: controlledPage, onPageChange }: ChatRoomGri
     };
   }, [selectedFace, token]);
 
-  const calcItems = useCallback(() => {
-    if (!containerRef.current) return;
-    const { clientWidth, clientHeight } = containerRef.current;
-    const paginationHeight = 32;
-    const availH = clientHeight - paginationHeight;
-    const cols = Math.max(1, Math.floor(clientWidth / CARD_MIN_W));
-    const rows = Math.max(1, Math.floor(availH / CARD_MIN_H));
-    setItemsPerPage(cols * rows);
-  }, []);
-
-  useEffect(() => {
-    calcItems();
-    const el = containerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => calcItems());
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [calcItems]);
-
   const totalPages = Math.max(1, Math.ceil(rooms.length / itemsPerPage));
   const clampedPage = Math.min(page, Math.max(0, totalPages - 1));
   const visibleRooms = useMemo(
@@ -84,9 +73,8 @@ export function ChatRoomGrid({ page: controlledPage, onPageChange }: ChatRoomGri
     [clampedPage, itemsPerPage, rooms]
   );
 
-  useEffect(() => {
-    onPageChange?.(clampedPage, totalPages);
-  }, [clampedPage, totalPages, onPageChange]);
+  const emitPage = useStablePaginationEmit(onPageChange);
+  useSyncedPaginationReport(emitPage, clampedPage, totalPages);
 
   const setPage = useCallback(
     (value: number | ((prev: number) => number)) => {
@@ -94,10 +82,10 @@ export function ChatRoomGrid({ page: controlledPage, onPageChange }: ChatRoomGri
         typeof value === 'function'
           ? value(isControlled ? (controlledPage ?? 0) : internalPage)
           : value;
-      if (isControlled) onPageChange?.(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
+      if (isControlled) emitPage(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
       else setInternalPage(next);
     },
-    [isControlled, controlledPage, internalPage, totalPages, onPageChange]
+    [isControlled, controlledPage, internalPage, totalPages, emitPage]
   );
 
   const showInternalPagination = !isControlled;
@@ -108,7 +96,7 @@ export function ChatRoomGrid({ page: controlledPage, onPageChange }: ChatRoomGri
 
   if (!selectedFace || !token) {
     return (
-      <div className="chatroom-grid-component" ref={containerRef}>
+      <div className="chatroom-grid-component">
         <p className="chatroom-grid-hint">Sign in to see chat rooms.</p>
       </div>
     );
@@ -116,15 +104,17 @@ export function ChatRoomGrid({ page: controlledPage, onPageChange }: ChatRoomGri
 
   if (loading) {
     return (
-      <div className="chatroom-grid-component chatroom-grid-component--center" ref={containerRef}>
+      <div className="chatroom-grid-component chatroom-grid-component--center">
         <Loader2 className="chatroom-grid-spinner" size={28} />
       </div>
     );
   }
 
+  const itemsStyle = { '--grid-cols': gridCols } as CSSProperties;
+
   return (
-    <div className="chatroom-grid-component" ref={containerRef}>
-      <div className="chatroom-grid-items">
+    <div className="chatroom-grid-component">
+      <div className="chatroom-grid-items" ref={itemsRef} style={itemsStyle}>
         {visibleRooms.map((room) => (
           <ChatRoomCard key={room.id} room={room} onOpen={() => goDetail(room.id)} />
         ))}

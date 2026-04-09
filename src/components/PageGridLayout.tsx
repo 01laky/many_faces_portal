@@ -5,7 +5,7 @@
  * Each item is wrapped in ComponentBlock (header, footer, slide-out) with unified style.
  */
 
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { ResponsiveGridLayout, useContainerWidth, verticalCompactor } from 'react-grid-layout';
 import type { LayoutItem, ResponsiveLayouts } from 'react-grid-layout';
 import { ComponentBlock } from './ComponentBlock';
@@ -35,6 +35,18 @@ import {
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import './PageGridLayout.scss';
+
+const COMPONENT_SETTINGS_PREFIX = 'component-settings-';
+
+function readBlockAutoplay(componentId: string): boolean {
+  try {
+    const raw = localStorage.getItem(COMPONENT_SETTINGS_PREFIX + componentId);
+    if (!raw) return false;
+    return Boolean(JSON.parse(raw).autoplay);
+  } catch {
+    return false;
+  }
+}
 
 const HAS_FOOTER: Record<GridComponentType, boolean> = {
   album: false,
@@ -145,13 +157,55 @@ export function PageGridLayout({ gridSchemaJson }: PageGridLayoutProps) {
   const [pagination, setPagination] = useState<
     Record<string, { page: number; totalPages: number }>
   >({});
+  const [autoplayingItemId, setAutoplayingItemId] = useState<string | null>(null);
 
-  const handlePageChange = useCallback(
-    (itemId: string) => (page: number, totalPages: number) => {
-      setPagination((prev) => ({ ...prev, [itemId]: { page, totalPages } }));
-    },
-    []
-  );
+  const pageChangeByItemId = useMemo(() => {
+    const m = new Map<string, (page: number, totalPages: number) => void>();
+    const items = schema?.items;
+    if (!items) return m;
+    for (const it of items) {
+      const id = it.i;
+      m.set(id, (page, totalPages) => {
+        setPagination((prev) => {
+          const cur = prev[id];
+          if (cur?.page === page && cur?.totalPages === totalPages) return prev;
+          return { ...prev, [id]: { page, totalPages } };
+        });
+      });
+    }
+    return m;
+  }, [schema]);
+
+  const playPauseByItemId = useMemo(() => {
+    const m = new Map<string, (playing: boolean) => void>();
+    const items = schema?.items;
+    if (!items) return m;
+    for (const it of items) {
+      const id = it.i;
+      m.set(id, (playing: boolean) => {
+        setAutoplayingItemId((cur) => {
+          if (playing) return id;
+          if (cur === id) return null;
+          return cur;
+        });
+      });
+    }
+    return m;
+  }, [schema]);
+
+  useEffect(() => {
+    if (!autoplayingItemId) return;
+    const id = autoplayingItemId;
+    const interval = window.setInterval(() => {
+      setPagination((prev) => {
+        const cur = prev[id];
+        if (!cur || cur.totalPages <= 1) return prev;
+        const nextPage = cur.page >= cur.totalPages - 1 ? 0 : cur.page + 1;
+        return { ...prev, [id]: { ...cur, page: nextPage } };
+      });
+    }, 4500);
+    return () => clearInterval(interval);
+  }, [autoplayingItemId]);
 
   if (!schema || !schema.items || schema.items.length === 0) {
     return null;
@@ -160,13 +214,13 @@ export function PageGridLayout({ gridSchemaJson }: PageGridLayoutProps) {
   function renderChild(
     item: GridItem,
     paginationState: { page: number; totalPages: number } | undefined,
-    onPageChange: (page: number, totalPages: number) => void
+    onPageChange: ((page: number, totalPages: number) => void) | undefined
   ) {
     const ct = item.componentType;
     const controlled = ct && HAS_FOOTER[ct];
     const page = paginationState?.page ?? 0;
     const totalPages = Math.max(1, paginationState?.totalPages ?? 1);
-    const onChange = controlled ? onPageChange : undefined;
+    const onChange = controlled && onPageChange ? onPageChange : undefined;
     if (ct === 'album') return <Album />;
     if (ct === 'albumGrid')
       return <AlbumGrid page={page} totalPages={totalPages} onPageChange={onChange} />;
@@ -250,8 +304,10 @@ export function PageGridLayout({ gridSchemaJson }: PageGridLayoutProps) {
                 totalPages={totalPages}
                 onPrev={hasFooter ? () => setPage(-1) : undefined}
                 onNext={hasFooter ? () => setPage(1) : undefined}
+                onPlayPause={hasFooter ? playPauseByItemId.get(item.i) : undefined}
+                autoplayFromStorage={hasFooter ? readBlockAutoplay(item.i) : false}
               >
-                {renderChild(item, paginationState, handlePageChange(item.i))}
+                {renderChild(item, paginationState, pageChangeByItemId.get(item.i))}
               </ComponentBlock>
             </div>
           );

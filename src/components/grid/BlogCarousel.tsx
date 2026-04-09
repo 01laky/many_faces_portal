@@ -9,6 +9,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import { getBlogs, type BlogItem } from '../../api/services/BlogsService';
+import {
+  useStablePaginationEmit,
+  useSyncedPaginationReport,
+} from '../../hooks/usePaginationParentSync';
 import './BlogCarousel.scss';
 
 const CARD_WIDTH = 200;
@@ -96,9 +100,8 @@ export function BlogCarousel({
     [posts, clampedPage, visibleCount]
   );
 
-  useEffect(() => {
-    onPageChange?.(clampedPage, totalPages);
-  }, [clampedPage, totalPages, onPageChange]);
+  const emitPage = useStablePaginationEmit(onPageChange);
+  useSyncedPaginationReport(emitPage, clampedPage, totalPages);
 
   const setPage = useCallback(
     (value: number | ((prev: number) => number)) => {
@@ -106,10 +109,10 @@ export function BlogCarousel({
         typeof value === 'function'
           ? value(isControlled ? (controlledPage ?? 0) : internalPage)
           : value;
-      if (isControlled) onPageChange?.(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
+      if (isControlled) emitPage(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
       else setInternalPage(next);
     },
-    [isControlled, controlledPage, internalPage, totalPages, onPageChange]
+    [isControlled, controlledPage, internalPage, totalPages, emitPage]
   );
 
   const showInternalNav = !isControlled;

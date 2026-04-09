@@ -32,7 +32,6 @@ export interface FaceConfig {
   id: number;
   title: string;
   description?: string | null;
-  color?: string | null;
   gradientSettings?: string | null;
   isPublic: boolean;
   /** Profile directory visibility (API enum name) */

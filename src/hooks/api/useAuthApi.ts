@@ -5,6 +5,12 @@ import { setAuthToken } from '../../api/config';
 import { logger } from '../../utils/logger';
 import { isTokenExpired } from '../../utils/jwtUtils';
 import { env } from '../../config/env';
+import { buildPasswordGrantTokenRequest } from './authTokenRequest';
+
+/**
+ * Auth React Query layer: login sends password grant + optional rememberMe (longer access token TTL on API).
+ * Token query re-reads localStorage and drops expired JWTs so UI matches API reality.
+ */
 
 // Query keys
 export const authKeys = {
@@ -51,16 +57,20 @@ export function useLogin() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (credentials: { username: string; password: string }) => {
+    mutationFn: async (credentials: {
+      username: string;
+      password: string;
+      rememberMe?: boolean;
+    }) => {
       logger.info('Attempting login', { username: credentials.username });
 
-      const tokenRequest: OAuth2TokenRequest = {
-        grantType: 'password',
+      const tokenRequest = buildPasswordGrantTokenRequest({
         username: credentials.username,
         password: credentials.password,
+        rememberMe: credentials.rememberMe,
         clientId: env.oauth2ClientId,
         clientSecret: env.oauth2ClientSecret,
-      };
+      });
 
       let response;
       try {
@@ -124,6 +134,7 @@ export function useAuthToken() {
     queryKey: authKeys.token(),
     queryFn: () => {
       const token = localStorage.getItem('auth_token');
+      // Expired token: clear all auth keys so hooks and axios interceptor see logged-out state.
       if (!token || isTokenExpired(token)) {
         if (token) {
           localStorage.removeItem('auth_token');

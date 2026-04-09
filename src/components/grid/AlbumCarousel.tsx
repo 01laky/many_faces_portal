@@ -10,6 +10,10 @@ import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import { getAlbums, type AlbumItem } from '../../api/services/AlbumsService';
 import { albumCoverPlaceholderUrl } from './gridDisplayHelpers';
+import {
+  useStablePaginationEmit,
+  useSyncedPaginationReport,
+} from '../../hooks/usePaginationParentSync';
 import './AlbumCarousel.scss';
 
 const CARD_WIDTH = 160;
@@ -91,9 +95,8 @@ export function AlbumCarousel({
     [albums, clampedPage, visibleCount]
   );
 
-  useEffect(() => {
-    onPageChange?.(clampedPage, totalPages);
-  }, [clampedPage, totalPages, onPageChange]);
+  const emitPage = useStablePaginationEmit(onPageChange);
+  useSyncedPaginationReport(emitPage, clampedPage, totalPages);
 
   const setPage = useCallback(
     (value: number | ((prev: number) => number)) => {
@@ -101,10 +104,10 @@ export function AlbumCarousel({
         typeof value === 'function'
           ? value(isControlled ? (controlledPage ?? 0) : internalPage)
           : value;
-      if (isControlled) onPageChange?.(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
+      if (isControlled) emitPage(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
       else setInternalPage(next);
     },
-    [isControlled, controlledPage, internalPage, totalPages, onPageChange]
+    [isControlled, controlledPage, internalPage, totalPages, emitPage]
   );
 
   const showInternalNav = !isControlled;

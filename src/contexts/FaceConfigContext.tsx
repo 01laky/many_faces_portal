@@ -1,4 +1,12 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
 import type { ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { getFacesConfig } from '../api/config/getFacesConfig';
@@ -42,22 +50,28 @@ export function FaceConfigProvider({ children }: { children: ReactNode }) {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const loadGenerationRef = useRef(0);
 
   const loadConfig = useCallback(async () => {
+    const generation = ++loadGenerationRef.current;
     try {
       setIsLoading(true);
       setError(null);
       const config = await getFacesConfig(isAuthenticated ? (token ?? undefined) : undefined);
+      if (generation !== loadGenerationRef.current) return;
       setAllFaces(config);
       logger.info('Faces config loaded', {
         faceCount: config.length,
         isAuthenticated,
       });
     } catch (err) {
+      if (generation !== loadGenerationRef.current) return;
       logger.error('Failed to load faces config', { error: err });
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {
-      setIsLoading(false);
+      if (generation === loadGenerationRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [isAuthenticated, token]);
 

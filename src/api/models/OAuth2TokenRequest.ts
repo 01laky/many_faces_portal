@@ -8,6 +8,7 @@ export type OAuth2TokenRequest = {
     clientSecret?: string | null;
     username?: string | null;
     password?: string | null;
+    rememberMe?: boolean | null;
     refreshToken?: string | null;
     scope?: string | null;
     signature?: string | null;

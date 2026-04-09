@@ -2,17 +2,19 @@
  * ReelGrid - Paginated grid of reels for the current face (API-backed).
  */
 
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import { getReels, type ReelItem } from '../../api/services/ReelsService';
+import {
+  useStablePaginationEmit,
+  useSyncedPaginationReport,
+} from '../../hooks/usePaginationParentSync';
+import { useFillGridPagination } from '../../hooks/useFillGridPagination';
 import './ReelGrid.scss';
-
-const CARD_MIN_W = 120;
-const CARD_MIN_H = 200;
 
 export interface ReelGridProps {
   page?: number;
@@ -21,7 +23,7 @@ export interface ReelGridProps {
 }
 
 export function ReelGrid({ page: controlledPage, onPageChange }: ReelGridProps = {}) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const itemsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
   const { token } = useAuth();
@@ -31,29 +33,17 @@ export function ReelGrid({ page: controlledPage, onPageChange }: ReelGridProps =
   const [items, setItems] = useState<ReelItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState(4);
   const [internalPage, setInternalPage] = useState(0);
   const isControlled = onPageChange != null;
   const page = isControlled && controlledPage !== undefined ? controlledPage : internalPage;
 
-  const calcItems = useCallback(() => {
-    if (!containerRef.current) return;
-    const { clientWidth, clientHeight } = containerRef.current;
-    const paginationHeight = 32;
-    const availH = clientHeight - paginationHeight;
-    const cols = Math.max(1, Math.floor(clientWidth / CARD_MIN_W));
-    const rows = Math.max(1, Math.floor(availH / CARD_MIN_H));
-    setItemsPerPage(cols * rows);
-  }, []);
-
-  useEffect(() => {
-    calcItems();
-    const el = containerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => calcItems());
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [calcItems]);
+  const observeGrid = Boolean(token) && !loading && !loadError;
+  const { itemsPerPage, gridCols } = useFillGridPagination(itemsRef, observeGrid, isControlled, {
+    gap: 4,
+    minColWidth: 100,
+    imageHeightFromCellWidth: 16 / 9,
+    infoBlockPx: 0,
+  });
 
   useEffect(() => {
     if (!token) {
@@ -89,9 +79,8 @@ export function ReelGrid({ page: controlledPage, onPageChange }: ReelGridProps =
     [clampedPage, items, itemsPerPage]
   );
 
-  useEffect(() => {
-    onPageChange?.(clampedPage, totalPages);
-  }, [clampedPage, totalPages, onPageChange]);
+  const emitPage = useStablePaginationEmit(onPageChange);
+  useSyncedPaginationReport(emitPage, clampedPage, totalPages);
 
   const setPage = useCallback(
     (value: number | ((prev: number) => number)) => {
@@ -99,17 +88,17 @@ export function ReelGrid({ page: controlledPage, onPageChange }: ReelGridProps =
         typeof value === 'function'
           ? value(isControlled ? (controlledPage ?? 0) : internalPage)
           : value;
-      if (isControlled) onPageChange?.(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
+      if (isControlled) emitPage(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
       else setInternalPage(next);
     },
-    [isControlled, controlledPage, internalPage, totalPages, onPageChange]
+    [isControlled, controlledPage, internalPage, totalPages, emitPage]
   );
 
   const showInternalPagination = !isControlled;
 
   if (!token) {
     return (
-      <div className="reel-grid-component reel-grid-component--message" ref={containerRef}>
+      <div className="reel-grid-component reel-grid-component--message">
         <p>Sign in to see reels.</p>
       </div>
     );
@@ -117,7 +106,7 @@ export function ReelGrid({ page: controlledPage, onPageChange }: ReelGridProps =
 
   if (loading) {
     return (
-      <div className="reel-grid-component reel-grid-component--message" ref={containerRef}>
+      <div className="reel-grid-component reel-grid-component--message">
         <Loader2 size={28} className="reel-grid-spinner" aria-label="Loading" />
       </div>
     );
@@ -125,15 +114,17 @@ export function ReelGrid({ page: controlledPage, onPageChange }: ReelGridProps =
 
   if (loadError) {
     return (
-      <div className="reel-grid-component reel-grid-component--message" ref={containerRef}>
+      <div className="reel-grid-component reel-grid-component--message">
         <p>Could not load reels.</p>
       </div>
     );
   }
 
+  const itemsStyle = { '--grid-cols': gridCols } as CSSProperties;
+
   return (
-    <div className="reel-grid-component" ref={containerRef}>
-      <div className="reel-grid-items">
+    <div className="reel-grid-component">
+      <div className="reel-grid-items" ref={itemsRef} style={itemsStyle}>
         {visibleReels.map((reel) => (
           <div
             key={reel.id}

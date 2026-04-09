@@ -17,6 +17,7 @@ import './LoginPage.scss';
 interface LoginFormData {
   email: string;
   password: string;
+  rememberMe: boolean;
 }
 
 export function LoginPage() {
@@ -38,6 +39,7 @@ export function LoginPage() {
       .string()
       .required(t('pages.login.validation.passwordRequired'))
       .min(4, t('pages.login.validation.passwordMinLength')),
+    rememberMe: yup.boolean().default(false),
   });
 
   const {
@@ -47,6 +49,7 @@ export function LoginPage() {
   } = useForm<LoginFormData>({
     resolver: yupResolver(validationSchema),
     mode: 'onBlur', // Validate on blur for better UX
+    defaultValues: { rememberMe: false },
   });
 
   // Redirect if already authenticated
@@ -59,7 +62,7 @@ export function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      await login(data.email, data.password);
+      await login(data.email, data.password, { rememberMe: data.rememberMe });
       logger.info('Login successful, redirecting', { email: data.email });
       toast.success(t('pages.login.success') || 'Login successful!');
       // Redirect to face home page after successful login
@@ -121,6 +124,22 @@ export function LoginPage() {
                     placeholder={t('pages.login.password')}
                   />
                 </FormField>
+
+                {/* Maps to OAuth2 rememberMe; API issues long-lived JWT only when checked (see Jwt:ExpiresInMinutesRememberMe). */}
+                <div className="mb-3">
+                  <div className="form-check">
+                    <input
+                      id="rememberMe"
+                      type="checkbox"
+                      className="form-check-input"
+                      {...register('rememberMe')}
+                      disabled={isSubmitting}
+                    />
+                    <label className="form-check-label" htmlFor="rememberMe">
+                      {t('pages.login.rememberMe')}
+                    </label>
+                  </div>
+                </div>
 
                 <Button
                   type="submit"

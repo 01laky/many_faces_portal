@@ -9,6 +9,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import { getReels, type ReelItem } from '../../api/services/ReelsService';
+import {
+  useStablePaginationEmit,
+  useSyncedPaginationReport,
+} from '../../hooks/usePaginationParentSync';
 import './ReelCarousel.scss';
 
 const CARD_WIDTH = 120;
@@ -90,9 +94,8 @@ export function ReelCarousel({
     [clampedPage, visibleCount, items]
   );
 
-  useEffect(() => {
-    onPageChange?.(clampedPage, totalPages);
-  }, [clampedPage, totalPages, onPageChange]);
+  const emitPage = useStablePaginationEmit(onPageChange);
+  useSyncedPaginationReport(emitPage, clampedPage, totalPages);
 
   const setPage = useCallback(
     (value: number | ((prev: number) => number)) => {
@@ -100,10 +103,10 @@ export function ReelCarousel({
         typeof value === 'function'
           ? value(isControlled ? (controlledPage ?? 0) : internalPage)
           : value;
-      if (isControlled) onPageChange?.(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
+      if (isControlled) emitPage(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
       else setInternalPage(next);
     },
-    [isControlled, controlledPage, internalPage, totalPages, onPageChange]
+    [isControlled, controlledPage, internalPage, totalPages, emitPage]
   );
 
   const showInternalNav = !isControlled;

@@ -116,9 +116,15 @@ export function shouldShowFaceRolePanel(face: FaceConfig | null): boolean {
   return true;
 }
 
-/** True until user confirms face role onboarding (stored on server per UserFaceProfile). */
+/**
+ * True when we should auto-open the face-role onboarding panel.
+ * Uses server flag FaceRoleIntroCompleted; also skips if the user already has a face role
+ * (seed / API) so we do not nag after refresh when intro was never flipped in DB.
+ */
 // eslint-disable-next-line react-refresh/only-export-components
 export function isFirstVisitToFace(face: FaceConfig | null): boolean {
   if (!face || face.isPublic) return false;
-  return face.myFaceRoleIntroCompleted !== true;
+  if (face.myFaceRoleIntroCompleted === true) return false;
+  if (face.myFaceRoleId != null && face.myFaceRoleId > 0) return false;
+  return true;
 }

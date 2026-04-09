@@ -1,31 +1,18 @@
-# Development Dockerfile for React Vite application
-# Using npm instead of yarn to avoid rollup native module resolution issues
+# Development Dockerfile for React Vite application.
+# docker-compose.dev.yml bind-mounts ./fe_demo to /app and uses a named volume for
+# node_modules, so image-layer installs are invisible at runtime. Dependencies must
+# be installed when the container starts (into that volume).
 
-FROM node:20-slim
+FROM node:22-slim
+
+# docker-compose.dev healthcheck uses wget
+RUN apt-get update && apt-get install -y --no-install-recommends wget \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json ./
-COPY package-lock.json* ./
+RUN corepack enable && corepack prepare yarn@4.12.0 --activate
 
-# Install dependencies using npm (better native module support)
-RUN npm install
-
-# Install rollup native modules for Linux (needed for Debian-based images)
-# Detect platform and install correct module
-RUN ARCH=$(uname -m) && \
-    if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then \
-      npm install -D @rollup/rollup-linux-arm64-gnu || true; \
-    else \
-      npm install -D @rollup/rollup-linux-x64-gnu || true; \
-    fi
-
-# Copy source code
-COPY . .
-
-# Expose Vite dev server port
 EXPOSE 8081
 
-# Start development server using npm
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "8081"]
+CMD ["sh", "-c", "yarn install && yarn dev --host 0.0.0.0 --port 8081"]

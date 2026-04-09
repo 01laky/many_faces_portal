@@ -2,7 +2,7 @@
  * UserProfileGrid - Face profile directory (API-backed)
  */
 
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -13,10 +13,12 @@ import {
   type FaceProfileListItem,
 } from '../../api/services/faceProfilesApi';
 import { profileAvatarUrl } from './gridDisplayHelpers';
+import {
+  useStablePaginationEmit,
+  useSyncedPaginationReport,
+} from '../../hooks/usePaginationParentSync';
+import { useFillGridPagination } from '../../hooks/useFillGridPagination';
 import './UserProfileGrid.scss';
-
-const CARD_MIN_W = 140;
-const CARD_MIN_H = 120;
 
 export interface UserProfileGridProps {
   page?: number;
@@ -25,7 +27,7 @@ export interface UserProfileGridProps {
 }
 
 export function UserProfileGrid({ page: controlledPage, onPageChange }: UserProfileGridProps = {}) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const itemsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
   const { token } = useAuth();
@@ -36,29 +38,17 @@ export function UserProfileGrid({ page: controlledPage, onPageChange }: UserProf
   const [profiles, setProfiles] = useState<FaceProfileListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState(6);
   const [internalPage, setInternalPage] = useState(0);
   const isControlled = onPageChange != null;
   const page = isControlled && controlledPage !== undefined ? controlledPage : internalPage;
 
-  const calcItems = useCallback(() => {
-    if (!containerRef.current) return;
-    const { clientWidth, clientHeight } = containerRef.current;
-    const paginationHeight = 32;
-    const availH = clientHeight - paginationHeight;
-    const cols = Math.max(1, Math.floor(clientWidth / CARD_MIN_W));
-    const rows = Math.max(1, Math.floor(availH / CARD_MIN_H));
-    setItemsPerPage(cols * rows);
-  }, []);
-
-  useEffect(() => {
-    calcItems();
-    const el = containerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => calcItems());
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [calcItems]);
+  const observeGrid =
+    faceId != null && Boolean(token) && Boolean(faceIndex) && !loading && !loadError;
+  const { itemsPerPage, gridCols } = useFillGridPagination(itemsRef, observeGrid, isControlled, {
+    gap: 6,
+    minColWidth: 120,
+    fixedCardHeightPx: 92,
+  });
 
   useEffect(() => {
     if (faceId == null || !token) {
@@ -94,9 +84,8 @@ export function UserProfileGrid({ page: controlledPage, onPageChange }: UserProf
     [profiles, clampedPage, itemsPerPage]
   );
 
-  useEffect(() => {
-    onPageChange?.(clampedPage, totalPages);
-  }, [clampedPage, totalPages, onPageChange]);
+  const emitPage = useStablePaginationEmit(onPageChange);
+  useSyncedPaginationReport(emitPage, clampedPage, totalPages);
 
   const setPage = useCallback(
     (value: number | ((prev: number) => number)) => {
@@ -104,20 +93,17 @@ export function UserProfileGrid({ page: controlledPage, onPageChange }: UserProf
         typeof value === 'function'
           ? value(isControlled ? (controlledPage ?? 0) : internalPage)
           : value;
-      if (isControlled) onPageChange?.(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
+      if (isControlled) emitPage(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
       else setInternalPage(next);
     },
-    [isControlled, controlledPage, internalPage, totalPages, onPageChange]
+    [isControlled, controlledPage, internalPage, totalPages, emitPage]
   );
 
   const showInternalPagination = !isControlled;
 
   if (faceId == null || !faceIndex) {
     return (
-      <div
-        className="userprofile-grid-component userprofile-grid-component--message"
-        ref={containerRef}
-      >
+      <div className="userprofile-grid-component userprofile-grid-component--message">
         <p>Select a face.</p>
       </div>
     );
@@ -125,10 +111,7 @@ export function UserProfileGrid({ page: controlledPage, onPageChange }: UserProf
 
   if (!token) {
     return (
-      <div
-        className="userprofile-grid-component userprofile-grid-component--message"
-        ref={containerRef}
-      >
+      <div className="userprofile-grid-component userprofile-grid-component--message">
         <p>Sign in to see profiles.</p>
       </div>
     );
@@ -136,10 +119,7 @@ export function UserProfileGrid({ page: controlledPage, onPageChange }: UserProf
 
   if (loading) {
     return (
-      <div
-        className="userprofile-grid-component userprofile-grid-component--message"
-        ref={containerRef}
-      >
+      <div className="userprofile-grid-component userprofile-grid-component--message">
         <Loader2 size={28} aria-label="Loading" />
       </div>
     );
@@ -147,18 +127,17 @@ export function UserProfileGrid({ page: controlledPage, onPageChange }: UserProf
 
   if (loadError) {
     return (
-      <div
-        className="userprofile-grid-component userprofile-grid-component--message"
-        ref={containerRef}
-      >
+      <div className="userprofile-grid-component userprofile-grid-component--message">
         <p>Could not load profiles.</p>
       </div>
     );
   }
 
+  const itemsStyle = { '--grid-cols': gridCols } as CSSProperties;
+
   return (
-    <div className="userprofile-grid-component" ref={containerRef}>
-      <div className="userprofile-grid-items">
+    <div className="userprofile-grid-component">
+      <div className="userprofile-grid-items" ref={itemsRef} style={itemsStyle}>
         {visibleProfiles.map((profile) => {
           const name = profile.displayName?.trim() || 'Member';
           const path = getLocalizedPath(

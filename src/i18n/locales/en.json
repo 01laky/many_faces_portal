@@ -19,6 +19,7 @@
       "title": "Login",
       "email": "Email",
       "password": "Password",
+      "rememberMe": "Stay signed in",
       "submit": "Sign In",
       "submitting": "Logging in...",
       "success": "Login successful!",

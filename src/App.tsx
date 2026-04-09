@@ -7,7 +7,7 @@
  * Public faces are shown to anonymous users, private faces to authenticated ones.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   BrowserRouter,
   Routes,
@@ -24,6 +24,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ApiContextProvider } from './contexts/ApiContext';
 import { MessengerProvider } from './contexts/MessengerContext';
 import { FaceConfigProvider, useFaceConfig } from './contexts/FaceConfigContext';
+import { GridTopPanelProvider, type GridTopPanelState } from './contexts/GridTopPanelContext';
 import { LanguageRouter } from './components/LanguageRouter';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
@@ -65,6 +66,7 @@ import {
   UserCheck,
   IdCard,
   LayoutGrid,
+  ArrowLeft,
 } from 'lucide-react';
 import { useLocalizedLink } from './hooks/useLocalizedLink';
 import { useTranslation } from 'react-i18next';
@@ -82,6 +84,9 @@ import {
   isFirstVisitToFace,
 } from './components/FaceRoleSelectPanel';
 import { EditProfileTab } from './components/EditProfileTab';
+import { GridTopPanelContent } from './components/GridTopPanelContent';
+import { gridTopPanelHeaderTitle } from './components/gridTopPanelCreateMeta';
+import type { GridComponentType } from './components/PageGridLayout';
 import { logger } from './utils/logger';
 import { supportedLanguages } from './i18n/config';
 import { getAllRouteTranslations } from './utils/routeTranslations';
@@ -297,6 +302,7 @@ function AppRoutes() {
   const { availableFaces, selectedFace, selectFace, isLoading, error, reload } = useFaceConfig();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState<string>('settings');
+  const [gridTopPanel, setGridTopPanel] = useState<GridTopPanelState>(null);
   const [storiesCreateOpen, setStoriesCreateOpen] = useState(false);
   const [wallCreateOpen, setWallCreateOpen] = useState(false);
   const [wallRefreshKey, setWallRefreshKey] = useState(0);
@@ -317,26 +323,56 @@ function AppRoutes() {
   useEffect(() => {
     if (!settingsOpen) return;
     const onKey = (ev: KeyboardEvent) => {
-      if (ev.key === 'Escape') setSettingsOpen(false);
+      if (ev.key === 'Escape') {
+        setSettingsOpen(false);
+        setGridTopPanel(null);
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [settingsOpen]);
 
-  // First visit to a private face: open slide-out panel with Face role tab by default (deferred to avoid setState-in-effect lint)
+  // First visit to a private face: open top panel on Face role tab.
+  // Wait for faces config to finish loading with auth — otherwise the first unauthenticated
+  // fetch has no myFaceRole* fields and we would open the panel on every refresh.
   useEffect(() => {
+    if (isLoading) return;
+    if (!isAuthenticated || !token) return;
     if (!selectedFace || selectedFace.isPublic) return;
     if (!isFirstVisitToFace(selectedFace)) return;
     const id = window.setTimeout(() => {
+      setGridTopPanel(null);
       setSettingsOpen(true);
       setSettingsTab('faceRole');
     }, 0);
     return () => clearTimeout(id);
-  }, [selectedFace]);
+  }, [selectedFace, isLoading, isAuthenticated, token]);
+
+  const closeGridPanel = useCallback(() => setGridTopPanel(null), []);
+
+  const openGridCreate = useCallback((componentType: GridComponentType) => {
+    setGridTopPanel({ mode: 'create', componentType });
+    setSettingsOpen(true);
+  }, []);
+
+  const gridTopPanelApi = useMemo(
+    () => ({
+      gridTopPanel,
+      openGridCreate,
+      closeGridPanel,
+    }),
+    [gridTopPanel, openGridCreate, closeGridPanel]
+  );
 
   const handleClosePanel = () => {
     setSettingsOpen(false);
+    setGridTopPanel(null);
   };
+
+  const handleGridCreateSavedClose = useCallback(() => {
+    setSettingsOpen(false);
+    setGridTopPanel(null);
+  }, []);
 
   logger.info('AppRoutes render', {
     isAuthenticated,
@@ -400,485 +436,533 @@ function AppRoutes() {
   }
 
   return (
-    <div className={`app-layout ${settingsOpen ? 'app-layout--settings-open' : ''}`}>
-      <Header
-        onSettingsToggle={() => {
-          setSettingsTab('settings');
-          setSettingsOpen((s) => !s);
-        }}
-        onMenuToggle={() => {
-          setSettingsTab('pages');
-          setSettingsOpen((s) => !s);
-        }}
-        onProfileClick={() => {
-          setSettingsTab('profile');
-          setSettingsOpen(true);
-        }}
-        onStoriesCreate={
-          isAuthenticated && token && isStoriesPage ? () => setStoriesCreateOpen(true) : undefined
-        }
-        onWallTicketCreate={
-          isAuthenticated && token && selectedFace && isWallPage && canShowWallCreate
-            ? () => setWallCreateOpen(true)
-            : undefined
-        }
-      />
-      {isAuthenticated && token && (
-        <StoriesCreateTopPanel
-          open={storiesCreateOpen}
-          onClose={() => setStoriesCreateOpen(false)}
-          token={token}
+    <GridTopPanelProvider value={gridTopPanelApi}>
+      <div className={`app-layout ${settingsOpen ? 'app-layout--settings-open' : ''}`}>
+        <Header
+          onSettingsToggle={() => {
+            setGridTopPanel(null);
+            setSettingsTab('settings');
+            setSettingsOpen((s) => !s);
+          }}
+          onMenuToggle={() => {
+            setGridTopPanel(null);
+            setSettingsTab('pages');
+            setSettingsOpen((s) => !s);
+          }}
+          onProfileClick={() => {
+            setGridTopPanel(null);
+            setSettingsTab('profile');
+            setSettingsOpen(true);
+          }}
+          onStoriesCreate={
+            isAuthenticated && token && isStoriesPage ? () => setStoriesCreateOpen(true) : undefined
+          }
+          onWallTicketCreate={
+            isAuthenticated && token && selectedFace && isWallPage && canShowWallCreate
+              ? () => setWallCreateOpen(true)
+              : undefined
+          }
         />
-      )}
-      {isAuthenticated && token && selectedFace && (
-        <WallTicketCreateTopPanel
-          open={wallCreateOpen}
-          onClose={() => setWallCreateOpen(false)}
-          token={token}
-          faceId={selectedFace.id}
-          onCreated={() => setWallRefreshKey((k) => k + 1)}
-        />
-      )}
-      <div className="app-content-area">
-        <div
-          className={`settings-panel ${settingsOpen ? 'settings-panel--open' : ''}`}
-          style={gradientVars}
-        >
-          <div className="settings-panel-header">
-            <nav className="settings-tabs">
-              <button
-                className={`settings-tab ${settingsTab === 'settings' ? 'settings-tab--active' : ''}`}
-                onClick={() => setSettingsTab('settings')}
-                type="button"
-              >
-                {t('settingsPanel.tabSettings')}
-              </button>
-              {isAuthenticated && (
-                <button
-                  className={`settings-tab ${settingsTab === 'profile' ? 'settings-tab--active' : ''}`}
-                  onClick={() => setSettingsTab('profile')}
-                  type="button"
-                >
-                  <UserRound size={16} />
-                  <span>{t('editProfile.tabTitle', 'Edit profile')}</span>
-                </button>
-              )}
-              {isAuthenticated && selectedFace && shouldShowFaceRolePanel(selectedFace) && (
-                <button
-                  className={`settings-tab ${settingsTab === 'faceRole' ? 'settings-tab--active' : ''}`}
-                  onClick={() => setSettingsTab('faceRole')}
-                  type="button"
-                >
-                  <Shield size={16} />
-                  <span>{t('faceRoleSelect.tabTitle', 'Face role')}</span>
-                </button>
-              )}
-              {isAuthenticated && (
+        {isAuthenticated && token && (
+          <StoriesCreateTopPanel
+            open={storiesCreateOpen}
+            onClose={() => setStoriesCreateOpen(false)}
+            token={token}
+          />
+        )}
+        {isAuthenticated && token && selectedFace && (
+          <WallTicketCreateTopPanel
+            open={wallCreateOpen}
+            onClose={() => setWallCreateOpen(false)}
+            token={token}
+            faceId={selectedFace.id}
+            onCreated={() => setWallRefreshKey((k) => k + 1)}
+          />
+        )}
+        <div className="app-content-area">
+          <div
+            className={`settings-panel ${settingsOpen ? 'settings-panel--open' : ''}`}
+            style={gradientVars}
+          >
+            <div
+              className={`settings-panel-header ${gridTopPanel ? 'settings-panel-header--grid-tool' : ''}`}
+            >
+              {gridTopPanel ? (
                 <>
                   <button
-                    className={`settings-tab ${settingsTab === 'friendRequests' ? 'settings-tab--active' : ''}`}
-                    onClick={() => setSettingsTab('friendRequests')}
                     type="button"
+                    className="grid-top-panel-back"
+                    onClick={() => setGridTopPanel(null)}
                   >
-                    <UserRound size={16} />
-                    <span>{t('settingsPanel.tabFriendRequests')}</span>
+                    <ArrowLeft size={18} aria-hidden />
+                    {t('gridTopPanel.backToMenu', 'Back to menu')}
                   </button>
+                  <h2 className="grid-top-panel-header-title">
+                    {gridTopPanelHeaderTitle(gridTopPanel)}
+                  </h2>
                   <button
-                    className={`settings-tab ${settingsTab === 'messenger' ? 'settings-tab--active' : ''}`}
-                    onClick={() => setSettingsTab('messenger')}
+                    className="settings-panel-close"
+                    onClick={handleClosePanel}
                     type="button"
+                    aria-label={t('settingsPanel.closePanel')}
                   >
-                    <MessageCircle size={16} />
-                    <span>{t('settingsPanel.tabMessenger')}</span>
+                    <X size={20} />
                   </button>
+                </>
+              ) : (
+                <>
+                  <nav className="settings-tabs">
+                    <button
+                      className={`settings-tab ${settingsTab === 'settings' ? 'settings-tab--active' : ''}`}
+                      onClick={() => setSettingsTab('settings')}
+                      type="button"
+                    >
+                      {t('settingsPanel.tabSettings')}
+                    </button>
+                    {isAuthenticated && (
+                      <button
+                        className={`settings-tab ${settingsTab === 'profile' ? 'settings-tab--active' : ''}`}
+                        onClick={() => setSettingsTab('profile')}
+                        type="button"
+                      >
+                        <UserRound size={16} />
+                        <span>{t('editProfile.tabTitle', 'Edit profile')}</span>
+                      </button>
+                    )}
+                    {isAuthenticated && selectedFace && shouldShowFaceRolePanel(selectedFace) && (
+                      <button
+                        className={`settings-tab ${settingsTab === 'faceRole' ? 'settings-tab--active' : ''}`}
+                        onClick={() => setSettingsTab('faceRole')}
+                        type="button"
+                      >
+                        <Shield size={16} />
+                        <span>{t('faceRoleSelect.tabTitle', 'Face role')}</span>
+                      </button>
+                    )}
+                    {isAuthenticated && (
+                      <>
+                        <button
+                          className={`settings-tab ${settingsTab === 'friendRequests' ? 'settings-tab--active' : ''}`}
+                          onClick={() => setSettingsTab('friendRequests')}
+                          type="button"
+                        >
+                          <UserRound size={16} />
+                          <span>{t('settingsPanel.tabFriendRequests')}</span>
+                        </button>
+                        <button
+                          className={`settings-tab ${settingsTab === 'messenger' ? 'settings-tab--active' : ''}`}
+                          onClick={() => setSettingsTab('messenger')}
+                          type="button"
+                        >
+                          <MessageCircle size={16} />
+                          <span>{t('settingsPanel.tabMessenger')}</span>
+                        </button>
+                        <button
+                          className={`settings-tab ${settingsTab === 'notifications' ? 'settings-tab--active' : ''}`}
+                          onClick={() => setSettingsTab('notifications')}
+                          type="button"
+                        >
+                          <Bell size={16} />
+                          <span>{t('settingsPanel.tabNotifications')}</span>
+                        </button>
+                        <button
+                          className={`settings-tab ${settingsTab === 'blockList' ? 'settings-tab--active' : ''}`}
+                          onClick={() => setSettingsTab('blockList')}
+                          type="button"
+                        >
+                          <ShieldBan size={16} />
+                          <span>{t('userBlock.blockList', 'Block List')}</span>
+                        </button>
+                        <button
+                          className={`settings-tab ${settingsTab === 'follows' ? 'settings-tab--active' : ''}`}
+                          onClick={() => setSettingsTab('follows')}
+                          type="button"
+                        >
+                          <UserCheck size={16} />
+                          <span>{t('userFollow.followList', 'Follows')}</span>
+                        </button>
+                      </>
+                    )}
+                    <button
+                      className={`settings-tab ${settingsTab === 'faces' ? 'settings-tab--active' : ''}`}
+                      onClick={() => setSettingsTab('faces')}
+                      type="button"
+                    >
+                      {t('settingsPanel.tabFaces')}
+                    </button>
+                    <button
+                      className={`settings-tab ${settingsTab === 'pages' ? 'settings-tab--active' : ''}`}
+                      onClick={() => setSettingsTab('pages')}
+                      type="button"
+                    >
+                      {t('settingsPanel.tabPages')}
+                    </button>
+                  </nav>
                   <button
-                    className={`settings-tab ${settingsTab === 'notifications' ? 'settings-tab--active' : ''}`}
-                    onClick={() => setSettingsTab('notifications')}
+                    className="settings-panel-close"
+                    onClick={handleClosePanel}
                     type="button"
+                    aria-label={t('settingsPanel.closePanel')}
                   >
-                    <Bell size={16} />
-                    <span>{t('settingsPanel.tabNotifications')}</span>
-                  </button>
-                  <button
-                    className={`settings-tab ${settingsTab === 'blockList' ? 'settings-tab--active' : ''}`}
-                    onClick={() => setSettingsTab('blockList')}
-                    type="button"
-                  >
-                    <ShieldBan size={16} />
-                    <span>{t('userBlock.blockList', 'Block List')}</span>
-                  </button>
-                  <button
-                    className={`settings-tab ${settingsTab === 'follows' ? 'settings-tab--active' : ''}`}
-                    onClick={() => setSettingsTab('follows')}
-                    type="button"
-                  >
-                    <UserCheck size={16} />
-                    <span>{t('userFollow.followList', 'Follows')}</span>
+                    <X size={20} />
                   </button>
                 </>
               )}
-              <button
-                className={`settings-tab ${settingsTab === 'faces' ? 'settings-tab--active' : ''}`}
-                onClick={() => setSettingsTab('faces')}
-                type="button"
-              >
-                {t('settingsPanel.tabFaces')}
-              </button>
-              <button
-                className={`settings-tab ${settingsTab === 'pages' ? 'settings-tab--active' : ''}`}
-                onClick={() => setSettingsTab('pages')}
-                type="button"
-              >
-                {t('settingsPanel.tabPages')}
-              </button>
-            </nav>
-            <button
-              className="settings-panel-close"
-              onClick={handleClosePanel}
-              type="button"
-              aria-label={t('settingsPanel.closePanel')}
-            >
-              <X size={20} />
-            </button>
-          </div>
-          <div className="settings-panel-body">
-            {settingsTab === 'profile' && <EditProfileTab />}
-            {settingsTab === 'faceRole' && token && selectedFace && (
-              <div className="settings-panel-body-fill settings-section">
-                <FaceRoleSelectPanel
-                  face={selectedFace}
-                  token={token}
-                  onRoleSet={() => reload()}
-                  inPanel
+            </div>
+            <div className="settings-panel-body">
+              {gridTopPanel?.mode === 'create' ? (
+                <GridTopPanelContent
+                  state={gridTopPanel}
+                  onSavedClose={handleGridCreateSavedClose}
+                  onCancel={closeGridPanel}
                 />
-              </div>
-            )}
-            {settingsTab === 'settings' && (
-              <div className="settings-section">
-                <label className="settings-label">
-                  <Globe size={18} />
-                  {t('settingsPanel.language')}
-                </label>
-                <LanguageSwitcher />
-                {isAuthenticated && (
-                  <div className="settings-section" style={{ marginTop: 16 }}>
-                    <button
-                      type="button"
-                      className="settings-logout-btn"
-                      onClick={async () => {
-                        setSettingsOpen(false);
-                        await logout();
-                        navigate(getLocalizedPath('/login'), { replace: true });
-                      }}
-                    >
-                      {t('pages.logout.title', 'Logout')}
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-            {settingsTab === 'faces' && (
-              <div className="faces-grid">
-                {availableFaces.map((face) => {
-                  const isSelected = selectedFace?.id === face.id;
-                  const gradient = parseGradientSettings(face.gradientSettings);
-                  const gradientBg = gradient
-                    ? gradient.type === 'radial'
-                      ? `radial-gradient(circle, ${gradient.colors.join(', ')})`
-                      : `linear-gradient(${gradient.angle}deg, ${gradient.colors.join(', ')})`
-                    : face.color || '#0d6efd';
-                  return (
-                    <button
-                      key={face.id}
-                      className={`face-card ${isSelected ? 'face-card--selected' : ''}`}
-                      onClick={() => selectFace(face.id)}
-                      type="button"
-                    >
-                      <div className="face-card-preview" style={{ background: gradientBg }} />
-                      <div className="face-card-info">
-                        <span className="face-card-title">{face.title}</span>
-                        {face.description && (
-                          <span className="face-card-desc">{face.description}</span>
-                        )}
-                      </div>
-                      {isSelected && (
-                        <div className="face-card-check">
-                          <Check size={16} />
+              ) : (
+                <>
+                  {settingsTab === 'profile' && <EditProfileTab />}
+                  {settingsTab === 'faceRole' && token && selectedFace && (
+                    <div className="settings-panel-body-fill settings-section">
+                      <FaceRoleSelectPanel
+                        face={selectedFace}
+                        token={token}
+                        onRoleSet={() => reload()}
+                        inPanel
+                      />
+                    </div>
+                  )}
+                  {settingsTab === 'settings' && (
+                    <div className="settings-section">
+                      <label className="settings-label">
+                        <Globe size={18} />
+                        {t('settingsPanel.language')}
+                      </label>
+                      <LanguageSwitcher />
+                      {isAuthenticated && (
+                        <div className="settings-section" style={{ marginTop: 16 }}>
+                          <button
+                            type="button"
+                            className="settings-logout-btn"
+                            onClick={async () => {
+                              setSettingsOpen(false);
+                              await logout();
+                              navigate(getLocalizedPath('/login'), { replace: true });
+                            }}
+                          >
+                            {t('pages.logout.title', 'Logout')}
+                          </button>
                         </div>
                       )}
-                    </button>
+                    </div>
+                  )}
+                  {settingsTab === 'faces' && (
+                    <div className="faces-grid">
+                      {availableFaces.map((face) => {
+                        const isSelected = selectedFace?.id === face.id;
+                        const gradient = parseGradientSettings(face.gradientSettings);
+                        const gradientBg = gradient
+                          ? gradient.type === 'radial'
+                            ? `radial-gradient(circle, ${gradient.colors.join(', ')})`
+                            : `linear-gradient(${gradient.angle}deg, ${gradient.colors.join(', ')})`
+                          : '#0d6efd';
+                        return (
+                          <button
+                            key={face.id}
+                            className={`face-card ${isSelected ? 'face-card--selected' : ''}`}
+                            onClick={() => selectFace(face.id)}
+                            type="button"
+                          >
+                            <div className="face-card-preview" style={{ background: gradientBg }} />
+                            <div className="face-card-info">
+                              <span className="face-card-title">{face.title}</span>
+                              {face.description && (
+                                <span className="face-card-desc">{face.description}</span>
+                              )}
+                            </div>
+                            {isSelected && (
+                              <div className="face-card-check">
+                                <Check size={16} />
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {settingsTab === 'pages' && (
+                    <PagesNav onNavigate={() => setSettingsOpen(false)} />
+                  )}
+                  {settingsTab === 'friendRequests' && token && (
+                    <div className="settings-panel-body-fill">
+                      <FriendRequestsTab token={token} />
+                    </div>
+                  )}
+                  {settingsTab === 'messenger' && token && <MessengerTab token={token} />}
+                  {settingsTab === 'notifications' && token && <NotificationsTab token={token} />}
+                  {settingsTab === 'blockList' && token && (
+                    <div className="settings-panel-body-fill">
+                      <BlockListTab token={token} />
+                    </div>
+                  )}
+                  {settingsTab === 'follows' && token && (
+                    <div className="settings-panel-body-fill">
+                      <FollowTab token={token} />
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+          <main className="app-content">
+            <Routes>
+              <Route path="/" element={<Navigate to={`/${supportedLanguages[0]}`} replace />} />
+
+              <Route path="/:lang" element={<LanguageRouter />}>
+                {/* Index — guest redirects to /:lang/:face/home so URL has face prefix */}
+                <Route
+                  index
+                  element={
+                    <GuestRoute>
+                      <GuestRedirectToFaceHome />
+                    </GuestRoute>
+                  }
+                />
+
+                {/* === Face page routes (dynamic, from selected face) === */}
+                {faceRoutes.map((fr) => {
+                  const pathNorm = fr.page.path.replace(/^\//, '');
+                  const isPublicLogin = fr.isPublic && pathNorm === 'login';
+                  const isPublicRegister = fr.isPublic && pathNorm === 'register';
+                  const isPublicHome =
+                    fr.isPublic && pathNorm === 'home' && fr.page.pageType?.index === 'home';
+                  const publicElement = isPublicLogin ? (
+                    <GuestRoute>
+                      <LoginPage />
+                    </GuestRoute>
+                  ) : isPublicRegister ? (
+                    <GuestRoute>
+                      <RegisterPage />
+                    </GuestRoute>
+                  ) : isPublicHome ? (
+                    <GuestRoute>
+                      <HomePage />
+                    </GuestRoute>
+                  ) : null;
+                  return fr.isPublic ? (
+                    // Public face routes — use real Login/Register/Home components when path matches
+                    <Route
+                      key={fr.key}
+                      path={fr.path}
+                      element={
+                        publicElement ?? (
+                          <FacePageView page={fr.page} wallRefreshKey={wallRefreshKey} />
+                        )
+                      }
+                    />
+                  ) : (
+                    // Private face routes — require authentication
+                    <Route
+                      key={fr.key}
+                      path={fr.path}
+                      element={
+                        <ProtectedRoute>
+                          <FacePageView page={fr.page} wallRefreshKey={wallRefreshKey} />
+                        </ProtectedRoute>
+                      }
+                    />
                   );
                 })}
-              </div>
-            )}
-            {settingsTab === 'pages' && <PagesNav onNavigate={() => setSettingsOpen(false)} />}
-            {settingsTab === 'friendRequests' && token && (
-              <div className="settings-panel-body-fill">
-                <FriendRequestsTab token={token} />
-              </div>
-            )}
-            {settingsTab === 'messenger' && token && <MessengerTab token={token} />}
-            {settingsTab === 'notifications' && token && <NotificationsTab token={token} />}
-            {settingsTab === 'blockList' && token && (
-              <div className="settings-panel-body-fill">
-                <BlockListTab token={token} />
-              </div>
-            )}
-            {settingsTab === 'follows' && token && (
-              <div className="settings-panel-body-fill">
-                <FollowTab token={token} />
-              </div>
-            )}
-          </div>
-        </div>
-        <main className="app-content">
-          <Routes>
-            <Route path="/" element={<Navigate to={`/${supportedLanguages[0]}`} replace />} />
 
-            <Route path="/:lang" element={<LanguageRouter />}>
-              {/* Index — guest redirects to /:lang/:face/home so URL has face prefix */}
-              <Route
-                index
-                element={
-                  <GuestRoute>
-                    <GuestRedirectToFaceHome />
-                  </GuestRoute>
-                }
-              />
+                {/* === Static routes === */}
 
-              {/* === Face page routes (dynamic, from selected face) === */}
-              {faceRoutes.map((fr) => {
-                const pathNorm = fr.page.path.replace(/^\//, '');
-                const isPublicLogin = fr.isPublic && pathNorm === 'login';
-                const isPublicRegister = fr.isPublic && pathNorm === 'register';
-                const isPublicHome =
-                  fr.isPublic && pathNorm === 'home' && fr.page.pageType?.index === 'home';
-                const publicElement = isPublicLogin ? (
-                  <GuestRoute>
-                    <LoginPage />
-                  </GuestRoute>
-                ) : isPublicRegister ? (
-                  <GuestRoute>
-                    <RegisterPage />
-                  </GuestRoute>
-                ) : isPublicHome ? (
-                  <GuestRoute>
-                    <HomePage />
-                  </GuestRoute>
-                ) : null;
-                return fr.isPublic ? (
-                  // Public face routes — use real Login/Register/Home components when path matches
+                {/* Login — guest redirects to /:lang/:face/login so URL has face prefix */}
+                {loginPaths.map((path) => (
                   <Route
-                    key={fr.key}
-                    path={fr.path}
+                    key={path}
+                    path={path}
                     element={
-                      publicElement ?? (
-                        <FacePageView page={fr.page} wallRefreshKey={wallRefreshKey} />
-                      )
+                      <GuestRoute>
+                        <GuestRedirectToFacePath subPath={path} fallback={<LoginPage />} />
+                      </GuestRoute>
                     }
                   />
-                ) : (
-                  // Private face routes — require authentication
+                ))}
+
+                {/* Register — guest redirects to /:lang/:face/register so URL has face prefix */}
+                {registerPaths.map((path) => (
                   <Route
-                    key={fr.key}
-                    path={fr.path}
+                    key={path}
+                    path={path}
+                    element={
+                      <GuestRoute>
+                        <GuestRedirectToFacePath subPath={path} fallback={<RegisterPage />} />
+                      </GuestRoute>
+                    }
+                  />
+                ))}
+
+                {/* Homepage — protected */}
+                {homepagePaths.map((path) => (
+                  <Route
+                    key={path}
+                    path={path}
                     element={
                       <ProtectedRoute>
-                        <FacePageView page={fr.page} wallRefreshKey={wallRefreshKey} />
+                        <HomePageProtected />
                       </ProtectedRoute>
                     }
                   />
-                );
-              })}
+                ))}
 
-              {/* === Static routes === */}
+                {/* Profile — protected */}
+                {getRoutePaths('profile').map((path) => (
+                  <Route
+                    key={path}
+                    path={path}
+                    element={
+                      <ProtectedRoute>
+                        <ProfilePage />
+                      </ProtectedRoute>
+                    }
+                  />
+                ))}
 
-              {/* Login — guest redirects to /:lang/:face/login so URL has face prefix */}
-              {loginPaths.map((path) => (
+                {/* Component list — full-page paginated grid */}
                 <Route
-                  key={path}
-                  path={path}
-                  element={
-                    <GuestRoute>
-                      <GuestRedirectToFacePath subPath={path} fallback={<LoginPage />} />
-                    </GuestRoute>
-                  }
-                />
-              ))}
-
-              {/* Register — guest redirects to /:lang/:face/register so URL has face prefix */}
-              {registerPaths.map((path) => (
-                <Route
-                  key={path}
-                  path={path}
-                  element={
-                    <GuestRoute>
-                      <GuestRedirectToFacePath subPath={path} fallback={<RegisterPage />} />
-                    </GuestRoute>
-                  }
-                />
-              ))}
-
-              {/* Homepage — protected */}
-              {homepagePaths.map((path) => (
-                <Route
-                  key={path}
-                  path={path}
+                  path="list/:componentTypeId"
                   element={
                     <ProtectedRoute>
-                      <HomePageProtected />
+                      <ComponentListPage />
                     </ProtectedRoute>
                   }
                 />
-              ))}
 
-              {/* Profile — protected */}
-              {getRoutePaths('profile').map((path) => (
                 <Route
-                  key={path}
-                  path={path}
+                  path="detail/:componentTypeId/:entityId"
                   element={
                     <ProtectedRoute>
-                      <ProfilePage />
+                      <ComponentDetailPage />
                     </ProtectedRoute>
                   }
                 />
-              ))}
 
-              {/* Component list — full-page paginated grid */}
-              <Route
-                path="list/:componentTypeId"
-                element={
-                  <ProtectedRoute>
-                    <ComponentListPage />
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="detail/:componentTypeId/:entityId"
-                element={
-                  <ProtectedRoute>
-                    <ComponentDetailPage />
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* Album detail — protected */}
-              <Route
-                path="album/:id"
-                element={
-                  <ProtectedRoute>
-                    <AlbumDetailPage />
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* Blog detail — protected */}
-              <Route
-                path="blog/:id"
-                element={
-                  <ProtectedRoute>
-                    <BlogDetailPage />
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* Reel detail — protected */}
-              <Route
-                path="reel/:id"
-                element={
-                  <ProtectedRoute>
-                    <ReelDetailPage />
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* Face profile directory + detail — protected, URL includes face index */}
-              <Route
-                path=":faceIndex/profiles"
-                element={
-                  <ProtectedRoute>
-                    <SyncFaceFromProfileRoutes>
-                      <FaceProfilesListPage />
-                    </SyncFaceFromProfileRoutes>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path=":faceIndex/profile/:userId"
-                element={
-                  <ProtectedRoute>
-                    <SyncFaceFromProfileRoutes>
-                      <FaceProfileDetailPage />
-                    </SyncFaceFromProfileRoutes>
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path=":faceIndex/stories"
-                element={
-                  <ProtectedRoute>
-                    <SyncFaceFromProfileRoutes>
-                      <StoriesListPage />
-                    </SyncFaceFromProfileRoutes>
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* User detail — protected (more specific, must be before users list) */}
-              {getRoutePaths('users').map((path) => (
+                {/* Album detail — protected */}
                 <Route
-                  key={`${path}-detail`}
-                  path={`${path}/:id`}
+                  path="album/:id"
                   element={
-                    <ProtectedRoute>{token && <UserDetailPage token={token} />}</ProtectedRoute>
+                    <ProtectedRoute>
+                      <AlbumDetailPage />
+                    </ProtectedRoute>
                   }
                 />
-              ))}
 
-              {/* Users list — protected */}
-              {getRoutePaths('users').map((path) => (
+                {/* Blog detail — protected */}
                 <Route
-                  key={path}
-                  path={path}
-                  element={<ProtectedRoute>{token && <UsersPage token={token} />}</ProtectedRoute>}
+                  path="blog/:id"
+                  element={
+                    <ProtectedRoute>
+                      <BlogDetailPage />
+                    </ProtectedRoute>
+                  }
                 />
-              ))}
 
-              {/* Catch-all within language */}
-              <Route path="*" element={<Navigate to=".." replace />} />
-            </Route>
+                {/* Reel detail — protected */}
+                <Route
+                  path="reel/:id"
+                  element={
+                    <ProtectedRoute>
+                      <ReelDetailPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-            {/* Global catch-all */}
-            <Route path="*" element={<Navigate to={`/${supportedLanguages[0]}`} replace />} />
-          </Routes>
-        </main>
+                {/* Face profile directory + detail — protected, URL includes face index */}
+                <Route
+                  path=":faceIndex/profiles"
+                  element={
+                    <ProtectedRoute>
+                      <SyncFaceFromProfileRoutes>
+                        <FaceProfilesListPage />
+                      </SyncFaceFromProfileRoutes>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path=":faceIndex/profile/:userId"
+                  element={
+                    <ProtectedRoute>
+                      <SyncFaceFromProfileRoutes>
+                        <FaceProfileDetailPage />
+                      </SyncFaceFromProfileRoutes>
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path=":faceIndex/stories"
+                  element={
+                    <ProtectedRoute>
+                      <SyncFaceFromProfileRoutes>
+                        <StoriesListPage />
+                      </SyncFaceFromProfileRoutes>
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* User detail — protected (more specific, must be before users list) */}
+                {getRoutePaths('users').map((path) => (
+                  <Route
+                    key={`${path}-detail`}
+                    path={`${path}/:id`}
+                    element={
+                      <ProtectedRoute>{token && <UserDetailPage token={token} />}</ProtectedRoute>
+                    }
+                  />
+                ))}
+
+                {/* Users list — protected */}
+                {getRoutePaths('users').map((path) => (
+                  <Route
+                    key={path}
+                    path={path}
+                    element={
+                      <ProtectedRoute>{token && <UsersPage token={token} />}</ProtectedRoute>
+                    }
+                  />
+                ))}
+
+                {/* Catch-all within language */}
+                <Route path="*" element={<Navigate to=".." replace />} />
+              </Route>
+
+              {/* Global catch-all */}
+              <Route path="*" element={<Navigate to={`/${supportedLanguages[0]}`} replace />} />
+            </Routes>
+          </main>
+        </div>
+        <Footer
+          onMessagesClick={
+            isAuthenticated
+              ? () => {
+                  setGridTopPanel(null);
+                  setSettingsTab('messenger');
+                  setSettingsOpen(true);
+                }
+              : undefined
+          }
+        />
+        <ToastContainer
+          position="top-center"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       </div>
-      <Footer
-        onMessagesClick={
-          isAuthenticated
-            ? () => {
-                setSettingsTab('messenger');
-                setSettingsOpen(true);
-              }
-            : undefined
-        }
-      />
-      <ToastContainer
-        position="top-center"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-    </div>
+    </GridTopPanelProvider>
   );
 }
 

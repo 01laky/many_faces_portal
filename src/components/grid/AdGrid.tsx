@@ -2,7 +2,7 @@
  * AdGrid - Wall tickets as listing cards for the current face (API-backed)
  */
 
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, type CSSProperties } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
@@ -11,10 +11,12 @@ import {
   type WallTicketListItem,
 } from '../../api/services/wallTicketsApi';
 import { wallTicketListingImageUrl } from './gridDisplayHelpers';
+import {
+  useStablePaginationEmit,
+  useSyncedPaginationReport,
+} from '../../hooks/usePaginationParentSync';
+import { useFillGridPagination } from '../../hooks/useFillGridPagination';
 import './AdGrid.scss';
-
-const CARD_MIN_W = 150;
-const CARD_MIN_H = 180;
 
 export interface AdGridProps {
   page?: number;
@@ -23,7 +25,7 @@ export interface AdGridProps {
 }
 
 export function AdGrid({ page: controlledPage, onPageChange }: AdGridProps = {}) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const itemsRef = useRef<HTMLDivElement>(null);
   const { token } = useAuth();
   const { selectedFace } = useFaceConfig();
   const faceId = selectedFace?.id;
@@ -31,29 +33,17 @@ export function AdGrid({ page: controlledPage, onPageChange }: AdGridProps = {})
   const [items, setItems] = useState<WallTicketListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState(6);
   const [internalPage, setInternalPage] = useState(0);
   const isControlled = onPageChange != null;
   const page = isControlled && controlledPage !== undefined ? controlledPage : internalPage;
 
-  const calcItems = useCallback(() => {
-    if (!containerRef.current) return;
-    const { clientWidth, clientHeight } = containerRef.current;
-    const paginationHeight = 32;
-    const availH = clientHeight - paginationHeight;
-    const cols = Math.max(1, Math.floor(clientWidth / CARD_MIN_W));
-    const rows = Math.max(1, Math.floor(availH / CARD_MIN_H));
-    setItemsPerPage(cols * rows);
-  }, []);
-
-  useEffect(() => {
-    calcItems();
-    const el = containerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => calcItems());
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [calcItems]);
+  const observeGrid = Boolean(token) && faceId != null && !loading && !loadError;
+  const { itemsPerPage, gridCols } = useFillGridPagination(itemsRef, observeGrid, isControlled, {
+    gap: 6,
+    minColWidth: 130,
+    imageHeightFromCellWidth: 1,
+    infoBlockPx: 42,
+  });
 
   useEffect(() => {
     if (!token || faceId == null) {
@@ -89,9 +79,8 @@ export function AdGrid({ page: controlledPage, onPageChange }: AdGridProps = {})
     [items, clampedPage, itemsPerPage]
   );
 
-  useEffect(() => {
-    onPageChange?.(clampedPage, totalPages);
-  }, [clampedPage, totalPages, onPageChange]);
+  const emitPage = useStablePaginationEmit(onPageChange);
+  useSyncedPaginationReport(emitPage, clampedPage, totalPages);
 
   const setPage = useCallback(
     (value: number | ((prev: number) => number)) => {
@@ -99,17 +88,17 @@ export function AdGrid({ page: controlledPage, onPageChange }: AdGridProps = {})
         typeof value === 'function'
           ? value(isControlled ? (controlledPage ?? 0) : internalPage)
           : value;
-      if (isControlled) onPageChange?.(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
+      if (isControlled) emitPage(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
       else setInternalPage(next);
     },
-    [isControlled, controlledPage, internalPage, totalPages, onPageChange]
+    [isControlled, controlledPage, internalPage, totalPages, emitPage]
   );
 
   const showInternalPagination = !isControlled;
 
   if (!token || faceId == null) {
     return (
-      <div className="ad-grid-component ad-grid-component--message" ref={containerRef}>
+      <div className="ad-grid-component ad-grid-component--message">
         <p>Sign in to see listings.</p>
       </div>
     );
@@ -117,7 +106,7 @@ export function AdGrid({ page: controlledPage, onPageChange }: AdGridProps = {})
 
   if (loading) {
     return (
-      <div className="ad-grid-component ad-grid-component--message" ref={containerRef}>
+      <div className="ad-grid-component ad-grid-component--message">
         <Loader2 size={28} aria-label="Loading" />
       </div>
     );
@@ -125,15 +114,17 @@ export function AdGrid({ page: controlledPage, onPageChange }: AdGridProps = {})
 
   if (loadError) {
     return (
-      <div className="ad-grid-component ad-grid-component--message" ref={containerRef}>
+      <div className="ad-grid-component ad-grid-component--message">
         <p>Could not load wall listings.</p>
       </div>
     );
   }
 
+  const itemsStyle = { '--grid-cols': gridCols } as CSSProperties;
+
   return (
-    <div className="ad-grid-component" ref={containerRef}>
-      <div className="ad-grid-items">
+    <div className="ad-grid-component">
+      <div className="ad-grid-items" ref={itemsRef} style={itemsStyle}>
         {visibleAds.map((ad) => (
           <div key={ad.id} className="ad-grid-card">
             <img src={wallTicketListingImageUrl(ad.id)} alt={ad.title} loading="lazy" />

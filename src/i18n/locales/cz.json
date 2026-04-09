@@ -19,6 +19,7 @@
       "title": "Přihlášení",
       "email": "Email",
       "password": "Heslo",
+      "rememberMe": "Zůstat trvale přihlášen",
       "submit": "Přihlásit se",
       "submitting": "Přihlašuji...",
       "success": "Přihlášení úspěšné!",

@@ -2,7 +2,7 @@
  * StoryGrid - Published stories for the current face (API-backed)
  */
 
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -10,10 +10,12 @@ import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import { fetchStoriesForFace, type StoryListItem } from '../../api/services/storiesApi';
 import { storyRingImageUrl } from './gridDisplayHelpers';
+import {
+  useStablePaginationEmit,
+  useSyncedPaginationReport,
+} from '../../hooks/usePaginationParentSync';
+import { useFillGridPagination } from '../../hooks/useFillGridPagination';
 import './StoryGrid.scss';
-
-const CARD_MIN_W = 90;
-const CARD_MIN_H = 110;
 
 export interface StoryGridProps {
   page?: number;
@@ -22,7 +24,7 @@ export interface StoryGridProps {
 }
 
 export function StoryGrid({ page: controlledPage, onPageChange }: StoryGridProps = {}) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const itemsRef = useRef<HTMLDivElement>(null);
   const getLocalizedPath = useLocalizedLink();
   const { token } = useAuth();
   const { selectedFace } = useFaceConfig();
@@ -32,29 +34,17 @@ export function StoryGrid({ page: controlledPage, onPageChange }: StoryGridProps
   const [stories, setStories] = useState<StoryListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState(8);
   const [internalPage, setInternalPage] = useState(0);
   const isControlled = onPageChange != null;
   const page = isControlled && controlledPage !== undefined ? controlledPage : internalPage;
 
-  const calcItems = useCallback(() => {
-    if (!containerRef.current) return;
-    const { clientWidth, clientHeight } = containerRef.current;
-    const paginationHeight = 32;
-    const availH = clientHeight - paginationHeight;
-    const cols = Math.max(1, Math.floor(clientWidth / CARD_MIN_W));
-    const rows = Math.max(1, Math.floor(availH / CARD_MIN_H));
-    setItemsPerPage(cols * rows);
-  }, []);
-
-  useEffect(() => {
-    calcItems();
-    const el = containerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => calcItems());
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [calcItems]);
+  const observeGrid =
+    Boolean(token) && faceId != null && Boolean(faceIndex) && !loading && !loadError;
+  const { itemsPerPage, gridCols } = useFillGridPagination(itemsRef, observeGrid, isControlled, {
+    gap: 6,
+    minColWidth: 72,
+    fixedCardHeightPx: 76,
+  });
 
   useEffect(() => {
     if (!token || faceId == null) {
@@ -90,9 +80,8 @@ export function StoryGrid({ page: controlledPage, onPageChange }: StoryGridProps
     [stories, clampedPage, itemsPerPage]
   );
 
-  useEffect(() => {
-    onPageChange?.(clampedPage, totalPages);
-  }, [clampedPage, totalPages, onPageChange]);
+  const emitPage = useStablePaginationEmit(onPageChange);
+  useSyncedPaginationReport(emitPage, clampedPage, totalPages);
 
   const setPage = useCallback(
     (value: number | ((prev: number) => number)) => {
@@ -100,10 +89,10 @@ export function StoryGrid({ page: controlledPage, onPageChange }: StoryGridProps
         typeof value === 'function'
           ? value(isControlled ? (controlledPage ?? 0) : internalPage)
           : value;
-      if (isControlled) onPageChange?.(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
+      if (isControlled) emitPage(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
       else setInternalPage(next);
     },
-    [isControlled, controlledPage, internalPage, totalPages, onPageChange]
+    [isControlled, controlledPage, internalPage, totalPages, emitPage]
   );
 
   const showInternalPagination = !isControlled;
@@ -111,7 +100,7 @@ export function StoryGrid({ page: controlledPage, onPageChange }: StoryGridProps
 
   if (!token || faceId == null || !faceIndex) {
     return (
-      <div className="story-grid-component story-grid-component--message" ref={containerRef}>
+      <div className="story-grid-component story-grid-component--message">
         <p>Sign in to see stories.</p>
       </div>
     );
@@ -119,7 +108,7 @@ export function StoryGrid({ page: controlledPage, onPageChange }: StoryGridProps
 
   if (loading) {
     return (
-      <div className="story-grid-component story-grid-component--message" ref={containerRef}>
+      <div className="story-grid-component story-grid-component--message">
         <Loader2 size={28} aria-label="Loading" />
       </div>
     );
@@ -127,15 +116,17 @@ export function StoryGrid({ page: controlledPage, onPageChange }: StoryGridProps
 
   if (loadError) {
     return (
-      <div className="story-grid-component story-grid-component--message" ref={containerRef}>
+      <div className="story-grid-component story-grid-component--message">
         <p>Could not load stories.</p>
       </div>
     );
   }
 
+  const itemsStyle = { '--grid-cols': gridCols } as CSSProperties;
+
   return (
-    <div className="story-grid-component" ref={containerRef}>
-      <div className="story-grid-items">
+    <div className="story-grid-component">
+      <div className="story-grid-items" ref={itemsRef} style={itemsStyle}>
         {visibleStories.map((story) => (
           <Link key={story.id} className="story-grid-card" to={listHref}>
             <div className="story-grid-ring">

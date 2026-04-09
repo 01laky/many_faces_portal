@@ -1,33 +1,22 @@
 # Production Dockerfile for React Vite application
 
-# Build stage
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+RUN corepack enable && corepack prepare yarn@4.12.0 --activate
 
-# Install dependencies
-RUN npm ci
+COPY package.json yarn.lock .yarnrc.yml ./
+RUN yarn install --immutable
 
-# Copy source code
 COPY . .
+RUN yarn build
 
-# Build the application
-RUN npm run build
-
-# Production stage
 FROM nginx:alpine
 
-# Copy built files from build stage
 COPY --from=build /app/dist /usr/share/nginx/html
-
-# Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 80
 EXPOSE 80
 
-# Start nginx
 CMD ["nginx", "-g", "daemon off;"]

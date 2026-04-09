@@ -9,11 +9,14 @@
 
 .userprofile-grid-items {
   flex: 1;
+  min-height: 0;
+  height: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: repeat(var(--grid-cols, 3), minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
   gap: 6px;
   overflow: hidden;
-  align-content: start;
+  align-content: stretch;
 }
 
 .userprofile-grid-card {
@@ -24,8 +27,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   padding: 10px 6px 8px;
   gap: 2px;
+  min-height: 0;
+  height: 100%;
 }
 
 .userprofile-grid-avatar {

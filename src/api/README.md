@@ -13,7 +13,7 @@ To regenerate the API client:
 curl http://localhost:8000/swagger/v1/swagger.json > openapi.json
 
 # Then generate the client
-npm run generate:api
+yarn generate:api
 ```
 
 ## Structure

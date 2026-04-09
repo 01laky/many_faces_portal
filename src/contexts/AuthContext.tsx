@@ -35,7 +35,7 @@ interface AuthContextType {
   token: string | null;
 
   // Actions
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string, options?: { rememberMe?: boolean }) => Promise<void>;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
 }
@@ -166,13 +166,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * Login function - uses React Query mutation
    */
   const login = useCallback(
-    async (username: string, password: string) => {
+    async (username: string, password: string, options?: { rememberMe?: boolean }) => {
       try {
         setIsLoading(true);
         logger.info('Attempting login', { username });
 
         // Use React Query mutation
-        const result = await loginMutation.mutateAsync({ username, password });
+        // rememberMe forwarded as optional; hook coerces to boolean for API (see buildPasswordGrantTokenRequest).
+        const result = await loginMutation.mutateAsync({
+          username,
+          password,
+          rememberMe: options?.rememberMe,
+        });
 
         if (result?.accessToken) {
           setToken(result.accessToken);

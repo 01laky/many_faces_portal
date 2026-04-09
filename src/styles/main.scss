@@ -340,3 +340,85 @@ body {
     font-weight: 600;
   }
 }
+
+// ── Grid block actions in top settings panel ──
+.settings-panel-header--grid-tool {
+  gap: 0.75rem;
+}
+
+.grid-top-panel-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.35rem 0.65rem;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+  }
+}
+
+.grid-top-panel-header-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  line-height: 1.25;
+}
+
+.grid-top-panel-body {
+  min-height: 200px;
+
+  &--create {
+    padding-right: 0.25rem;
+  }
+}
+
+.grid-top-panel-create-fallback {
+  padding: 0.5rem 0;
+  color: rgba(255, 255, 255, 0.88);
+
+  p {
+    margin: 0;
+    line-height: 1.45;
+  }
+}
+
+.grid-top-panel-create-heading {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.grid-top-panel-create-desc {
+  margin: 0 0 12px;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.4;
+}
+
+.grid-top-panel-create-input {
+  width: 100%;
+  max-width: 320px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.2);
+  color: #fff;
+  font-size: 0.875rem;
+}

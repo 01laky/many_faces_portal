@@ -1,8 +1,17 @@
 /**
- * AlbumGrid - Paginated grid of album cards (API, current face)
+ * AlbumGrid - Paginated grid of album cards (API, current face).
+ * Layout (cols, rows, tile size, itemsPerPage) is derived from the items container via TypeScript + ResizeObserver.
  */
 
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import {
+  useState,
+  useRef,
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+  useMemo,
+  type CSSProperties,
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -10,10 +19,44 @@ import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import { getAlbums, type AlbumItem } from '../../api/services/AlbumsService';
 import { albumCoverPlaceholderUrl } from './gridDisplayHelpers';
+import {
+  useStablePaginationEmit,
+  useSyncedPaginationReport,
+} from '../../hooks/usePaginationParentSync';
+import { computeAlbumGridLayout, type AlbumGridLayout } from '../../utils/computeAlbumGridLayout';
 import './AlbumGrid.scss';
 
-const ALBUM_CARD_MIN_W = 140;
-const ALBUM_CARD_MIN_H = 160;
+const ALBUM_GRID_GAP_PX = 6;
+const DEFAULT_ITEMS_PER_PAGE = 8;
+
+const ALBUM_GRID_LAYOUT_OPTS = {
+  gap: ALBUM_GRID_GAP_PX,
+  /** 2× prior 88px floor → fewer columns, larger thumbnails when space allows */
+  minTilePx: 176,
+  maxCols: 12,
+  maxRows: 10,
+  maxItemsPerPage: 48,
+} as const;
+
+function albumCardLayoutProps(layout: AlbumGridLayout): {
+  style: CSSProperties;
+  'data-album-tile-px': string;
+  'data-album-grid-cols': string;
+  'data-album-grid-rows': string;
+} {
+  const px = `${layout.tilePx}px`;
+  return {
+    style: {
+      width: layout.tilePx,
+      height: layout.tilePx,
+      boxSizing: 'border-box',
+      ['--album-tile-px' as string]: px,
+    },
+    'data-album-tile-px': String(layout.tilePx),
+    'data-album-grid-cols': String(layout.cols),
+    'data-album-grid-rows': String(layout.rows),
+  };
+}
 
 export interface AlbumGridProps {
   page?: number;
@@ -22,7 +65,7 @@ export interface AlbumGridProps {
 }
 
 export function AlbumGrid({ page: controlledPage, onPageChange }: AlbumGridProps = {}) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const itemsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
   const { token } = useAuth();
@@ -32,30 +75,45 @@ export function AlbumGrid({ page: controlledPage, onPageChange }: AlbumGridProps
   const [albums, setAlbums] = useState<AlbumItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState(6);
   const [internalPage, setInternalPage] = useState(0);
+  const [gridLayout, setGridLayout] = useState<AlbumGridLayout | null>(null);
+
   const isControlled = onPageChange != null;
   const page = isControlled && controlledPage !== undefined ? controlledPage : internalPage;
 
-  const calcItems = useCallback(() => {
-    if (!containerRef.current) return;
-    const { clientWidth, clientHeight } = containerRef.current;
-    const headerHeight = 36;
-    const paginationHeight = 32;
-    const availH = clientHeight - headerHeight - paginationHeight;
-    const cols = Math.max(1, Math.floor(clientWidth / ALBUM_CARD_MIN_W));
-    const rows = Math.max(1, Math.floor(availH / ALBUM_CARD_MIN_H));
-    setItemsPerPage(cols * rows);
+  const observeGrid = Boolean(token) && faceId != null && !loading && !loadError;
+
+  const measureGridLayout = useCallback(() => {
+    const el = itemsRef.current;
+    if (!el) return;
+    const w = el.clientWidth;
+    const h = el.clientHeight;
+    if (w <= 0 || h <= 0) return;
+    const next = computeAlbumGridLayout(w, h, ALBUM_GRID_LAYOUT_OPTS);
+    if (!next) return;
+    setGridLayout((prev) =>
+      prev &&
+      prev.cols === next.cols &&
+      prev.rows === next.rows &&
+      prev.tilePx === next.tilePx &&
+      prev.itemsPerPage === next.itemsPerPage
+        ? prev
+        : next
+    );
   }, []);
 
-  useEffect(() => {
-    calcItems();
-    const el = containerRef.current;
+  useLayoutEffect(() => {
+    if (!observeGrid) {
+      setGridLayout(null);
+      return;
+    }
+    measureGridLayout();
+    const el = itemsRef.current;
     if (!el) return;
-    const ro = new ResizeObserver(() => calcItems());
+    const ro = new ResizeObserver(() => measureGridLayout());
     ro.observe(el);
     return () => ro.disconnect();
-  }, [calcItems]);
+  }, [observeGrid, measureGridLayout]);
 
   useEffect(() => {
     if (!token || faceId == null) {
@@ -84,6 +142,8 @@ export function AlbumGrid({ page: controlledPage, onPageChange }: AlbumGridProps
     };
   }, [token, faceId]);
 
+  const itemsPerPage = gridLayout?.itemsPerPage ?? DEFAULT_ITEMS_PER_PAGE;
+
   const totalPages = Math.max(1, Math.ceil(albums.length / itemsPerPage));
   const clampedPage = Math.min(page, Math.max(0, totalPages - 1));
   const visibleAlbums = useMemo(
@@ -91,9 +151,8 @@ export function AlbumGrid({ page: controlledPage, onPageChange }: AlbumGridProps
     [albums, clampedPage, itemsPerPage]
   );
 
-  useEffect(() => {
-    onPageChange?.(clampedPage, totalPages);
-  }, [clampedPage, totalPages, onPageChange]);
+  const emitPage = useStablePaginationEmit(onPageChange);
+  useSyncedPaginationReport(emitPage, clampedPage, totalPages);
 
   const setPage = useCallback(
     (value: number | ((prev: number) => number)) => {
@@ -101,17 +160,17 @@ export function AlbumGrid({ page: controlledPage, onPageChange }: AlbumGridProps
         typeof value === 'function'
           ? value(isControlled ? (controlledPage ?? 0) : internalPage)
           : value;
-      if (isControlled) onPageChange?.(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
+      if (isControlled) emitPage(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
       else setInternalPage(next);
     },
-    [isControlled, controlledPage, internalPage, totalPages, onPageChange]
+    [isControlled, controlledPage, internalPage, totalPages, emitPage]
   );
 
   const showInternalPagination = !isControlled;
 
   if (!token || faceId == null) {
     return (
-      <div className="album-grid-component album-grid-component--message" ref={containerRef}>
+      <div className="album-grid-component album-grid-component--message">
         <p>Sign in to see albums.</p>
       </div>
     );
@@ -119,7 +178,7 @@ export function AlbumGrid({ page: controlledPage, onPageChange }: AlbumGridProps
 
   if (loading) {
     return (
-      <div className="album-grid-component album-grid-component--message" ref={containerRef}>
+      <div className="album-grid-component album-grid-component--message">
         <Loader2 size={28} className="album-grid-spinner" aria-label="Loading" />
       </div>
     );
@@ -127,35 +186,52 @@ export function AlbumGrid({ page: controlledPage, onPageChange }: AlbumGridProps
 
   if (loadError) {
     return (
-      <div className="album-grid-component album-grid-component--message" ref={containerRef}>
+      <div className="album-grid-component album-grid-component--message">
         <p>Could not load albums.</p>
       </div>
     );
   }
 
+  const itemsStyle = {
+    ...(gridLayout
+      ? {
+          gridTemplateColumns: `repeat(${gridLayout.cols}, minmax(0, 1fr))`,
+          gridTemplateRows: `repeat(${gridLayout.rows}, minmax(0, 1fr))`,
+        }
+      : { '--grid-cols': 2 }),
+  } as CSSProperties;
+
+  const sizedClass = gridLayout ? ' album-grid-items--sized' : '';
+
   return (
-    <div className="album-grid-component" ref={containerRef}>
-      <div className="album-grid-items">
-        {visibleAlbums.map((album) => (
-          <div
-            key={album.id}
-            className="album-grid-card"
-            onClick={() => navigate(getLocalizedPath(`/album/${album.id}`))}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') navigate(getLocalizedPath(`/album/${album.id}`));
-            }}
-          >
-            <img src={albumCoverPlaceholderUrl(album.id)} alt={album.title} loading="lazy" />
-            <div className="album-grid-card-info">
-              <span className="album-grid-card-title">{album.title}</span>
-              <span className="album-grid-card-count">
-                ♥ {album.likesCount} · 💬 {album.commentsCount}
-              </span>
+    <div className="album-grid-component">
+      <div className={`album-grid-items${sizedClass}`} ref={itemsRef} style={itemsStyle}>
+        {visibleAlbums.map((album) => {
+          const layoutProps = gridLayout ? albumCardLayoutProps(gridLayout) : null;
+          return (
+            <div
+              key={album.id}
+              className={`album-grid-card${gridLayout ? ' album-grid-card--sized' : ''}`}
+              {...(layoutProps ?? {})}
+              onClick={() => navigate(getLocalizedPath(`/album/${album.id}`))}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') navigate(getLocalizedPath(`/album/${album.id}`));
+              }}
+            >
+              <div className="album-grid-card-cover">
+                <img src={albumCoverPlaceholderUrl(album.id)} alt={album.title} loading="lazy" />
+              </div>
+              <div className="album-grid-card-info">
+                <span className="album-grid-card-title">{album.title}</span>
+                <span className="album-grid-card-count">
+                  ♥ {album.likesCount} · 💬 {album.commentsCount}
+                </span>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       {albums.length === 0 && <p className="album-grid-empty">No albums for this face yet.</p>}
       {showInternalPagination && totalPages > 1 && (

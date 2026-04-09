@@ -2,17 +2,19 @@
  * BlogGrid - Paginated grid of blog posts for the current face (API-backed)
  */
 
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import { getBlogs, type BlogItem } from '../../api/services/BlogsService';
+import {
+  useStablePaginationEmit,
+  useSyncedPaginationReport,
+} from '../../hooks/usePaginationParentSync';
+import { useFillGridPagination } from '../../hooks/useFillGridPagination';
 import './BlogGrid.scss';
-
-const CARD_MIN_W = 180;
-const CARD_MIN_H = 190;
 
 function blogCover(blog: BlogItem): string {
   const first = blog.images?.[0]?.imageUrl;
@@ -32,7 +34,7 @@ export interface BlogGridProps {
 }
 
 export function BlogGrid({ page: controlledPage, onPageChange }: BlogGridProps = {}) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const itemsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
   const { token } = useAuth();
@@ -42,29 +44,17 @@ export function BlogGrid({ page: controlledPage, onPageChange }: BlogGridProps =
   const [posts, setPosts] = useState<BlogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState(4);
   const [internalPage, setInternalPage] = useState(0);
   const isControlled = onPageChange != null;
   const page = isControlled && controlledPage !== undefined ? controlledPage : internalPage;
 
-  const calcItems = useCallback(() => {
-    if (!containerRef.current) return;
-    const { clientWidth, clientHeight } = containerRef.current;
-    const paginationHeight = 32;
-    const availH = clientHeight - paginationHeight;
-    const cols = Math.max(1, Math.floor(clientWidth / CARD_MIN_W));
-    const rows = Math.max(1, Math.floor(availH / CARD_MIN_H));
-    setItemsPerPage(cols * rows);
-  }, []);
-
-  useEffect(() => {
-    calcItems();
-    const el = containerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => calcItems());
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [calcItems]);
+  const observeGrid = Boolean(token) && faceId != null && !loading && !loadError;
+  const { itemsPerPage, gridCols } = useFillGridPagination(itemsRef, observeGrid, isControlled, {
+    gap: 6,
+    minColWidth: 160,
+    imageHeightFromCellWidth: 10 / 16,
+    infoBlockPx: 68,
+  });
 
   useEffect(() => {
     if (!token || faceId == null) {
@@ -100,9 +90,8 @@ export function BlogGrid({ page: controlledPage, onPageChange }: BlogGridProps =
     [posts, clampedPage, itemsPerPage]
   );
 
-  useEffect(() => {
-    onPageChange?.(clampedPage, totalPages);
-  }, [clampedPage, totalPages, onPageChange]);
+  const emitPage = useStablePaginationEmit(onPageChange);
+  useSyncedPaginationReport(emitPage, clampedPage, totalPages);
 
   const setPage = useCallback(
     (value: number | ((prev: number) => number)) => {
@@ -110,17 +99,17 @@ export function BlogGrid({ page: controlledPage, onPageChange }: BlogGridProps =
         typeof value === 'function'
           ? value(isControlled ? (controlledPage ?? 0) : internalPage)
           : value;
-      if (isControlled) onPageChange?.(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
+      if (isControlled) emitPage(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
       else setInternalPage(next);
     },
-    [isControlled, controlledPage, internalPage, totalPages, onPageChange]
+    [isControlled, controlledPage, internalPage, totalPages, emitPage]
   );
 
   const showInternalPagination = !isControlled;
 
   if (!token || faceId == null) {
     return (
-      <div className="blog-grid-component blog-grid-component--message" ref={containerRef}>
+      <div className="blog-grid-component blog-grid-component--message">
         <p>Sign in to see blog posts.</p>
       </div>
     );
@@ -128,7 +117,7 @@ export function BlogGrid({ page: controlledPage, onPageChange }: BlogGridProps =
 
   if (loading) {
     return (
-      <div className="blog-grid-component blog-grid-component--message" ref={containerRef}>
+      <div className="blog-grid-component blog-grid-component--message">
         <Loader2 size={28} aria-label="Loading" />
       </div>
     );
@@ -136,15 +125,17 @@ export function BlogGrid({ page: controlledPage, onPageChange }: BlogGridProps =
 
   if (loadError) {
     return (
-      <div className="blog-grid-component blog-grid-component--message" ref={containerRef}>
+      <div className="blog-grid-component blog-grid-component--message">
         <p>Could not load blog posts.</p>
       </div>
     );
   }
 
+  const itemsStyle = { '--grid-cols': gridCols } as CSSProperties;
+
   return (
-    <div className="blog-grid-component" ref={containerRef}>
-      <div className="blog-grid-items">
+    <div className="blog-grid-component">
+      <div className="blog-grid-items" ref={itemsRef} style={itemsStyle}>
         {visiblePosts.map((post) => (
           <div
             key={post.id}

@@ -1,15 +1,13 @@
 /**
  * ComponentBlock - Wrapper for every grid/carousel component with unified style.
  *
- * Header: left = icon + title (from admin), right = action icons
- * (Create, List, Report, Help, Sort, Favorites, Settings).
- * Footer: Previous, Play/Stop, Next (for grid/carousel types).
- * Slide-out panel: Create form (by type) + Component settings (localStorage by componentId).
+ * Header: + opens the global top sliding panel (create). List navigates to /list/:typeId.
+ * Minor actions (sort / filter rank, block autoplay) use the small slide-out on this block.
+ * Optional editAlbum/editBlog/editReel still opens the local panel for inline edit.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import {
   Plus,
   List,
@@ -36,8 +34,8 @@ import {
 import { useFaceConfig } from '../contexts/FaceConfigContext';
 import { useAnimatedGradientStyle } from '../hooks/useAnimatedGradient';
 import { useLocalizedLink } from '../hooks/useLocalizedLink';
+import { useGridTopPanel } from '../contexts/GridTopPanelContext';
 import { COMPONENT_TYPE_ID } from '../constants/componentTypeIds';
-import { ChatRoomForm } from './grid/ChatRoomForm';
 import { AlbumForm } from './grid/AlbumForm';
 import { BlogForm } from './grid/BlogForm';
 import { ReelForm } from './grid/ReelForm';
@@ -116,13 +114,13 @@ export interface ComponentBlockProps {
   onPlayPause?: (playing: boolean) => void;
   /** Initial playing from localStorage */
   autoplayFromStorage?: boolean;
-  /** Album to edit (opens panel in edit mode) */
+  /** Album to edit (opens local panel) */
   editAlbum?: AlbumItem | null;
   onAlbumSaved?: (album: AlbumItem) => void;
-  /** Blog to edit (opens panel in edit mode) */
+  /** Blog to edit (opens local panel) */
   editBlog?: BlogItem | null;
   onBlogSaved?: (blog: BlogItem) => void;
-  /** Reel to edit (opens panel in edit mode) */
+  /** Reel to edit (opens local panel) */
   editReel?: ReelItem | null;
   onReelSaved?: (reel: ReelItem) => void;
 }
@@ -146,9 +144,10 @@ export function ComponentBlock({
   onReelSaved,
 }: ComponentBlockProps) {
   const { selectedFace } = useFaceConfig();
-  const gradientVars = useAnimatedGradientStyle(selectedFace?.gradientSettings);
+  const { openGridCreate } = useGridTopPanel();
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
+  const gradientVars = useAnimatedGradientStyle(selectedFace?.gradientSettings);
   const defaults = COMPONENT_DEFAULTS[componentType];
   const TitleIcon = defaults.icon;
   const title = titleProp ?? defaults.title;
@@ -160,19 +159,41 @@ export function ComponentBlock({
   const isChatRoomType = CHAT_ROOM_COMPONENT_TYPES.includes(componentType);
   const isFaceHost = selectedFace?.myFaceRoleName === 'FACE_HOST';
   const canCreateChatRoom = isChatRoomType && selectedFace?.chatRoomsCreate === true && !isFaceHost;
-  const [panelOpen, setPanelOpen] = useState(false);
-  const [panelTab, setPanelTab] = useState<'create' | 'settings'>('create');
+
+  type LocalPanelMode = 'edit' | 'sort' | 'block';
+  const [localPanelOpen, setLocalPanelOpen] = useState(false);
+  const [localPanelMode, setLocalPanelMode] = useState<LocalPanelMode>('sort');
+
+  useEffect(() => {
+    if (editAlbum && isAlbumType) {
+      queueMicrotask(() => {
+        setLocalPanelMode('edit');
+        setLocalPanelOpen(true);
+      });
+    } else if (editBlog && isBlogType) {
+      queueMicrotask(() => {
+        setLocalPanelMode('edit');
+        setLocalPanelOpen(true);
+      });
+    } else if (editReel && isReelType) {
+      queueMicrotask(() => {
+        setLocalPanelMode('edit');
+        setLocalPanelOpen(true);
+      });
+    }
+  }, [editAlbum, editBlog, editReel, isAlbumType, isBlogType, isReelType]);
+
   const [playing, setPlaying] = useState(autoplayFromStorage);
   const [settings, setSettings] = useState(() => getStoredSettings(componentId));
 
-  const openPanel = useCallback((tab: 'create' | 'settings') => {
-    setPanelTab(tab);
-    setPanelOpen(true);
+  const openLocalPanel = useCallback((mode: LocalPanelMode) => {
+    setLocalPanelMode(mode);
+    setLocalPanelOpen(true);
   }, []);
 
   const handleAlbumSaved = useCallback(
     (album: AlbumItem) => {
-      setPanelOpen(false);
+      setLocalPanelOpen(false);
       onAlbumSaved?.(album);
     },
     [onAlbumSaved]
@@ -180,7 +201,7 @@ export function ComponentBlock({
 
   const handleBlogSaved = useCallback(
     (blog: BlogItem) => {
-      setPanelOpen(false);
+      setLocalPanelOpen(false);
       onBlogSaved?.(blog);
     },
     [onBlogSaved]
@@ -188,22 +209,13 @@ export function ComponentBlock({
 
   const handleReelSaved = useCallback(
     (reel: ReelItem) => {
-      setPanelOpen(false);
+      setLocalPanelOpen(false);
       onReelSaved?.(reel);
     },
     [onReelSaved]
   );
 
-  const handleChatRoomSaved = useCallback(
-    (roomId: number) => {
-      setPanelOpen(false);
-      toast.success('Chat room created');
-      navigate(getLocalizedPath(`/detail/${COMPONENT_TYPE_ID[componentType]}/${roomId}`));
-    },
-    [navigate, getLocalizedPath, componentType]
-  );
-
-  const closePanel = useCallback(() => setPanelOpen(false), []);
+  const closeLocalPanel = useCallback(() => setLocalPanelOpen(false), []);
 
   const handlePlayPause = useCallback(() => {
     const next = !playing;
@@ -212,6 +224,18 @@ export function ComponentBlock({
     setStoredSettings(componentId, { ...settings, autoplay: next });
     setSettings((s) => ({ ...s, autoplay: next }));
   }, [playing, onPlayPause, componentId, settings]);
+
+  const onPlayPauseRef = useRef(onPlayPause);
+  useEffect(() => {
+    onPlayPauseRef.current = onPlayPause;
+  }, [onPlayPause]);
+  useEffect(() => {
+    if (!hasFooter || !autoplayFromStorage) return;
+    onPlayPauseRef.current?.(true);
+    return () => {
+      onPlayPauseRef.current?.(false);
+    };
+  }, [hasFooter, autoplayFromStorage]);
 
   const handleSettingsChange = useCallback(
     (key: 'autoplay', value: boolean) => {
@@ -247,7 +271,7 @@ export function ComponentBlock({
               disabled={isChatRoomType && !canCreateChatRoom}
               onClick={() => {
                 if (isChatRoomType && !canCreateChatRoom) return;
-                openPanel('create');
+                openGridCreate(componentType);
               }}
             >
               <Plus size={16} />
@@ -268,7 +292,12 @@ export function ComponentBlock({
             <button type="button" className="component-block-action-btn" title="Help">
               <HelpCircle size={16} />
             </button>
-            <button type="button" className="component-block-action-btn" title="Sort">
+            <button
+              type="button"
+              className="component-block-action-btn"
+              title="Sort & filter rank"
+              onClick={() => openLocalPanel('sort')}
+            >
               <ArrowUpDown size={16} />
             </button>
             <button type="button" className="component-block-action-btn" title="Add to favorites">
@@ -277,8 +306,8 @@ export function ComponentBlock({
             <button
               type="button"
               className="component-block-action-btn"
-              title="Settings"
-              onClick={() => openPanel('settings')}
+              title="Block settings"
+              onClick={() => openLocalPanel('block')}
             >
               <Settings size={16} />
             </button>
@@ -326,109 +355,98 @@ export function ComponentBlock({
       </div>
       <div className="component-block-border-bottom" />
 
-      {/* Slide-out panel (create / settings) */}
+      {/* Small slide-out: edit (when parent passes edit*) or sort / block settings */}
       <div
-        className={`component-block-panel ${panelOpen ? 'component-block-panel--open' : ''}`}
+        className={`component-block-panel ${localPanelOpen ? 'component-block-panel--open' : ''}`}
         style={gradientVars}
-        aria-hidden={!panelOpen}
+        aria-hidden={!localPanelOpen}
       >
         <div className="component-block-panel-header">
-          {!isAlbumType && !isBlogType && !isReelType && (
+          {localPanelMode === 'edit' && isAlbumType && (
+            <span className="component-block-panel-tab component-block-panel-tab--active">
+              {editAlbum ? 'Edit Album' : 'Album'}
+            </span>
+          )}
+          {localPanelMode === 'edit' && isBlogType && (
+            <span className="component-block-panel-tab component-block-panel-tab--active">
+              {editBlog ? 'Edit Blog' : 'Blog'}
+            </span>
+          )}
+          {localPanelMode === 'edit' && isReelType && (
+            <span className="component-block-panel-tab component-block-panel-tab--active">
+              {editReel ? 'Edit Reel' : 'Reel'}
+            </span>
+          )}
+          {localPanelMode !== 'edit' && (
             <nav className="component-block-panel-tabs">
               <button
                 type="button"
-                className={`component-block-panel-tab ${panelTab === 'create' ? 'component-block-panel-tab--active' : ''}`}
-                onClick={() => setPanelTab('create')}
+                className={`component-block-panel-tab ${localPanelMode === 'sort' ? 'component-block-panel-tab--active' : ''}`}
+                onClick={() => setLocalPanelMode('sort')}
               >
-                Create new
+                Sort / rank
               </button>
               <button
                 type="button"
-                className={`component-block-panel-tab ${panelTab === 'settings' ? 'component-block-panel-tab--active' : ''}`}
-                onClick={() => setPanelTab('settings')}
+                className={`component-block-panel-tab ${localPanelMode === 'block' ? 'component-block-panel-tab--active' : ''}`}
+                onClick={() => setLocalPanelMode('block')}
               >
-                Settings
+                Block
               </button>
             </nav>
-          )}
-          {isAlbumType && (
-            <span className="component-block-panel-tab component-block-panel-tab--active">
-              {editAlbum ? 'Edit Album' : 'Create Album'}
-            </span>
-          )}
-          {isBlogType && (
-            <span className="component-block-panel-tab component-block-panel-tab--active">
-              {editBlog ? 'Edit Blog' : 'Create Blog'}
-            </span>
-          )}
-          {isReelType && (
-            <span className="component-block-panel-tab component-block-panel-tab--active">
-              {editReel ? 'Edit Reel' : 'Create Reel'}
-            </span>
           )}
           <button
             type="button"
             className="component-block-panel-close"
-            onClick={closePanel}
+            onClick={closeLocalPanel}
             aria-label="Close"
           >
             <X size={20} />
           </button>
         </div>
         <div className="component-block-panel-body">
-          {isAlbumType && (
-            <AlbumForm editAlbum={editAlbum} onSaved={handleAlbumSaved} onCancel={closePanel} />
+          {localPanelMode === 'edit' && isAlbumType && (
+            <AlbumForm
+              editAlbum={editAlbum}
+              onSaved={handleAlbumSaved}
+              onCancel={closeLocalPanel}
+            />
           )}
-          {isBlogType && (
-            <BlogForm editBlog={editBlog} onSaved={handleBlogSaved} onCancel={closePanel} />
+          {localPanelMode === 'edit' && isBlogType && (
+            <BlogForm editBlog={editBlog} onSaved={handleBlogSaved} onCancel={closeLocalPanel} />
           )}
-          {isReelType && (
-            <ReelForm editReel={editReel} onSaved={handleReelSaved} onCancel={closePanel} />
+          {localPanelMode === 'edit' && isReelType && (
+            <ReelForm editReel={editReel} onSaved={handleReelSaved} onCancel={closeLocalPanel} />
           )}
-          {isChatRoomType && panelTab === 'create' && canCreateChatRoom && (
-            <ChatRoomForm onSaved={handleChatRoomSaved} onCancel={closePanel} />
-          )}
-          {isChatRoomType && panelTab === 'create' && !canCreateChatRoom && (
+          {localPanelMode === 'sort' && (
             <div className="component-block-panel-section">
+              <h3 className="component-block-panel-heading">Sort & filter rank</h3>
               <p className="component-block-panel-desc">
-                {isFaceHost
-                  ? 'Face hosts can browse chat rooms but cannot create them or participate.'
-                  : 'Creating chat rooms is not enabled for this face.'}
+                Fine-grained ordering and filters for this block only. (Placeholder — connect to
+                your ranking API when ready.)
               </p>
             </div>
           )}
-          {!isAlbumType &&
-            !isBlogType &&
-            !isReelType &&
-            !isChatRoomType &&
-            panelTab === 'create' && (
-              <div className="component-block-panel-section">
-                <h3 className="component-block-panel-heading">Create new {defaults.title}</h3>
-                <p className="component-block-panel-desc">
-                  Form for creating new content (configured per component type).
-                </p>
-                <input
-                  type="text"
-                  className="component-block-panel-input"
-                  placeholder="Title"
-                  aria-label="Title"
-                />
-              </div>
-            )}
-          {!isAlbumType && !isBlogType && !isReelType && panelTab === 'settings' && (
+          {localPanelMode === 'block' && (
             <div className="component-block-panel-section">
-              <h3 className="component-block-panel-heading">Component settings</h3>
+              <h3 className="component-block-panel-heading">Block settings</h3>
               <p className="component-block-panel-desc">
                 Stored locally per component (ID: {componentId}).
               </p>
-              <label className="component-block-panel-label">
-                <input
-                  type="checkbox"
-                  checked={settings.autoplay ?? false}
-                  onChange={(e) => handleSettingsChange('autoplay', e.target.checked)}
-                />
-                Autoplay
-              </label>
+              {hasFooter ? (
+                <label className="component-block-panel-label">
+                  <input
+                    type="checkbox"
+                    checked={settings.autoplay ?? false}
+                    onChange={(e) => handleSettingsChange('autoplay', e.target.checked)}
+                  />
+                  Autoplay
+                </label>
+              ) : (
+                <p className="component-block-panel-desc">
+                  No carousel options for this block type.
+                </p>
+              )}
             </div>
           )}
         </div>
