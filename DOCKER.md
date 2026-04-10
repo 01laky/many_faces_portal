@@ -93,6 +93,7 @@ docker-compose up -d fe-demo-dev
 ## Volumes
 
 Development container uses volume mounts for:
+
 - Source code (`.:/app`) - Live code changes
 - Node modules (`/app/node_modules`) - Isolated dependencies
 

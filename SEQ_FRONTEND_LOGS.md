@@ -48,26 +48,31 @@ Source = 'Frontend' and Component = 'UserProfile'
 ## Common Queries
 
 ### All Frontend Logs
+
 ```
 Source = 'Frontend'
 ```
 
 ### Frontend Errors Only
+
 ```
 Source = 'Frontend' and Level = 'Error'
 ```
 
 ### Frontend Logs from Last Hour
+
 ```
 Source = 'Frontend' and @Timestamp > ago(1h)
 ```
 
 ### Frontend Logs with Specific User
+
 ```
 Source = 'Frontend' and UserId = '123'
 ```
 
 ### Frontend API Errors
+
 ```
 Source = 'Frontend' and MessageTemplate like '%API%' and Level = 'Error'
 ```

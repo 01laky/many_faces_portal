@@ -30,15 +30,15 @@ yarn generate:api
 The API client is automatically configured in `main.tsx`:
 
 ```tsx
-import { configureApiClient } from './api/config'
-configureApiClient()
+import { configureApiClient } from './api/config';
+configureApiClient();
 ```
 
 ### Using Services
 
 ```tsx
-import { AuthService, OAuth2Service } from './api'
-import type { RegisterModel, OAuth2TokenRequest } from './api'
+import { AuthService, OAuth2Service } from './api';
+import type { RegisterModel, OAuth2TokenRequest } from './api';
 
 // Register a user
 const registerData: RegisterModel = {
@@ -46,15 +46,15 @@ const registerData: RegisterModel = {
   password: 'Password123!',
   firstName: 'John',
   lastName: 'Doe',
-}
+};
 
 try {
   const result = await AuthService.postApiAuthRegister({
     requestBody: registerData,
-  })
-  console.log('Registration successful', result)
+  });
+  console.log('Registration successful', result);
 } catch (error) {
-  console.error('Registration failed', error)
+  console.error('Registration failed', error);
 }
 
 // Get OAuth2 token
@@ -64,15 +64,15 @@ const tokenRequest: OAuth2TokenRequest = {
   password: 'Password123!',
   clientId: 'be-demo-client',
   clientSecret: 'be-demo-secret-very-strong-key',
-}
+};
 
 try {
   const tokenResponse = await OAuth2Service.postApiOauth2Token({
     requestBody: tokenRequest,
-  })
-  console.log('Token received', tokenResponse)
+  });
+  console.log('Token received', tokenResponse);
 } catch (error) {
-  console.error('Token request failed', error)
+  console.error('Token request failed', error);
 }
 ```
 
@@ -81,13 +81,13 @@ try {
 To set an authentication token for subsequent requests:
 
 ```tsx
-import { setAuthToken } from './api/config'
+import { setAuthToken } from './api/config';
 
 // Set token after login
-setAuthToken('your-jwt-token-here')
+setAuthToken('your-jwt-token-here');
 
 // Clear token on logout
-setAuthToken(null)
+setAuthToken(null);
 ```
 
 ### Environment Variables
@@ -119,15 +119,15 @@ VITE_API_URL=http://localhost:8000
 All API calls return `CancelablePromise` which can throw `ApiError`:
 
 ```tsx
-import { ApiError } from './api'
+import { ApiError } from './api';
 
 try {
-  await AuthService.postApiAuthRegister({ requestBody: data })
+  await AuthService.postApiAuthRegister({ requestBody: data });
 } catch (error) {
   if (error instanceof ApiError) {
-    console.error('API Error:', error.status, error.body)
+    console.error('API Error:', error.status, error.body);
   } else {
-    console.error('Unknown error:', error)
+    console.error('Unknown error:', error);
   }
 }
 ```

@@ -41,7 +41,7 @@ Radix UI components are headless (unstyled), so you need to add your own styles.
 ### Example: Dialog
 
 ```tsx
-import * as Dialog from '@radix-ui/react-dialog'
+import * as Dialog from '@radix-ui/react-dialog';
 
 function MyDialog() {
   return (
@@ -56,14 +56,14 @@ function MyDialog() {
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
-  )
+  );
 }
 ```
 
 ### Example: Select
 
 ```tsx
-import * as Select from '@radix-ui/react-select'
+import * as Select from '@radix-ui/react-select';
 
 function MySelect() {
   return (
@@ -80,7 +80,7 @@ function MySelect() {
         </Select.Content>
       </Select.Portal>
     </Select.Root>
-  )
+  );
 }
 ```
 

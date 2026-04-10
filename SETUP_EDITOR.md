@@ -7,6 +7,7 @@ The red underlines in your editor are because Cursor/VS Code needs the **ZipFS**
 ## Automatic Installation
 
 If you have VS Code/Cursor CLI installed, run:
+
 ```bash
 code --install-extension arcanis.vscode-zipfs
 # or
@@ -35,6 +36,7 @@ cursor --install-extension arcanis.vscode-zipfs
 ## Verification
 
 After reloading, the red underlines should disappear. You can verify by:
+
 - Opening `src/App.tsx` - no red underlines
 - Running `yarn type-check` in terminal - should pass
 

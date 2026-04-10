@@ -13,39 +13,37 @@ This project uses `react-i18next` for internationalization support.
 ### In Components
 
 ```tsx
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next';
 
 function MyComponent() {
-  const { t } = useTranslation('common')
-  
-  return <h1>{t('welcome')}</h1>
+  const { t } = useTranslation('common');
+
+  return <h1>{t('welcome')}</h1>;
 }
 ```
 
 ### With Interpolation
 
 ```tsx
-const { t } = useTranslation('common')
-const count = 5
+const { t } = useTranslation('common');
+const count = 5;
 
-return <p>{t('count', { count })}</p>
+return <p>{t('count', { count })}</p>;
 ```
 
 ### Change Language
 
 ```tsx
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next';
 
 function LanguageSwitcher() {
-  const { i18n } = useTranslation()
-  
+  const { i18n } = useTranslation();
+
   const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng)
-  }
-  
-  return (
-    <button onClick={() => changeLanguage('en')}>English</button>
-  )
+    i18n.changeLanguage(lng);
+  };
+
+  return <button onClick={() => changeLanguage('en')}>English</button>;
 }
 ```
 
@@ -58,6 +56,7 @@ function LanguageSwitcher() {
 ## Default Language
 
 The default language is **English (en)**. The language is automatically detected from:
+
 1. localStorage (if previously set)
 2. Browser navigator
 3. HTML lang attribute

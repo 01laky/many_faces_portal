@@ -98,6 +98,7 @@ The easiest way to run the frontend in development:
 ```
 
 This script will:
+
 1. Check and install dependencies if needed
 2. Run code validation (TypeScript, ESLint)
 3. Format code with Prettier
@@ -120,6 +121,7 @@ docker-compose -f docker-compose.yml up --build
 ```
 
 Or manually:
+
 ```bash
 docker-compose -f docker-compose.yml down
 ```
@@ -145,11 +147,13 @@ To perform a clean rebuild of Docker images:
 ### Local Development (Without Docker)
 
 1. **Install dependencies**:
+
    ```bash
    yarn install
    ```
 
 2. **Start development server**:
+
    ```bash
    yarn dev
    ```
@@ -157,11 +161,13 @@ To perform a clean rebuild of Docker images:
    The app will be available at `http://localhost:8081`
 
 3. **Run tests**:
+
    ```bash
    yarn test
    ```
 
 4. **Format code**:
+
    ```bash
    yarn format
    ```
@@ -201,6 +207,7 @@ This updates the API client in `src/api/` based on the backend API schema.
 - **Protected Home** (`/:locale/home`) - Protected page after login
 
 All pages support internationalization with localized routes:
+
 - `/en/login` - English
 - `/sk/login` - Slovak
 - `/cz/login` - Czech
@@ -229,13 +236,13 @@ const result = await AuthService.register({
   email: 'user@example.com',
   password: 'password123',
   firstName: 'John',
-  lastName: 'Doe'
+  lastName: 'Doe',
 });
 
 // Login
 const loginResult = await AuthService.login({
   email: 'user@example.com',
-  password: 'password123'
+  password: 'password123',
 });
 ```
 
@@ -307,7 +314,7 @@ yarn test
 
 3. **Make code changes**: Edit code in `src/`
 
-4. **Test changes**: 
+4. **Test changes**:
    - Unit tests: `yarn test`
    - Manual testing: Open `http://localhost:8081`
 
@@ -336,6 +343,7 @@ yarn test:coverage
 ```
 
 Tests are located in:
+
 - `src/utils/__tests__/` - Utility function tests (route translations)
 - `src/api/__tests__/` - API client tests (face path routing)
 - Component tests (when added)
@@ -386,6 +394,7 @@ This frontend is part of the `_mfai_demo` monorepo and integrates with:
 - **Admin**: `admin_demo` (separate admin panel)
 
 Use root-level scripts to manage all services:
+
 - `start-all-dev.sh` - Start all services with live status screen
 - `stop-all-dev.sh` - Stop all services
 - `clear-all-dev.sh` - Clear all containers and volumes

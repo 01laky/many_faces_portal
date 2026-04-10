@@ -3,11 +3,13 @@
 If TypeScript editor still doesn't work with PnP, we can switch to node_modules mode:
 
 1. Edit `.yarnrc.yml`:
+
    ```yaml
    nodeLinker: node-modules
    ```
 
 2. Run:
+
    ```bash
    yarn install
    ```
