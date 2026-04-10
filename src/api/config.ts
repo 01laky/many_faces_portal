@@ -1,7 +1,10 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { OpenAPI } from './core/OpenAPI';
 import { env } from '../config/env';
-import { supportedLanguages } from '../i18n/config';
+import {
+  applyFacePrefixToRequestUrl,
+  getEffectiveFacePrefix,
+} from './faceApiRouting';
 
 // Track if interceptors have been set up
 let interceptorsSetup = false;
@@ -37,57 +40,31 @@ export function configureApiClient() {
       }
     );
 
-    // Request interceptor: prepend face path to API request URLs
+    // Request interceptor: prepend /{face}/ before /api/... (backend RoutingMiddleware)
     axios.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        // Only process requests to API base URL (not external URLs)
-        const isApiRequest = config.url && (
-          config.url.startsWith('/api/') || 
-          config.url.startsWith(env.apiUrl) ||
-          (config.baseURL && config.baseURL.startsWith(env.apiUrl))
-        );
+        if (!config.url) return config as InternalAxiosRequestConfig;
 
-        if (isApiRequest && config.url) {
-          // Extract face path from current window location
-          // Handles language prefix routes: /en/login, /sk/prihlasenie, /cz/prihlaseni
-          // Handles face prefix routes: /acme-corp/dashboard, /acme-corp/en/login
-          // 
-          // Examples:
-          // - /en/login -> facePath = null (language prefix, no face)
-          // - /acme-corp/dashboard -> facePath = 'acme-corp' (face prefix)
-          // - /acme-corp/en/login -> facePath = 'acme-corp' (face prefix + language)
-          const pathSegments = window.location.pathname.split('/').filter(Boolean);
-          
-          // Use supported languages from i18n config to identify language prefixes
-          // Language codes should not be treated as face paths
-          const languageCodes = supportedLanguages as readonly string[];
-          
-          // Check if first segment is a language code
-          const firstSegment = pathSegments.length > 0 ? pathSegments[0] : null;
-          const isLanguagePrefix = firstSegment && languageCodes.includes(firstSegment.toLowerCase());
-          
-          // Determine face path:
-          // - If first segment is language code -> facePath = null (no face prefix, language-only route)
-          // - If first segment is NOT language code -> facePath = firstSegment (it's the face prefix)
-          // - If no valid segments, no face path
-          const facePath = isLanguagePrefix 
-            ? null  // Language prefix route: /en/login -> no face path
-            : firstSegment;  // Face prefix route: /acme-corp/... -> facePath = 'acme-corp'
+        const u = config.url;
+        const base = env.apiUrl.replace(/\/$/, '');
+        const targetsApiHost =
+          u.startsWith('/api/') ||
+          u === '/api' ||
+          u.startsWith('/hubs/') ||
+          u === '/hubs' ||
+          u.startsWith(`${base}/api/`) ||
+          u.startsWith(`${base}/api?`) ||
+          u === `${base}/api` ||
+          u.startsWith(`${base}/hubs/`) ||
+          u.startsWith(`${base}/hubs?`) ||
+          u === `${base}/hubs`;
 
-          // If face path exists and URL doesn't already contain it, insert it after /api
-          if (facePath && !config.url.includes(`/${facePath}/`)) {
-            // Insert face path after /api prefix
-            // Example: /api/users -> /api/acme-corp/users
-            // Example: /api/auth/login -> /api/acme-corp/auth/login
-            if (config.url.startsWith('/api/')) {
-              // Insert face path after /api prefix
-              config.url = config.url.replace('/api/', `/api/${facePath}/`);
-            } else {
-              // If URL doesn't start with /api/, prepend /api/facePath
-              config.url = `/api/${facePath}${config.url}`;
-            }
-          }
+        if (!targetsApiHost) {
+          return config as InternalAxiosRequestConfig;
         }
+
+        const face = getEffectiveFacePrefix(window.location.pathname, env.defaultFacePrefix);
+        config.url = applyFacePrefixToRequestUrl(u, face, env.apiUrl);
 
         return config as InternalAxiosRequestConfig;
       },

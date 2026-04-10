@@ -13,6 +13,8 @@
 
 import axios from 'axios';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import { env } from '../config/env';
+import { applyFacePrefixToRequestUrl, getEffectiveFacePrefix } from './faceApiRouting';
 
 /**
  * API client configuration options
@@ -63,42 +65,23 @@ export class ApiClient {
     // It adds face path prefix and Authorization header
     this.instance.interceptors.request.use(
       (config) => {
-        // Extract face path from current window location
-        // Handles language prefix routes: /en/login, /sk/prihlasenie, /cz/prihlaseni
-        // Handles face prefix routes: /acme-corp/dashboard, /acme-corp/en/login
-        // 
-        // Examples:
-        // - /en/login -> facePath = null (language prefix, no face)
-        // - /acme-corp/dashboard -> facePath = 'acme-corp' (face prefix)
-        // - /acme-corp/en/login -> facePath = 'acme-corp' (face prefix + language)
-        const pathSegments = window.location.pathname.split('/').filter(Boolean);
-        
-        // Known language codes that should not be treated as face paths
-        // In a more sophisticated implementation, this could be imported from i18n config
-        const languageCodes = ['en', 'sk', 'cz'];
-        
-        // Check if first segment is a language code
-        const firstSegment = pathSegments.length > 0 ? pathSegments[0] : null;
-        const isLanguagePrefix = firstSegment && languageCodes.includes(firstSegment.toLowerCase());
-        
-        // Determine face path:
-        // - If first segment is language code, check second segment for face path
-        // - If first segment is not language code, it's the face path (if exists)
-        const facePath = isLanguagePrefix && pathSegments.length > 1 
-          ? pathSegments[1]  // Language prefix route: /en/acme-corp/... -> facePath = 'acme-corp'
-          : (!isLanguagePrefix ? firstSegment : null);  // Face prefix route: /acme-corp/... -> facePath = 'acme-corp'
-
-        // If face path exists and URL doesn't already contain it, insert it after /api
-        if (facePath && config.url && !config.url.includes(`/${facePath}/`)) {
-          // Insert face path after /api prefix
-          // Example: /api/users -> /api/acme-corp/users
-          // Example: /api/auth/login -> /api/acme-corp/auth/login
-          if (config.url.startsWith('/api/')) {
-            // Insert face path after /api prefix
-            config.url = config.url.replace('/api/', `/api/${facePath}/`);
-          } else {
-            // If URL doesn't start with /api/, prepend /api/facePath
-            config.url = `/api/${facePath}${config.url}`;
+        if (config.url) {
+          const u = config.url;
+          const base = env.apiUrl.replace(/\/$/, '');
+          const targetsApiHost =
+            u.startsWith('/api/') ||
+            u === '/api' ||
+            u.startsWith('/hubs/') ||
+            u === '/hubs' ||
+            u.startsWith(`${base}/api/`) ||
+            u.startsWith(`${base}/api?`) ||
+            u === `${base}/api` ||
+            u.startsWith(`${base}/hubs/`) ||
+            u.startsWith(`${base}/hubs?`) ||
+            u === `${base}/hubs`;
+          if (targetsApiHost) {
+            const face = getEffectiveFacePrefix(window.location.pathname, env.defaultFacePrefix);
+            config.url = applyFacePrefixToRequestUrl(u, face, env.apiUrl);
           }
         }
 

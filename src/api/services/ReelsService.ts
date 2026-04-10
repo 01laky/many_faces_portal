@@ -1,11 +1,11 @@
-import { env } from '../../config/env';
 import { authAwareFetch } from '../utils/authAwareFetch';
 import { buildFaceQuery } from '../utils/reelQuery';
+import { absoluteScopedUrl } from '../faceApiRouting';
 
 async function apiFetch(path: string, options: RequestInit & { token?: string }) {
   const token = options.token;
   delete (options as Record<string, unknown>).token;
-  const url = `${env.apiUrl}${path}`;
+  const url = absoluteScopedUrl(path);
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...((options.headers as Record<string, string>) ?? {}),

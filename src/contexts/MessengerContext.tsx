@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
-import { env } from '../config/env';
+import { absoluteScopedUrl } from '../api/faceApiRouting';
 
 type ConnectionState = 'Connecting' | 'Connected' | 'Disconnected';
 
@@ -144,7 +144,7 @@ export function MessengerProvider({
       return;
     }
 
-    const hubUrl = `${env.apiUrl}/hubs/messenger`;
+    const hubUrl = absoluteScopedUrl('/hubs/messenger');
     const connection = new HubConnectionBuilder()
       .withUrl(hubUrl, { accessTokenFactory: () => token })
       .withAutomaticReconnect()

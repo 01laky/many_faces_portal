@@ -27,6 +27,7 @@ vi.mock('../../utils/logger', () => ({
 vi.mock('../../config/env', () => ({
   env: {
     apiUrl: 'http://localhost:8000',
+    defaultFacePrefix: 'public',
   },
 }));
 

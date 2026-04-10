@@ -4,7 +4,7 @@ import { HubConnectionBuilder, type HubConnection } from '@microsoft/signalr';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Loader2, Send } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { env } from '../config/env';
+import { absoluteScopedUrl } from '../api/faceApiRouting';
 import { useAuth } from '../contexts/AuthContext';
 import { useFaceConfig } from '../contexts/FaceConfigContext';
 import {
@@ -76,7 +76,7 @@ export function ChatRoomDetailPage({ roomId: roomIdProp }: { roomId: number }) {
       return;
     }
 
-    const hubUrl = `${env.apiUrl}/hubs/chatroom`;
+    const hubUrl = absoluteScopedUrl('/hubs/chatroom');
     const conn = new HubConnectionBuilder()
       .withUrl(hubUrl, { accessTokenFactory: () => token })
       .withAutomaticReconnect()

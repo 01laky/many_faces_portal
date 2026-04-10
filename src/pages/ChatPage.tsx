@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
-import { env } from '../config/env';
+import { absoluteScopedUrl } from '../api/faceApiRouting';
 import { Button } from '../components/radix/Button';
 import './ChatPage.scss';
 
@@ -58,7 +58,7 @@ export function ChatPage() {
   useEffect(() => {
     if (!token) return;
 
-    const hubUrl = `${env.apiUrl}/hubs/chat`;
+    const hubUrl = absoluteScopedUrl('/hubs/chat');
     const connection = new HubConnectionBuilder()
       .withUrl(hubUrl, {
         accessTokenFactory: () => token,

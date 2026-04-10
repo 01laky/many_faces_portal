@@ -6,6 +6,8 @@
 interface EnvConfig {
   // API Configuration
   apiUrl: string;
+  /** URL segment for tenant API routes when the path has no face (e.g. public → /public/api/...). */
+  defaultFacePrefix: string;
 
   // OAuth2 Configuration
   oauth2ClientId: string;
@@ -45,7 +47,8 @@ function getBoolEnv(key: string, defaultValue: boolean): boolean {
  */
 export const env: EnvConfig = {
   // API Configuration
-  apiUrl: getEnv('VITE_API_URL', 'http://localhost:8000'),
+  apiUrl: getEnv('VITE_API_URL', 'https://localhost:8001'),
+  defaultFacePrefix: getEnv('VITE_DEFAULT_FACE_PREFIX', 'public'),
 
   // OAuth2 Configuration
   oauth2ClientId: getEnv('VITE_OAUTH2_CLIENT_ID', 'be-demo-client'),
