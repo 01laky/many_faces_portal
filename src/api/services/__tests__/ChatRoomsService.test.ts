@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 vi.mock('../../../config/env', () => ({
-  env: { apiUrl: 'http://test-api' },
+  env: { apiUrl: 'http://test-api', defaultFacePrefix: 'public' },
 }));
 
 import {
@@ -40,7 +40,7 @@ describe('ChatRoomsService', () => {
     await listChatRooms(7, token);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe('http://test-api/api/faces/7/chat-rooms');
+    expect(url).toBe('http://test-api/public/api/faces/7/chat-rooms');
     expect(init.method).toBe('GET');
     expect((init.headers as Record<string, string>).Authorization).toBe('Bearer t1');
   });
@@ -51,7 +51,7 @@ describe('ChatRoomsService', () => {
       new Response(JSON.stringify({ id: 1 }), { status: 200, headers: { 'Content-Type': 'application/json' } })
     );
     await getChatRoom(7, 99, token);
-    expect(fetchMock.mock.calls[0][0]).toBe('http://test-api/api/faces/7/chat-rooms/99');
+    expect(fetchMock.mock.calls[0][0]).toBe('http://test-api/public/api/faces/7/chat-rooms/99');
   });
 
   it('createChatRoom should POST body', async () => {
@@ -73,7 +73,7 @@ describe('ChatRoomsService', () => {
     const fetchMock = vi.mocked(fetch);
     fetchMock.mockResolvedValueOnce(new Response('{}', { status: 200 }));
     await joinPublicChatRoom(7, 3, token);
-    expect(fetchMock.mock.calls[0][0]).toBe('http://test-api/api/faces/7/chat-rooms/3/join');
+    expect(fetchMock.mock.calls[0][0]).toBe('http://test-api/public/api/faces/7/chat-rooms/3/join');
     expect((fetchMock.mock.calls[0][1] as RequestInit).method).toBe('POST');
   });
 
@@ -81,14 +81,14 @@ describe('ChatRoomsService', () => {
     const fetchMock = vi.mocked(fetch);
     fetchMock.mockResolvedValueOnce(new Response('{}', { status: 200 }));
     await requestJoinChatRoom(7, 3, token);
-    expect(fetchMock.mock.calls[0][0]).toBe('http://test-api/api/faces/7/chat-rooms/3/join-requests');
+    expect(fetchMock.mock.calls[0][0]).toBe('http://test-api/public/api/faces/7/chat-rooms/3/join-requests');
   });
 
   it('getChatRoomMessages should append query string', async () => {
     const fetchMock = vi.mocked(fetch);
     await getChatRoomMessages(7, 3, token, { pageSize: 25, beforeId: 100 });
     expect(fetchMock.mock.calls[0][0]).toBe(
-      'http://test-api/api/faces/7/chat-rooms/3/messages?pageSize=25&beforeId=100'
+      'http://test-api/public/api/faces/7/chat-rooms/3/messages?pageSize=25&beforeId=100'
     );
   });
 

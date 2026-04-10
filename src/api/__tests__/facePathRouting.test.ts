@@ -9,6 +9,8 @@ import {
   prependFaceBeforeApi,
   getEffectiveFacePrefix,
   applyFacePrefixToRequestUrl,
+  scopePathForCurrentFace,
+  absoluteScopedUrl,
 } from '../faceApiRouting';
 
 const mockWindow = {
@@ -108,6 +110,31 @@ describe('Face Path Routing', () => {
       expect(face).toBe('acme-corp');
       const out = applyFacePrefixToRequestUrl(`${apiBase}/api/Users`, face, apiBase);
       expect(out).toBe(`${apiBase}/acme-corp/api/Users`);
+    });
+  });
+
+  describe('ACL /api/me/capabilities URL shape', () => {
+    it('scopePathForCurrentFace uses default face on static route path', () => {
+      mockWindowLocation('/en/login');
+      expect(scopePathForCurrentFace('/api/me/capabilities')).toMatch(/\/public\/api\/me\/capabilities$/);
+    });
+
+    it('scopePathForCurrentFace uses tenant face from pathname', () => {
+      mockWindowLocation('/en/acme-corp/home');
+      expect(scopePathForCurrentFace('/api/me/capabilities')).toBe('/acme-corp/api/me/capabilities');
+    });
+
+    it('absoluteScopedUrl prepends apiUrl and face segment', () => {
+      mockWindowLocation('/en/login');
+      const u = absoluteScopedUrl('/api/me/capabilities');
+      expect(u).toContain('/public/api/me/capabilities');
+      expect(u.startsWith('http')).toBe(true);
+    });
+
+    it('does not double-prefix when path already has face api segment', () => {
+      mockWindowLocation('/en/public/home');
+      const scoped = scopePathForCurrentFace('/public/api/me/capabilities');
+      expect(scoped).toBe('/public/api/me/capabilities');
     });
   });
 
