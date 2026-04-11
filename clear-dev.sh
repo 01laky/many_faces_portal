@@ -11,11 +11,11 @@ echo "🧹 Clearing Frontend containers and volumes..."
 
 # Stop and remove containers from root docker-compose
 cd "$(dirname "$0")/.."
-docker-compose -f docker-compose.dev.yml stop fe-demo-dev 2>/dev/null || true
-docker-compose -f docker-compose.dev.yml rm -f fe-demo-dev 2>/dev/null || true
+docker-compose -f docker-compose.dev.yml stop fe-demo-dev fe-demo-proxy 2>/dev/null || true
+docker-compose -f docker-compose.dev.yml rm -f fe-demo-dev fe-demo-proxy 2>/dev/null || true
 
 # Remove container by name if it still exists
-docker rm -f fe-demo-dev 2>/dev/null || true
+docker rm -f fe-demo-dev fe-demo-proxy 2>/dev/null || true
 
 # Remove volumes
 docker volume rm fe-demo-node-modules 2>/dev/null || true

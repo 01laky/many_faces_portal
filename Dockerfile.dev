@@ -2,6 +2,9 @@
 # docker-compose.dev.yml bind-mounts ./fe_demo to /app and uses a named volume for
 # node_modules, so image-layer installs are invisible at runtime. Dependencies must
 # be installed when the container starts (into that volume).
+#
+# CYPRESS_INSTALL_BINARY=0 — dev server does not run e2e inside this container; skipping
+# the Cypress browser download speeds first `yarn install` dramatically after a volume wipe.
 
 FROM node:22-slim
 
@@ -15,4 +18,4 @@ RUN corepack enable && corepack prepare yarn@4.12.0 --activate
 
 EXPOSE 8081
 
-CMD ["sh", "-c", "yarn install && yarn dev --host 0.0.0.0 --port 8081"]
+CMD ["sh", "-c", "CYPRESS_INSTALL_BINARY=0 yarn install && yarn dev --host 0.0.0.0 --port 8081"]
