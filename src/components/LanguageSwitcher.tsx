@@ -2,7 +2,7 @@ import * as Select from '@radix-ui/react-select';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useApp, supportedLanguages } from '../contexts/AppContext';
 import { useTranslation } from 'react-i18next';
-import type { SupportedLanguage } from '../i18n/config';
+import type { SupportedLanguage } from '../i18n/constants';
 import { getEnglishRoute, getTranslatedRoute } from '../utils/routeTranslations';
 import './LanguageSwitcher.scss';
 
@@ -17,48 +17,51 @@ export function LanguageSwitcher() {
   const displayLanguage = (lang as SupportedLanguage) || currentLanguage;
 
   const handleLanguageChange = (newLang: string) => {
-    const langCode = newLang as SupportedLanguage;
+    void (async () => {
+      const langCode = newLang as SupportedLanguage;
 
-    // Change i18n language
-    changeLanguage(langCode);
+      await changeLanguage(langCode);
 
-    // Update URL to reflect new language while preserving and translating current path
-    const currentPath = location.pathname;
+      // Update URL to reflect new language while preserving and translating current path
+      const currentPath = location.pathname;
 
-    // Extract path without language prefix
-    // Examples: /en -> '', /en/login -> /login, /sk/prihlasenie -> /prihlasenie
-    let pathWithoutLang = currentPath;
+      // Extract path without language prefix
+      // Examples: /en -> '', /en/login -> /login, /sk/prihlasenie -> /prihlasenie
+      let pathWithoutLang = currentPath;
 
-    // Remove language prefix if it exists (e.g., /en, /sk, /cz)
-    for (const supportedLang of supportedLanguages) {
-      if (currentPath.startsWith(`/${supportedLang}`)) {
-        pathWithoutLang = currentPath.slice(`/${supportedLang}`.length);
-        break;
+      // Remove language prefix if it exists (e.g., /en, /sk, /cz)
+      for (const supportedLang of supportedLanguages) {
+        if (currentPath.startsWith(`/${supportedLang}`)) {
+          pathWithoutLang = currentPath.slice(`/${supportedLang}`.length);
+          break;
+        }
       }
-    }
 
-    // If path is empty or just '/', it means we're on the home page
-    if (pathWithoutLang === '' || pathWithoutLang === '/') {
-      navigate(`/${langCode}`, { replace: true });
-      return;
-    }
+      // If path is empty or just '/', it means we're on the home page
+      if (pathWithoutLang === '' || pathWithoutLang === '/') {
+        navigate(`/${langCode}`, { replace: true });
+        return;
+      }
 
-    // Remove leading slash from path
-    const cleanPath = pathWithoutLang.startsWith('/') ? pathWithoutLang.slice(1) : pathWithoutLang;
+      // Remove leading slash from path
+      const cleanPath = pathWithoutLang.startsWith('/')
+        ? pathWithoutLang.slice(1)
+        : pathWithoutLang;
 
-    // Get English route name from current translated path
-    const currentLang = (lang as SupportedLanguage) || currentLanguage;
-    const englishRoute = getEnglishRoute(cleanPath, currentLang, (key: string) => {
-      return i18nT(key, { lng: currentLang });
-    });
+      // Get English route name from current translated path
+      const currentLang = (lang as SupportedLanguage) || currentLanguage;
+      const englishRoute = getEnglishRoute(cleanPath, currentLang, (key: string) => {
+        return i18nT(key, { lng: currentLang });
+      });
 
-    // Translate to new language
-    const translatedPath = getTranslatedRoute(englishRoute, langCode, (key: string) => {
-      return i18nT(key, { lng: langCode });
-    });
+      // Translate to new language
+      const translatedPath = getTranslatedRoute(englishRoute, langCode, (key: string) => {
+        return i18nT(key, { lng: langCode });
+      });
 
-    // Navigate to new language with translated path
-    navigate(`/${langCode}${translatedPath ? `/${translatedPath}` : ''}`, { replace: true });
+      // Navigate to new language with translated path
+      navigate(`/${langCode}${translatedPath ? `/${translatedPath}` : ''}`, { replace: true });
+    })();
   };
 
   return (

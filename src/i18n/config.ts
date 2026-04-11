@@ -1,82 +1,86 @@
 /**
- * i18n/config.ts - Internationalization (i18n) configuration for Frontend Demo
- *
- * This file configures the i18next library for multi-language support.
- * It sets up:
- * - Language detection from browser/localStorage
- * - Translation resources for all supported languages
- * - React integration for i18n hooks
- *
- * Supported languages: English (en), Slovak (sk), Czech (cz)
+ * i18n runtime — async initialization so only the active locale JSON is in the initial chunk.
+ * Call `initI18n()` once from `main.tsx` before `createRoot().render()`.
  */
-
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
+import { supportedLanguages, type SupportedLanguage } from './constants';
 
-// Import translation files for all supported languages
-import enTranslations from './locales/en.json';
-import skTranslations from './locales/sk.json';
-import czTranslations from './locales/cz.json';
+export { supportedLanguages, type SupportedLanguage } from './constants';
 
-// Supported languages array - defines all languages available in the application
-// Using 'as const' makes this a readonly tuple for type safety
-export const supportedLanguages = ['en', 'sk', 'cz'] as const;
+function readStoredLanguage(): SupportedLanguage | null {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') return null;
+  const stored = localStorage.getItem('i18nextLng');
+  if (stored && supportedLanguages.includes(stored as SupportedLanguage)) {
+    return stored as SupportedLanguage;
+  }
+  return null;
+}
 
-// TypeScript type for supported languages - allows only values from supportedLanguages array
-export type SupportedLanguage = (typeof supportedLanguages)[number];
+function readNavigatorLanguage(): SupportedLanguage | null {
+  if (typeof navigator === 'undefined') return null;
+  const nav = navigator.language?.slice(0, 2);
+  if (nav && supportedLanguages.includes(nav as SupportedLanguage)) {
+    return nav as SupportedLanguage;
+  }
+  return null;
+}
 
-// Configure i18next with plugins and settings
-i18n
-  // Add language detector plugin - automatically detects user's preferred language
-  // Checks localStorage, browser navigator, and HTML lang attribute
-  .use(LanguageDetector)
-  // Add React integration plugin - enables useTranslation hook and other React features
-  .use(initReactI18next)
-  // Initialize i18next with configuration
-  .init({
-    // Default language - used when detection fails or language is not supported
-    fallbackLng: 'en',
-    // Supported languages - only these languages will be available
-    supportedLngs: supportedLanguages,
-    // Default namespace - namespace containing common translations
-    defaultNS: 'common',
-    // Namespaces - list of all translation namespaces
-    ns: ['common'],
-    // Resources with translations - maps language codes to their translation objects
-    resources: {
-      en: {
-        common: enTranslations, // English translations
+function readHtmlLang(): SupportedLanguage | null {
+  if (typeof document === 'undefined' || !document.documentElement) return null;
+  const tag = document.documentElement.lang?.slice(0, 2);
+  if (tag && supportedLanguages.includes(tag as SupportedLanguage)) {
+    return tag as SupportedLanguage;
+  }
+  return null;
+}
+
+/** Same priority as former `i18next-browser-languagedetector` order (without running the plugin twice). */
+function pickInitialLanguage(): SupportedLanguage {
+  return readStoredLanguage() ?? readNavigatorLanguage() ?? readHtmlLang() ?? 'en';
+}
+
+let initPromise: Promise<void> | null = null;
+
+export async function ensureLanguageLoaded(lng: SupportedLanguage): Promise<void> {
+  if (!i18n.isInitialized) {
+    await initI18n();
+  }
+  if (!i18n.hasResourceBundle(lng, 'common')) {
+    const common = (await import(`./locales/${lng}.json`)).default;
+    i18n.addResourceBundle(lng, 'common', common, true, true);
+  }
+}
+
+export function initI18n(): Promise<void> {
+  if (i18n.isInitialized) {
+    return Promise.resolve();
+  }
+  if (initPromise) {
+    return initPromise;
+  }
+  initPromise = (async () => {
+    const lng = pickInitialLanguage();
+    const common = (await import(`./locales/${lng}.json`)).default;
+    await i18n.use(initReactI18next).init({
+      lng,
+      fallbackLng: 'en',
+      supportedLngs: [...supportedLanguages],
+      defaultNS: 'common',
+      ns: ['common'],
+      resources: {
+        [lng]: { common },
       },
-      sk: {
-        common: skTranslations, // Slovak translations
+      partialBundledLanguages: true,
+      react: {
+        useSuspense: false,
       },
-      cz: {
-        common: czTranslations, // Czech translations
+      interpolation: {
+        escapeValue: false,
       },
-    },
-    // React-specific options
-    react: {
-      // Disable suspense for better compatibility with older React versions
-      // Suspense can cause issues with some React patterns
-      useSuspense: false,
-    },
-    // Language detection options
-    detection: {
-      // Order of language detection methods (priority order)
-      // 1. localStorage - check if user previously selected a language
-      // 2. navigator - detect from browser language settings
-      // 3. htmlTag - detect from HTML lang attribute
-      order: ['localStorage', 'navigator', 'htmlTag'],
-      // Cache detected language in localStorage for future visits
-      caches: ['localStorage'],
-    },
-    // Interpolation options - how to handle variables in translations
-    interpolation: {
-      // Don't escape values - React already handles XSS protection
-      // This allows HTML in translations if needed
-      escapeValue: false,
-    },
-  });
+    });
+  })();
+  return initPromise;
+}
 
 export default i18n;

@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 import { buildLocalizedNavigateTarget } from '../utils/buildLocalizedNavigatePath';
-import type { SupportedLanguage } from '../i18n/config';
+import type { SupportedLanguage } from '../i18n/constants';
 
 /**
  * Imperative navigation with **`/{lang}/...`** prefix derived from the current route (`lang` param) or

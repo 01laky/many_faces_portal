@@ -1,4 +1,12 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
 import type { ReactNode } from 'react';
 import { setAuthToken } from '../api/config';
 import { logger } from '../utils/logger';
@@ -14,6 +22,15 @@ import {
 } from '../hooks/api/useAuthApi';
 import { authKeys } from '../hooks/api/useAuthApi';
 import { useMeCapabilities } from '../hooks/api/useMeCapabilities';
+
+/**
+ * Session / expiry — intentional layering (see performance prompt §2.8):
+ * - **React Query `useAuthToken`**: canonical token read + cache; `readAuthTokenQueryValue` clears storage when expired.
+ * - **Bootstrap `localStorage` + `useEffect` sync**: hydrates UI before Query resolves; must stay aligned with Query on login/logout.
+ * - **`setInterval` + `isTokenExpired`**: safety net when JWT expires without a failing API call; **paused while tab hidden** to reduce wakeups.
+ * - **Axios `401` → `auth:unauthorized`**: clears session when the backend rejects the token (network path).
+ * Logout UX may fire from any layer; keep behavior consistent (toast + redirect handled by listeners/pages).
+ */
 
 /**
  * User information interface
@@ -152,7 +169,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('auth:unauthorized', handler);
   }, [t]);
 
-  // Session watcher: periodically check token expiry and auto-logout (no API request needed)
+  // Session watcher: periodically check token expiry (complements React Query token read); pauses when tab is hidden.
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   useEffect(() => {
     if (!token || !isAuthenticated) return;
 
@@ -171,8 +189,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    const interval = setInterval(checkExpiry, 30_000); // Check every 30 seconds
-    return () => clearInterval(interval);
+    const clearTimer = () => {
+      if (intervalRef.current != null) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+
+    const startTimer = () => {
+      clearTimer();
+      intervalRef.current = setInterval(checkExpiry, 30_000);
+    };
+
+    const onVisibility = () => {
+      if (typeof document === 'undefined') return;
+      if (document.visibilityState === 'hidden') {
+        clearTimer();
+      } else {
+        checkExpiry();
+        startTimer();
+      }
+    };
+
+    checkExpiry();
+    startTimer();
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      clearTimer();
+    };
   }, [token, isAuthenticated, t]);
 
   /**
@@ -302,18 +347,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [refreshTokenMutation, logout]);
 
+  const authValue = useMemo(
+    (): AuthContextType => ({
+      isAuthenticated,
+      isLoading,
+      user,
+      token,
+      login,
+      logout,
+      refreshAuth,
+    }),
+    [isAuthenticated, isLoading, user, token, login, logout, refreshAuth]
+  );
+
   return (
-    <AuthContext.Provider
-      value={{
-        isAuthenticated,
-        isLoading,
-        user,
-        token,
-        login,
-        logout,
-        refreshAuth,
-      }}
-    >
+    <AuthContext.Provider value={authValue}>
       <MeCapabilitiesWarmup token={token} />
       {children}
     </AuthContext.Provider>

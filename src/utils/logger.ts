@@ -30,16 +30,23 @@ class FrontendLogger {
   private flushInterval: number = 5000; // Flush every 5 seconds
   private maxBufferSize: number = 100;
   private lastSeqErrorAt: number = 0;
-
   constructor() {
     // Get Seq URL from environment config
     this.seqUrl = env.seqUrl;
     // Disable Seq in dev to avoid CORS/503 spam; enable only when explicitly needed
     this.enabled = import.meta.env.PROD ? env.enableSeqLogging : false;
 
-    // Start periodic flush
-    if (this.enabled) {
-      setInterval(() => this.flush(), this.flushInterval);
+    // Periodic flush; skip ticks while tab hidden to reduce wakeups (buffer flushes on focus).
+    if (this.enabled && typeof document !== 'undefined') {
+      setInterval(() => {
+        if (document.hidden) return;
+        void this.flush();
+      }, this.flushInterval);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          void this.flush();
+        }
+      });
     }
   }
 

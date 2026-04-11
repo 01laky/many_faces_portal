@@ -15,7 +15,9 @@ import {
   applyFacePrefixToRequestUrl,
   scopePathForCurrentFace,
   absoluteScopedUrl,
+  resetLangLevelStaticRouteSegmentsCache,
 } from '../faceApiRouting';
+import { initI18n } from '../../i18n/config';
 
 const mockWindow = {
   location: {
@@ -44,8 +46,14 @@ function restoreWindowLocation() {
 }
 
 describe('Face Path Routing', () => {
+  beforeAll(async () => {
+    await initI18n();
+    resetLangLevelStaticRouteSegmentsCache();
+  });
+
   beforeEach(() => {
     axios.interceptors.request.clear();
+    resetLangLevelStaticRouteSegmentsCache();
   });
 
   afterEach(() => {

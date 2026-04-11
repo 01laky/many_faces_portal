@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Save, Loader2, Plus, X } from 'lucide-react';
-import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.snow.css';
+import { BlogQuillEditor } from './BlogQuillEditor';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import {
@@ -46,7 +45,7 @@ const MAX_IMAGES = 3;
 export function BlogForm({ editBlog, onSaved, onCancel }: BlogFormProps) {
   const { token } = useAuth();
   const { allFaces } = useFaceConfig();
-  const quillRef = useRef<ReactQuill>(null);
+  const quillRef = useRef<unknown>(null);
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -156,7 +155,7 @@ export function BlogForm({ editBlog, onSaved, onCancel }: BlogFormProps) {
       <div className="blog-form-label">
         Content
         <div className="blog-form-editor-wrapper">
-          <ReactQuill
+          <BlogQuillEditor
             ref={quillRef}
             theme="snow"
             value={content}

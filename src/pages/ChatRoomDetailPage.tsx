@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { HubConnectionBuilder, type HubConnection } from '@microsoft/signalr';
+import type { HubConnection } from '@microsoft/signalr';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Loader2, Send } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { absoluteScopedUrl } from '../api/faceApiRouting';
+import { buildAuthenticatedHubConnection } from '../api/signalr/buildAuthenticatedHubConnection';
 import { useAuth } from '../contexts/AuthContext';
 import { useFaceConfig } from '../contexts/FaceConfigContext';
 import {
@@ -82,11 +82,7 @@ export function ChatRoomDetailPage({ roomId: roomIdProp }: { roomId: number }) {
       return;
     }
 
-    const hubUrl = absoluteScopedUrl('/hubs/chatroom');
-    const conn = new HubConnectionBuilder()
-      .withUrl(hubUrl, { accessTokenFactory: () => token })
-      .withAutomaticReconnect()
-      .build();
+    const conn = buildAuthenticatedHubConnection('/hubs/chatroom', token);
 
     conn.on(
       'ReceiveRoomMessage',

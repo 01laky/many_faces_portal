@@ -1,4 +1,4 @@
-import type { SupportedLanguage } from '../i18n/config';
+import type { SupportedLanguage } from '../i18n/constants';
 
 /**
  * Builds an **internal** router target `/{lang}/{path}` for imperative navigation (`navigate(...)`) where

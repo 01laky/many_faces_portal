@@ -71,10 +71,12 @@ export function ApiContextProvider({
     return new ApiClient(accessToken, {}, publicIP);
   }, [accessToken]);
 
-  // Create context model
-  const apiContextModel: TApiContextModel = {
-    api,
-  };
+  const apiContextModel = React.useMemo(
+    (): TApiContextModel => ({
+      api,
+    }),
+    [api]
+  );
 
   return <ApiContext.Provider value={apiContextModel}>{children}</ApiContext.Provider>;
 }

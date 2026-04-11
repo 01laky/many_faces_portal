@@ -69,4 +69,21 @@ export default defineConfig({
     __APP_NAME__: JSON.stringify(process.env.VITE_APP_NAME || 'Be Demo Frontend'),
     __APP_VERSION__: JSON.stringify(process.env.VITE_APP_VERSION || '1.0.0'),
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+          if (id.includes('node_modules/react-dom')) return 'vendor-react-dom';
+          if (id.includes('node_modules/react-router')) return 'vendor-router';
+          if (id.includes('node_modules/@tanstack/react-query')) return 'vendor-query';
+          if (id.includes('node_modules/@microsoft/signalr')) return 'vendor-signalr';
+          if (id.includes('react-quill') || id.includes('node_modules/quill'))
+            return 'vendor-quill';
+          if (id.includes('node_modules/react/')) return 'vendor-react';
+          return 'vendor';
+        },
+      },
+    },
+  },
 });

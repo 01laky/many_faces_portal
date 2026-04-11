@@ -9,6 +9,21 @@ import {
 // Track if interceptors have been set up
 let interceptorsSetup = false;
 
+/** Avoid re-parsing `pathname` on every axios request when the URL has not changed. */
+let cachedFacePathname = '';
+let cachedFacePrefix = '';
+function getMemoizedEffectiveFacePrefix(): string {
+  if (typeof window === 'undefined') {
+    return '';
+  }
+  const pathname = window.location.pathname;
+  if (pathname !== cachedFacePathname) {
+    cachedFacePathname = pathname;
+    cachedFacePrefix = getEffectiveFacePrefix(pathname, env.defaultFacePrefix);
+  }
+  return cachedFacePrefix;
+}
+
 /**
  * Configure API client with base URL from environment variables
  * Sets up global axios interceptors for face path routing.
@@ -63,7 +78,7 @@ export function configureApiClient() {
           return config as InternalAxiosRequestConfig;
         }
 
-        const face = getEffectiveFacePrefix(window.location.pathname, env.defaultFacePrefix);
+        const face = getMemoizedEffectiveFacePrefix();
         config.url = applyFacePrefixToRequestUrl(u, face, env.apiUrl);
 
         return config as InternalAxiosRequestConfig;

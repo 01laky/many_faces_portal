@@ -4,7 +4,7 @@ import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useFaceConfig } from '../contexts/FaceConfigContext';
 import { buildLocalizedLinkPath } from '../utils/buildLocalizedLinkPath';
-import type { SupportedLanguage } from '../i18n/config';
+import type { SupportedLanguage } from '../i18n/constants';
 
 /**
  * Returns **`getLocalizedPath(path)`** for `<Link to={...}>` / anchors: combines route language, i18n route

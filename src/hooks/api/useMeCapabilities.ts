@@ -27,6 +27,7 @@ export function createMeCapabilitiesQueryOptions(
     queryFn: () => fetchMeCapabilities(token!),
     enabled: Boolean(enabled && token),
     staleTime: 60_000,
+    gcTime: 15 * 60_000,
   };
 }
 

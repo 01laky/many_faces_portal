@@ -1,4 +1,4 @@
-import type { SupportedLanguage } from '../i18n/config';
+import type { SupportedLanguage } from '../i18n/constants';
 
 // Map of English route names to their keys in i18n
 const routeKeys: Record<string, string> = {
@@ -114,7 +114,12 @@ export function getAllRouteTranslations(
   const supportedLanguages: SupportedLanguage[] = ['en', 'sk', 'cz'];
   supportedLanguages.forEach((lang) => {
     const translated = t(routeKey, { lng: lang });
-    if (translated !== englishRoute) {
+    if (
+      typeof translated === 'string' &&
+      translated.length > 0 &&
+      translated !== englishRoute &&
+      !translations.includes(translated)
+    ) {
       translations.push(translated);
     }
   });

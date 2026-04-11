@@ -4,7 +4,7 @@
  */
 
 import { env } from '../config/env';
-import { supportedLanguages } from '../i18n/config';
+import { supportedLanguages } from '../i18n/constants';
 import { getAllRouteTranslations } from '../utils/routeTranslations';
 import i18n from '../i18n/config';
 
@@ -18,6 +18,11 @@ const ROUTES_WHERE_SECOND_SEGMENT_IS_NOT_FACE = [
 ] as const;
 
 let cachedLangLevelStaticSegments: Set<string> | null = null;
+
+/** Call after `initI18n()` so static route segments reflect loaded bundles (tests may reset between cases). */
+export function resetLangLevelStaticRouteSegmentsCache(): void {
+  cachedLangLevelStaticSegments = null;
+}
 
 function langLevelStaticRouteSegments(): Set<string> {
   if (cachedLangLevelStaticSegments) return cachedLangLevelStaticSegments;

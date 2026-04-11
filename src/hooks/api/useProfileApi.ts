@@ -34,6 +34,7 @@ export function useProfile() {
     queryKey: profileQueryKey(faceId),
     queryFn: () => profileApi.getProfile(token, faceId),
     enabled: Boolean(isAuthenticated && token),
+    gcTime: 15 * 60_000,
   });
 
   const resolvedAvatarUrl = profile?.faceAvatarUrl ?? profile?.globalAvatarUrl ?? null;

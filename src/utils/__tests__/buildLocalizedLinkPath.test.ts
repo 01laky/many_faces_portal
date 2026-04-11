@@ -4,7 +4,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { buildLocalizedLinkPath } from '../buildLocalizedLinkPath';
-import { supportedLanguages } from '../../i18n/config';
+import { supportedLanguages } from '../../i18n/constants';
 
 describe('buildLocalizedLinkPath', () => {
   const mockT = vi.fn((key: string) => {

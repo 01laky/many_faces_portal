@@ -3,12 +3,13 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
 } from 'react';
-import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
-import { absoluteScopedUrl } from '../api/faceApiRouting';
+import type { HubConnection } from '@microsoft/signalr';
+import { buildAuthenticatedHubConnection } from '../api/signalr/buildAuthenticatedHubConnection';
 
 type ConnectionState = 'Connecting' | 'Connected' | 'Disconnected';
 
@@ -144,11 +145,7 @@ export function MessengerProvider({
       return;
     }
 
-    const hubUrl = absoluteScopedUrl('/hubs/messenger');
-    const connection = new HubConnectionBuilder()
-      .withUrl(hubUrl, { accessTokenFactory: () => token })
-      .withAutomaticReconnect()
-      .build();
+    const connection = buildAuthenticatedHubConnection('/hubs/messenger', token);
 
     connectionRef.current = connection;
 
@@ -203,18 +200,32 @@ export function MessengerProvider({
     };
   }, [token]);
 
-  const value: MessengerContextValue = {
-    connectionState,
-    sendMessage,
-    acceptMessageRequest,
-    rejectMessageRequest,
-    onChatMessage,
-    onMessageRequest,
-    onFriendRequest,
-    onMessageRequestAccepted,
-    onMessageRequestRejected,
-    onNotification,
-  };
+  const value = useMemo(
+    (): MessengerContextValue => ({
+      connectionState,
+      sendMessage,
+      acceptMessageRequest,
+      rejectMessageRequest,
+      onChatMessage,
+      onMessageRequest,
+      onFriendRequest,
+      onMessageRequestAccepted,
+      onMessageRequestRejected,
+      onNotification,
+    }),
+    [
+      connectionState,
+      sendMessage,
+      acceptMessageRequest,
+      rejectMessageRequest,
+      onChatMessage,
+      onMessageRequest,
+      onFriendRequest,
+      onMessageRequestAccepted,
+      onMessageRequestRejected,
+      onNotification,
+    ]
+  );
 
   return <MessengerContext.Provider value={value}>{children}</MessengerContext.Provider>;
 }

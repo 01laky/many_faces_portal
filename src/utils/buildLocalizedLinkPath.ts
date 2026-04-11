@@ -1,4 +1,4 @@
-import type { SupportedLanguage } from '../i18n/config';
+import type { SupportedLanguage } from '../i18n/constants';
 import { getTranslatedRoute } from './routeTranslations';
 
 export type LocalizedLinkTranslate = (key: string) => string;

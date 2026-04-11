@@ -86,6 +86,8 @@ export function useAuthToken() {
     queryFn: () => readAuthTokenQueryValue(),
     /** Periodic re-read so JWT expiry or storage changes in another tab converge without full page reload. */
     staleTime: 60_000,
+    /** Cap in-memory retention for long sessions (default query `gcTime` also applies). */
+    gcTime: 10 * 60_000,
   });
 }
 
