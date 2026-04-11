@@ -87,7 +87,7 @@ export function useLogin() {
             error.body?.message ||
             error.message ||
             'Login failed';
-          throw new Error(errorMessage);
+          throw new Error(errorMessage, { cause: error });
         }
         throw error;
       }
