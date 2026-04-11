@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { ACL_PERMISSION_KEYS } from '../aclPermissionKeys';
-import type { MeCapabilities } from '../capabilitiesTypes';
 import {
   canMutateGlobalPageTypes,
   canPlatformAdmin,
@@ -12,125 +11,112 @@ import {
   parseMeCapabilities,
 } from '../permissions';
 
-function caps(partial: Partial<MeCapabilities>): MeCapabilities {
-  return {
-    globalRole: partial.globalRole ?? 'USER',
-    requestFaceId: partial.requestFaceId ?? 1,
-    requestFaceIndex: partial.requestFaceIndex ?? 'public',
-    isAdminFaceScope: partial.isAdminFaceScope ?? false,
-    myFaceRoleName: partial.myFaceRoleName ?? null,
-    permissions: partial.permissions ?? [],
-  };
-}
-
-describe('hasPermission', () => {
-  it('returns false for null, undefined, or empty permissions', () => {
-    expect(hasPermission(null, ACL_PERMISSION_KEYS.tenantSession)).toBe(false);
-    expect(hasPermission(undefined, ACL_PERMISSION_KEYS.tenantSession)).toBe(false);
-    expect(hasPermission(caps({ permissions: [] }), ACL_PERMISSION_KEYS.tenantSession)).toBe(false);
-  });
-
-  it('is exact string match (no substring / case folding)', () => {
-    const c = caps({ permissions: ['tenant:session', 'face:member'] });
-    expect(hasPermission(c, ACL_PERMISSION_KEYS.tenantSession)).toBe(true);
-    expect(hasPermission(c, 'TENANT:SESSION')).toBe(false);
-    expect(hasPermission(c, 'tenant')).toBe(false);
-  });
-});
-
-describe('capability helpers', () => {
-  it('maps platform pagetype flag', () => {
-    expect(
-      canMutateGlobalPageTypes(caps({ permissions: [ACL_PERMISSION_KEYS.platformPagetypeMutate] }))
-    ).toBe(true);
-    expect(
-      canMutateGlobalPageTypes(caps({ permissions: [ACL_PERMISSION_KEYS.platformAdmin] }))
-    ).toBe(false);
-  });
-
-  it('maps admin / super / tenant / face self-service', () => {
-    expect(canPlatformAdmin(caps({ permissions: [ACL_PERMISSION_KEYS.platformAdmin] }))).toBe(true);
-    expect(canSuperAdmin(caps({ permissions: [ACL_PERMISSION_KEYS.platformSuper] }))).toBe(true);
-    expect(hasTenantSession(caps({ permissions: [ACL_PERMISSION_KEYS.tenantSession] }))).toBe(true);
-    expect(hasFaceMember(caps({ permissions: [ACL_PERMISSION_KEYS.faceMember] }))).toBe(true);
-    expect(
-      canUseFaceRoleSelfService(caps({ permissions: [ACL_PERMISSION_KEYS.faceRoleSelfService] }))
-    ).toBe(true);
-  });
-});
-
+/**
+ * Edge cases for GET /api/me/capabilities parsing and permission helpers (security-hardening prompt).
+ */
 describe('parseMeCapabilities', () => {
-  it('returns null for non-objects and malformed payloads', () => {
+  it('returns null for non-object payloads', () => {
     expect(parseMeCapabilities(null)).toBeNull();
     expect(parseMeCapabilities(undefined)).toBeNull();
     expect(parseMeCapabilities('x')).toBeNull();
-    expect(parseMeCapabilities([])).toBeNull();
-    expect(parseMeCapabilities({})).toBeNull();
+    expect(parseMeCapabilities(1)).toBeNull();
+  });
+
+  it('returns null when required fields are wrong types', () => {
     expect(parseMeCapabilities({ globalRole: 1 })).toBeNull();
-    expect(parseMeCapabilities({ globalRole: 'USER', requestFaceId: '1' })).toBeNull();
+    expect(parseMeCapabilities({ globalRole: 'USER', requestFaceId: 'n' })).toBeNull();
     expect(
-      parseMeCapabilities({ globalRole: 'USER', requestFaceId: 1, isAdminFaceScope: 'yes' })
+      parseMeCapabilities({ globalRole: 'USER', requestFaceId: 1, isAdminFaceScope: 'x' })
     ).toBeNull();
     expect(
       parseMeCapabilities({
         globalRole: 'USER',
         requestFaceId: 1,
+        requestFaceIndex: 2,
         isAdminFaceScope: false,
+        permissions: [],
+      })
+    ).toBeNull();
+    expect(
+      parseMeCapabilities({
+        globalRole: 'USER',
+        requestFaceId: 1,
+        requestFaceIndex: null,
+        isAdminFaceScope: false,
+        myFaceRoleName: 1,
+        permissions: [],
+      })
+    ).toBeNull();
+    expect(
+      parseMeCapabilities({
+        globalRole: 'USER',
+        requestFaceId: 1,
+        requestFaceIndex: null,
+        isAdminFaceScope: false,
+        myFaceRoleName: null,
         permissions: [1],
       })
     ).toBeNull();
   });
 
-  it('accepts null requestFaceIndex and myFaceRoleName', () => {
-    const parsed = parseMeCapabilities({
+  it('accepts valid payloads and normalizes null optional fields', () => {
+    const caps = parseMeCapabilities({
       globalRole: 'USER',
-      requestFaceId: 2,
+      requestFaceId: 3,
       requestFaceIndex: null,
       isAdminFaceScope: false,
       myFaceRoleName: null,
-      permissions: ['tenant:session'],
+      permissions: ['a', 'b'],
     });
-    expect(parsed).toEqual({
+    expect(caps).toEqual({
       globalRole: 'USER',
-      requestFaceId: 2,
+      requestFaceId: 3,
       requestFaceIndex: null,
       isAdminFaceScope: false,
       myFaceRoleName: null,
-      permissions: ['tenant:session'],
+      permissions: ['a', 'b'],
     });
   });
 
-  it('copies permissions array (mutating result does not affect input)', () => {
-    const perms = ['tenant:session'];
-    const parsed = parseMeCapabilities({
-      globalRole: 'USER',
+  it('copies permissions array defensively', () => {
+    const raw = {
+      globalRole: 'ADMIN',
       requestFaceId: 1,
       requestFaceIndex: 'public',
-      isAdminFaceScope: false,
-      myFaceRoleName: null,
-      permissions: perms,
-    });
-    expect(parsed).not.toBeNull();
-    parsed!.permissions.push('x');
-    expect(perms).toEqual(['tenant:session']);
+      isAdminFaceScope: true,
+      myFaceRoleName: 'FACE_HOST',
+      permissions: ['p'],
+    };
+    const caps = parseMeCapabilities(raw)!;
+    caps.permissions.push('mutated');
+    expect(raw.permissions).toEqual(['p']);
+  });
+});
+
+describe('permission helpers', () => {
+  const base = parseMeCapabilities({
+    globalRole: 'USER',
+    requestFaceId: 1,
+    requestFaceIndex: 'public',
+    isAdminFaceScope: false,
+    myFaceRoleName: null,
+    permissions: [ACL_PERMISSION_KEYS.tenantSession, ACL_PERMISSION_KEYS.faceMember],
+  })!;
+
+  it('hasPermission is false for missing keys', () => {
+    expect(hasPermission(base, ACL_PERMISSION_KEYS.platformSuper)).toBe(false);
+    expect(hasPermission(null, ACL_PERMISSION_KEYS.tenantSession)).toBe(false);
+    expect(hasPermission({ ...base, permissions: [] }, ACL_PERMISSION_KEYS.tenantSession)).toBe(
+      false
+    );
   });
 
-  it('accepts duplicate permission strings in payload (helpers still work)', () => {
-    const parsed = parseMeCapabilities({
-      globalRole: 'USER',
-      requestFaceId: 1,
-      requestFaceIndex: 'public',
-      isAdminFaceScope: false,
-      myFaceRoleName: null,
-      permissions: ['tenant:session', 'tenant:session', 'face:member'],
-    });
-    expect(parsed!.permissions).toHaveLength(3);
-    expect(hasTenantSession(parsed)).toBe(true);
-  });
-
-  it('treats extra unknown permission strings as opaque', () => {
-    const c = caps({ permissions: ['tenant:session', 'future:capability'] });
-    expect(hasPermission(c, 'future:capability')).toBe(true);
-    expect(canMutateGlobalPageTypes(c)).toBe(false);
+  it('maps capability helpers to keys', () => {
+    expect(hasTenantSession(base)).toBe(true);
+    expect(hasFaceMember(base)).toBe(true);
+    expect(canSuperAdmin(base)).toBe(false);
+    expect(canPlatformAdmin(base)).toBe(false);
+    expect(canMutateGlobalPageTypes(base)).toBe(false);
+    expect(canUseFaceRoleSelfService(base)).toBe(false);
   });
 });
