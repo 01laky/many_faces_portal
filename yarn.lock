@@ -4460,9 +4460,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-react-hooks@npm:^7.0.1":
-  version: 7.0.1
-  resolution: "eslint-plugin-react-hooks@npm:7.0.1"
+"eslint-plugin-react-hooks@npm:7.1.0-canary-705268dc-20260409":
+  version: 7.1.0-canary-705268dc-20260409
+  resolution: "eslint-plugin-react-hooks@npm:7.1.0-canary-705268dc-20260409"
   dependencies:
     "@babel/core": "npm:^7.24.4"
     "@babel/parser": "npm:^7.24.4"
@@ -4470,8 +4470,8 @@ __metadata:
     zod: "npm:^3.25.0 || ^4.0.0"
     zod-validation-error: "npm:^3.5.0 || ^4.0.0"
   peerDependencies:
-    eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0
-  checksum: 10/12e96c68d58c6588305fd17d660524a1ef1e872650ec591d5b138f059431290831c373d4b1c9ae8991fb25f96c43935497d2149678c027e65d0417d3d99ecc85
+    eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0 || ^10.0.0
+  checksum: 10/d6d8c2babd6ee5b6beaec7da14c8c24fc476140cf9905dc0a5c69e5d3aa75a7a14551e8881296a0dc57127d37132b22e79381082c140c177f803a7d250af31bf
   languageName: node
   linkType: hard
 
@@ -4863,7 +4863,7 @@ __metadata:
     cypress: "npm:^15.13.1"
     eslint: "npm:^10.2.0"
     eslint-config-prettier: "npm:^10.1.8"
-    eslint-plugin-react-hooks: "npm:^7.0.1"
+    eslint-plugin-react-hooks: "npm:7.1.0-canary-705268dc-20260409"
     eslint-plugin-react-refresh: "npm:^0.5.2"
     globals: "npm:^17.4.0"
     husky: "npm:^9.1.7"

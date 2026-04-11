@@ -14,15 +14,21 @@ export default defineConfig([
     extends: [
       js.configs.recommended,
       ...tseslint.configs.recommended,
-      reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
       prettier, // Must be last to override other configs
     ],
+    plugins: {
+      // Canary `flat.recommended` enables many experimental rules; keep classic
+      // hooks checks until the codebase opts into the full preset.
+      'react-hooks': reactHooks,
+    },
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
     },
     rules: {
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
       // Allow unused vars that start with underscore
       '@typescript-eslint/no-unused-vars': [
         'error',
