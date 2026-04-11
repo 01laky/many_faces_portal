@@ -1,5 +1,9 @@
+/**
+ * Regression tests for ACL parsing (`parseMeCapabilities`) and helper predicates used by route guards.
+ * Keeps **fe_demo** `permissions.ts` aligned with backend `GET /api/me/capabilities` JSON (security hardening).
+ */
 import { describe, expect, it } from 'vitest';
-import { ACL_PERMISSION_KEYS } from '../aclPermissionKeys';
+import { ACL_PERMISSION_KEYS, ALL_ACL_PERMISSION_KEYS_SORTED } from '../aclPermissionKeys';
 import {
   canMutateGlobalPageTypes,
   canPlatformAdmin,
@@ -118,5 +122,24 @@ describe('permission helpers', () => {
     expect(canPlatformAdmin(base)).toBe(false);
     expect(canMutateGlobalPageTypes(base)).toBe(false);
     expect(canUseFaceRoleSelfService(base)).toBe(false);
+  });
+});
+
+describe('ACL catalog vs /api/me/capabilities', () => {
+  const baseFields = {
+    globalRole: 'USER',
+    requestFaceId: 1,
+    requestFaceIndex: 'public' as const,
+    isAdminFaceScope: false,
+    myFaceRoleName: null as string | null,
+  };
+
+  it.each(ALL_ACL_PERMISSION_KEYS_SORTED)('accepts permission key %s in payload', (key) => {
+    const caps = parseMeCapabilities({
+      ...baseFields,
+      permissions: [key],
+    });
+    expect(caps).not.toBeNull();
+    expect(hasPermission(caps, key)).toBe(true);
   });
 });

@@ -3,10 +3,21 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import * as profileApi from '../../api/profile/profileApi';
 
-const profileKey = (faceId?: number | null) => (faceId != null ? ['profile', faceId] : ['profile']);
+/**
+ * Stable React Query key for profile reads/writes. Includes `faceId` when the viewer is scoped to a face
+ * so face-specific avatars invalidate independently of the global profile cache.
+ */
+export function profileQueryKey(
+  faceId?: number | null
+): readonly ['profile'] | readonly ['profile', number] {
+  return faceId != null ? (['profile', faceId] as const) : (['profile'] as const);
+}
 
 /**
- * Resolved avatar: local (face) if set, else global, else null.
+ * Profile + avatar hooks: reads `/profile` when authenticated, exposes mutations that invalidate the same
+ * `profileQueryKey` family so the avatar strip updates after uploads.
+ *
+ * `resolvedAvatarUrl` prefers `faceAvatarUrl` (per-face override), then `globalAvatarUrl`, else `null`.
  */
 export function useProfile() {
   const { token, isAuthenticated } = useAuth();
@@ -20,7 +31,7 @@ export function useProfile() {
     error,
     refetch,
   } = useQuery({
-    queryKey: profileKey(faceId),
+    queryKey: profileQueryKey(faceId),
     queryFn: () => profileApi.getProfile(token, faceId),
     enabled: Boolean(isAuthenticated && token),
   });
@@ -30,18 +41,18 @@ export function useProfile() {
   const updateMutation = useMutation({
     mutationFn: (data: { firstName?: string | null; lastName?: string | null }) =>
       profileApi.updateProfile(token, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: profileKey() }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: profileQueryKey() }),
   });
 
   const uploadGlobalMutation = useMutation({
     mutationFn: (file: File) => profileApi.uploadGlobalAvatar(token, file),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: profileKey() }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: profileQueryKey() }),
   });
 
   const uploadFaceMutation = useMutation({
     mutationFn: ({ faceId: fId, file }: { faceId: number; file: File }) =>
       profileApi.uploadFaceAvatar(token, fId, file),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: profileKey(faceId) }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: profileQueryKey(faceId) }),
   });
 
   return {

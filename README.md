@@ -342,6 +342,18 @@ yarn test:watch
 yarn test:coverage
 ```
 
+### Cypress (E2E)
+
+After a production build, `vite preview` serves **HTTP** on port **4173** (see `vite.config.ts` `preview`) so Cypress does not need dev certificates.
+
+```bash
+yarn build
+yarn preview --host 127.0.0.1 --port 4173 --strictPort   # background terminal
+yarn test:e2e:ci                                       # app shell smoke
+# Optional — requires API at E2E_API_URL (default http://127.0.0.1:8000):
+yarn test:e2e:api
+```
+
 Tests are located in:
 
 - `src/utils/__tests__/` - Utility function tests (route translations)

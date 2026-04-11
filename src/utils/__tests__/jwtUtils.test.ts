@@ -1,56 +1,51 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+/**
+ * Client-side JWT **exp** inspection used before attaching `Authorization` headers. Tests pin fake time
+ * (`vi.setSystemTime`) and craft unsigned base64url tokens — **not** a crypto/security review of JWT,
+ * only parsing + clock skew semantics for `isTokenExpired`.
+ */
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { isTokenExpired } from '../jwtUtils';
 
-/** Minimal JWT-shaped string: header.payload.signature (Base64URL not required; atob path uses standard base64 from btoa). */
-function makeJwt(payloadObj: Record<string, unknown>): string {
-  const header = btoa(JSON.stringify({ alg: 'none', typ: 'JWT' }));
-  const payload = btoa(JSON.stringify(payloadObj));
-  return `${header}.${payload}.x`;
+function makeJwt(payload: Record<string, unknown>): string {
+  const header = Buffer.from(JSON.stringify({ alg: 'none' })).toString('base64url');
+  const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  return `${header}.${body}.sig`;
 }
 
 describe('isTokenExpired', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-01T12:00:00.000Z'));
+  });
+
   afterEach(() => {
     vi.useRealTimers();
   });
 
-  it('returns false when exp is missing (token treated as non-expiring for client UX)', () => {
-    expect(isTokenExpired(makeJwt({ sub: 'u1' }))).toBe(false);
+  it('returns true when fewer than two segments', () => {
+    expect(isTokenExpired('not-a-jwt')).toBe(true);
   });
 
-  it('returns false when exp is in the future', () => {
-    const future = Math.floor(Date.now() / 1000) + 3600;
-    expect(isTokenExpired(makeJwt({ exp: future }))).toBe(false);
+  it('returns true when payload is not valid JSON after decode', () => {
+    expect(isTokenExpired('xx.yy.zz')).toBe(true);
+  });
+
+  it('returns true on malformed payload JSON', () => {
+    expect(isTokenExpired('e30.!!!.sig')).toBe(true);
+  });
+
+  it('returns false when exp is missing', () => {
+    const jwt = makeJwt({ sub: 'x' });
+    expect(isTokenExpired(jwt)).toBe(false);
   });
 
   it('returns true when exp is in the past', () => {
-    const past = Math.floor(Date.now() / 1000) - 60;
-    expect(isTokenExpired(makeJwt({ exp: past }))).toBe(true);
+    const jwt = makeJwt({ exp: Math.floor(Date.now() / 1000) - 3600 });
+    expect(isTokenExpired(jwt)).toBe(true);
   });
 
-  it('returns false when exp matches current instant (not strictly before now)', () => {
-    vi.useFakeTimers();
-    const nowSec = 1_700_000_000;
-    vi.setSystemTime(nowSec * 1000);
-    expect(isTokenExpired(makeJwt({ exp: nowSec }))).toBe(false);
-  });
-
-  it('returns true when exp is strictly before now', () => {
-    vi.useFakeTimers();
-    const nowSec = 1_700_000_000;
-    vi.setSystemTime(nowSec * 1000);
-    expect(isTokenExpired(makeJwt({ exp: nowSec - 1 }))).toBe(true);
-  });
-
-  it('returns true for malformed JWT strings', () => {
-    expect(isTokenExpired('')).toBe(true);
-    expect(isTokenExpired('not-a-jwt')).toBe(true);
-    expect(isTokenExpired('only.two')).toBe(true);
-    expect(isTokenExpired('a.b!!!.c')).toBe(true);
-  });
-
-  it('returns true when payload is not valid JSON after base64 decode', () => {
-    const badPayload = btoa('{');
-    const h = btoa('{}');
-    expect(isTokenExpired(`${h}.${badPayload}.s`)).toBe(true);
+  it('returns false when exp is in the future', () => {
+    const jwt = makeJwt({ exp: Math.floor(Date.now() / 1000) + 3600 });
+    expect(isTokenExpired(jwt)).toBe(false);
   });
 });

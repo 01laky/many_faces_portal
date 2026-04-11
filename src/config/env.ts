@@ -1,50 +1,58 @@
 /**
- * Environment configuration
- * Centralized place for all environment variables with validation and defaults
+ * Vite **import.meta.env** bridge: every runtime knob the SPA reads from `.env*` / CI variables lands here
+ * so components import `env` instead of scattering `import.meta.env.VITE_*` strings (easier audits + tests).
+ *
+ * **Validation:** `collectEnvValidationErrors` is pure (Vitest); `validateEnv` logs and **throws in PROD**
+ * only when misconfigured so broken builds fail fast. Dev mode prints hints but keeps the app bootable
+ * so engineers can fix `.env.local` without rebuilding.
+ *
+ * **Seq in dev:** `seqUrl` defaults to `/seq-proxy` while `import.meta.env.DEV` is true so the browser talks
+ * same-origin to Vite, which forwards to `VITE_SEQ_PROXY_TARGET` (see `vite.config.ts`). Production uses
+ * absolute `VITE_SEQ_URL` when logging is enabled.
  */
 
-interface EnvConfig {
-  // API Configuration
+/** Snapshot of all supported `VITE_*` variables after defaults are applied. */
+export interface EnvConfig {
+  /** Base URL for REST clients (OpenAPI `OpenAPI.BASE` wiring). Must be parseable by `new URL()`. */
   apiUrl: string;
-  /** URL segment for tenant API routes when the path has no face (e.g. public → /public/api/...). */
+  /**
+   * First URL segment before `/api/...` for tenant-scoped routing on the **public** SPA (guest “face” host).
+   * Example: `public` → requests hit `/public/api/...` when no face slug is in the path.
+   */
   defaultFacePrefix: string;
 
-  // OAuth2 Configuration
+  /** OAuth2 **client_id** registered with be_demo (Resource Owner + refresh flows). */
   oauth2ClientId: string;
+  /** OAuth2 **client_secret** (public demo — replace in real deployments; never commit production secrets). */
   oauth2ClientSecret: string;
 
-  // Seq Logging Configuration
+  /** Seq ingestion / UI URL, or `/seq-proxy` in dev — validated only when `enableSeqLogging` is true. */
   seqUrl: string;
+  /** When true, client logger may forward structured events to Seq (subject to logger implementation). */
   enableSeqLogging: boolean;
 
-  // Application Configuration
   appName: string;
   appVersion: string;
+  /** Vite mode string (`development` / `production` / custom). */
   environment: string;
 
-  // Development Configuration
+  /** Gates verbose `logEnvConfig` console output in dev. */
   debugMode: boolean;
 }
 
-/**
- * Get environment variable with fallback
- */
+/** Reads `import.meta.env[key]` with a string default when unset or empty. */
 function getEnv(key: string, defaultValue: string): string {
   return import.meta.env[key] || defaultValue;
 }
 
-/**
- * Get boolean environment variable
- */
+/** Accepts `true` / `1` as truthy; any other explicit string is treated as false. */
 function getBoolEnv(key: string, defaultValue: boolean): boolean {
   const value = import.meta.env[key];
   if (value === undefined) return defaultValue;
   return value === 'true' || value === '1';
 }
 
-/**
- * Environment configuration object
- */
+/** Live singleton parsed once at module load — tests should override via `collectEnvValidationErrors` clones. */
 export const env: EnvConfig = {
   // API Configuration
   apiUrl: getEnv('VITE_API_URL', 'https://localhost:8001'),
@@ -69,35 +77,41 @@ export const env: EnvConfig = {
 };
 
 /**
- * Validate critical environment variables
+ * Pure validator used by `validateEnv` and Vitest. Builds a human-readable string list (never throws).
+ * Seq URL rules: invalid URLs are reported **only** when logging is enabled to avoid blocking installs
+ * where Seq is intentionally off.
  */
-export function validateEnv(): void {
+export function collectEnvValidationErrors(cfg: EnvConfig): string[] {
   const errors: string[] = [];
 
-  // Validate API URL format
   try {
-    new URL(env.apiUrl);
+    new URL(cfg.apiUrl);
   } catch {
-    errors.push(`Invalid VITE_API_URL: ${env.apiUrl}`);
+    errors.push(`Invalid VITE_API_URL: ${cfg.apiUrl}`);
   }
 
-  // Validate Seq URL format if logging is enabled
-  if (env.enableSeqLogging) {
+  if (cfg.enableSeqLogging) {
     try {
-      new URL(env.seqUrl);
+      new URL(cfg.seqUrl);
     } catch {
-      errors.push(`Invalid VITE_SEQ_URL: ${env.seqUrl}`);
+      errors.push(`Invalid VITE_SEQ_URL: ${cfg.seqUrl}`);
     }
   }
 
-  // Validate OAuth2 credentials are not empty
-  if (!env.oauth2ClientId) {
+  if (!cfg.oauth2ClientId) {
     errors.push('VITE_OAUTH2_CLIENT_ID is required');
   }
 
-  if (!env.oauth2ClientSecret) {
+  if (!cfg.oauth2ClientSecret) {
     errors.push('VITE_OAUTH2_CLIENT_SECRET is required');
   }
+
+  return errors;
+}
+
+/** Side effect: console + optional throw in production when `collectEnvValidationErrors` returns messages. */
+export function validateEnv(): void {
+  const errors = collectEnvValidationErrors(env);
 
   if (errors.length > 0) {
     console.error('❌ Environment configuration errors:');
@@ -108,9 +122,7 @@ export function validateEnv(): void {
   }
 }
 
-/**
- * Log environment configuration (only in development)
- */
+/** Pretty-prints selected keys when `debugMode` is on — avoid calling from hot paths. */
 export function logEnvConfig(): void {
   if (import.meta.env.DEV && env.debugMode) {
     console.log('🔧 Environment Configuration:');

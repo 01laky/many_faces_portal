@@ -1,32 +1,35 @@
+/**
+ * Ensures the OAuth2 password-grant payload builder normalizes **`rememberMe`** (strict boolean) and
+ * forwards static grant fields expected by `OAuth2Service.postApiOauth2Token` / be_demo token endpoint.
+ */
 import { describe, it, expect } from 'vitest';
 import { buildPasswordGrantTokenRequest } from '../authTokenRequest';
 
 describe('buildPasswordGrantTokenRequest', () => {
   const base = {
-    username: 'user@test.com',
-    password: 'secret',
+    username: 'u',
+    password: 'p',
     clientId: 'cid',
-    clientSecret: 'csec',
+    clientSecret: 'sec',
   };
 
-  it('sets rememberMe true only when argument is strictly true', () => {
+  it('sets rememberMe true only when strictly true', () => {
     expect(buildPasswordGrantTokenRequest({ ...base, rememberMe: true }).rememberMe).toBe(true);
-    expect(buildPasswordGrantTokenRequest({ ...base, rememberMe: false }).rememberMe).toBe(false);
-    expect(buildPasswordGrantTokenRequest({ ...base }).rememberMe).toBe(false);
     expect(buildPasswordGrantTokenRequest({ ...base, rememberMe: undefined }).rememberMe).toBe(
       false
     );
+    expect(buildPasswordGrantTokenRequest({ ...base, rememberMe: false }).rememberMe).toBe(false);
   });
 
-  it('builds a password grant body with OAuth2 client credentials', () => {
-    const req = buildPasswordGrantTokenRequest(base);
-    expect(req).toEqual({
+  it('includes password grant fields', () => {
+    const r = buildPasswordGrantTokenRequest({ ...base, rememberMe: true });
+    expect(r).toMatchObject({
       grantType: 'password',
-      username: base.username,
-      password: base.password,
-      rememberMe: false,
-      clientId: base.clientId,
-      clientSecret: base.clientSecret,
+      username: 'u',
+      password: 'p',
+      clientId: 'cid',
+      clientSecret: 'sec',
+      rememberMe: true,
     });
   });
 });

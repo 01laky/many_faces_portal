@@ -1,30 +1,40 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AuthService, OAuth2Service, ApiError } from '../../api';
-import type { OAuth2TokenRequest, RegisterModel } from '../../api';
-import { setAuthToken } from '../../api/config';
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { logger } from '../../utils/logger';
-import { isTokenExpired } from '../../utils/jwtUtils';
-import { env } from '../../config/env';
-import { buildPasswordGrantTokenRequest } from './authTokenRequest';
 import { meCapabilitiesKeys } from './useMeCapabilities';
+import {
+  registerUser,
+  runPasswordGrantLogin,
+  readAuthTokenQueryValue,
+  clearLocalAuthSession,
+  runRefreshGrantLogin,
+} from './authSessionActions';
 
 /**
- * Auth React Query layer: login sends password grant + optional rememberMe (longer access token TTL on API).
- * Token query re-reads localStorage and drops expired JWTs so UI matches API reality.
+ * Auth React Query façade: thin wrappers around `authSessionActions` so components never touch OpenAPI
+ * clients or storage keys directly.
+ *
+ * - **Login / refresh** persist tokens via `runPasswordGrantLogin` / `runRefreshGrantLogin` and warm
+ *   `authKeys.token` cache + invalidate `meCapabilitiesKeys` so ACL-gated routes refetch after identity change.
+ * - **`useAuthToken`** polls storage (`staleTime`) and calls `readAuthTokenQueryValue`, which strips expired
+ *   JWTs client-side to avoid request storms with `401` while the UI still thinks the user is signed in.
+ * - **`clearAuthAndCapabilitiesQueries`** is the hard reset used on refresh failure / logout so React Query
+ *   cannot resurrect a dead session from in-memory caches (security hardening §13 / §18).
  */
 
-// Query keys
+/** React Query key factory for everything under the auth domain (user + token subkeys). */
 export const authKeys = {
   all: ['auth'] as const,
   user: () => [...authKeys.all, 'user'] as const,
   token: () => [...authKeys.all, 'token'] as const,
 };
 
-// Token response type
-interface TokenResponse {
-  accessToken?: string;
-  refreshToken?: string;
-  token?: string;
+/**
+ * Drops cached auth + capabilities after refresh failure so the UI cannot loop on a dead session.
+ * Same keys as logout success — security-hardening prompt §13 / §18 (FE).
+ */
+export function clearAuthAndCapabilitiesQueries(queryClient: QueryClient): void {
+  queryClient.removeQueries({ queryKey: authKeys.all });
+  queryClient.removeQueries({ queryKey: meCapabilitiesKeys.all });
 }
 
 /**
@@ -34,13 +44,7 @@ export function useRegister() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: RegisterModel) => {
-      logger.info('Registering user', { email: data.email });
-      const response = await AuthService.postApiAuthRegister({
-        requestBody: data,
-      });
-      return response;
-    },
+    mutationFn: registerUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: authKeys.all });
       logger.info('User registered successfully');
@@ -58,63 +62,8 @@ export function useLogin() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (credentials: {
-      username: string;
-      password: string;
-      rememberMe?: boolean;
-    }) => {
-      logger.info('Attempting login', { username: credentials.username });
-
-      const tokenRequest = buildPasswordGrantTokenRequest({
-        username: credentials.username,
-        password: credentials.password,
-        rememberMe: credentials.rememberMe,
-        clientId: env.oauth2ClientId,
-        clientSecret: env.oauth2ClientSecret,
-      });
-
-      let response;
-      try {
-        response = await OAuth2Service.postApiOauth2Token({
-          requestBody: tokenRequest,
-        });
-      } catch (error) {
-        // Handle API errors
-        if (error instanceof ApiError) {
-          const errorMessage =
-            error.body?.errorDescription ||
-            error.body?.error ||
-            error.body?.message ||
-            error.message ||
-            'Login failed';
-          throw new Error(errorMessage, { cause: error });
-        }
-        throw error;
-      }
-
-      // Parse response
-      const tokenData = response as unknown as TokenResponse;
-      const accessToken =
-        tokenData.accessToken || (tokenData as unknown as { token?: string }).token;
-
-      if (!accessToken) {
-        throw new Error('No access token received from server');
-      }
-
-      // Store token in API client
-      setAuthToken(accessToken);
-
-      // Store in localStorage
-      localStorage.setItem('auth_token', accessToken);
-      if (tokenData.refreshToken) {
-        localStorage.setItem('auth_refresh_token', tokenData.refreshToken);
-      }
-
-      return {
-        accessToken,
-        refreshToken: tokenData.refreshToken,
-      };
-    },
+    mutationFn: (credentials: { username: string; password: string; rememberMe?: boolean }) =>
+      runPasswordGrantLogin(credentials),
     onSuccess: (data) => {
       queryClient.setQueryData(authKeys.token(), data);
       queryClient.invalidateQueries({ queryKey: authKeys.user() });
@@ -134,22 +83,9 @@ export function useLogin() {
 export function useAuthToken() {
   return useQuery({
     queryKey: authKeys.token(),
-    queryFn: () => {
-      const token = localStorage.getItem('auth_token');
-      // Expired token: clear all auth keys so hooks and axios interceptor see logged-out state.
-      if (!token || isTokenExpired(token)) {
-        if (token) {
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('auth_refresh_token');
-          localStorage.removeItem('auth_user');
-          setAuthToken(null);
-        }
-        return null;
-      }
-      setAuthToken(token);
-      return { accessToken: token };
-    },
-    staleTime: 60_000, // Re-check every minute to detect expiry
+    queryFn: () => readAuthTokenQueryValue(),
+    /** Periodic re-read so JWT expiry or storage changes in another tab converge without full page reload. */
+    staleTime: 60_000,
   });
 }
 
@@ -161,20 +97,10 @@ export function useLogout() {
 
   return useMutation({
     mutationFn: async () => {
-      // Clear token from API client
-      setAuthToken(null);
-
-      // Clear from localStorage
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('auth_refresh_token');
-      localStorage.removeItem('auth_user');
-
-      logger.info('User logged out');
+      clearLocalAuthSession();
     },
     onSuccess: () => {
-      // Clear all auth-related queries
-      queryClient.removeQueries({ queryKey: authKeys.all });
-      queryClient.removeQueries({ queryKey: meCapabilitiesKeys.all });
+      clearAuthAndCapabilitiesQueries(queryClient);
     },
   });
 }
@@ -186,47 +112,7 @@ export function useRefreshToken() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
-      const refreshToken = localStorage.getItem('auth_refresh_token');
-      if (!refreshToken) {
-        throw new Error('No refresh token available');
-      }
-
-      logger.info('Refreshing token');
-
-      const tokenRequest: OAuth2TokenRequest = {
-        grantType: 'refresh_token',
-        refreshToken,
-        clientId: env.oauth2ClientId,
-        clientSecret: env.oauth2ClientSecret,
-      };
-
-      const response = await OAuth2Service.postApiOauth2Token({
-        requestBody: tokenRequest,
-      });
-
-      const tokenData = response as unknown as TokenResponse;
-      const accessToken =
-        tokenData.accessToken || (tokenData as unknown as { token?: string }).token;
-
-      if (!accessToken) {
-        throw new Error('No access token received from server');
-      }
-
-      // Store token in API client
-      setAuthToken(accessToken);
-
-      // Store in localStorage
-      localStorage.setItem('auth_token', accessToken);
-      if (tokenData.refreshToken) {
-        localStorage.setItem('auth_refresh_token', tokenData.refreshToken);
-      }
-
-      return {
-        accessToken,
-        refreshToken: tokenData.refreshToken,
-      };
-    },
+    mutationFn: () => runRefreshGrantLogin(),
     onSuccess: (data) => {
       queryClient.setQueryData(authKeys.token(), data);
       queryClient.invalidateQueries({ queryKey: meCapabilitiesKeys.all });
@@ -234,9 +120,7 @@ export function useRefreshToken() {
     },
     onError: (error) => {
       logger.error('Token refresh failed', error);
-      // Clear auth state on refresh failure
-      queryClient.removeQueries({ queryKey: authKeys.all });
-      queryClient.removeQueries({ queryKey: meCapabilitiesKeys.all });
+      clearAuthAndCapabilitiesQueries(queryClient);
     },
   });
 }

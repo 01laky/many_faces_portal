@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { fetchWallTickets } from '../api/services/wallTicketsApi';
+import { computeCanShowWallCreate, loadWallHostViewerFlag } from './wallHostViewerLogic';
 
 export interface UseWallHostViewerOptions {
   enabled: boolean;
@@ -8,8 +9,11 @@ export interface UseWallHostViewerOptions {
 }
 
 /**
- * Loads wall list meta to know if current user is face host (hide create on wall).
- * When disabled or missing token/face, isHost is null (unknown).
+ * Loads wall list meta to know if the current user is the face **host** (hosts get a different wall UX;
+ * non-hosts may create certain wall content — product rule encoded in `computeCanShowWallCreate`).
+ *
+ * `isHost === null` means **unknown** (loading, missing inputs, or fetch error). `loading` tracks the
+ * in-flight request; consumers should not treat `loading === false` + `isHost === null` as "not host".
  */
 export function useWallHostViewer({ enabled, token, faceId }: UseWallHostViewerOptions) {
   const [isHost, setIsHost] = useState<boolean | null>(null);
@@ -18,6 +22,8 @@ export function useWallHostViewer({ enabled, token, faceId }: UseWallHostViewerO
   useEffect(() => {
     let cancelled = false;
     void (async () => {
+      // Yield once so StrictMode's mount→unmount→remount clears `cancelled` before network work starts,
+      // avoiding setState on an unmounted instance while still keeping async flow flat (no flushSync).
       await Promise.resolve();
       if (!enabled || !token || faceId == null) {
         if (!cancelled) {
@@ -29,10 +35,8 @@ export function useWallHostViewer({ enabled, token, faceId }: UseWallHostViewerO
 
       if (!cancelled) setLoading(true);
       try {
-        const res = await fetchWallTickets(token, faceId, 1, 1);
-        if (!cancelled) setIsHost(res.isHostViewer);
-      } catch {
-        if (!cancelled) setIsHost(null);
+        const host = await loadWallHostViewerFlag(fetchWallTickets, token, faceId);
+        if (!cancelled) setIsHost(host);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -43,7 +47,7 @@ export function useWallHostViewer({ enabled, token, faceId }: UseWallHostViewerO
     };
   }, [enabled, token, faceId]);
 
-  const canShowWallCreate = enabled && !!token && faceId != null && isHost === false;
+  const canShowWallCreate = computeCanShowWallCreate(enabled, token, faceId, isHost);
 
   return { isHost, loading, canShowWallCreate };
 }

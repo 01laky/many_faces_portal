@@ -49,6 +49,19 @@ export default defineConfig({
       },
     },
   },
+  /*
+   * Preview server (production build served locally) intentionally stays on **plain HTTP**:
+   * - Cypress `cy.visit` in CI points at `http://127.0.0.1:4173` (see `fe_demo/cypress.config.mjs`).
+   * - Dev `server` above still uses HTTPS (custom PEM or `@vitejs/plugin-basic-ssl`) for realistic local TLS.
+   * Vite's exported `UserConfig` typings do not always list `preview.https`; `false` is valid at runtime.
+   */
+  preview: {
+    port: 4173,
+    strictPort: true,
+    host: true,
+    // @ts-expect-error -- `false` disables TLS for preview; Vite's UserConfig types model `https` as server options only.
+    https: false,
+  },
   resolve: {
     extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json'],
   },

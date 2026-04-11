@@ -18,6 +18,8 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "cypress run",
+    "test:e2e:ci": "cypress run --spec cypress/e2e/app-load.cy.js",
+    "test:e2e:api": "cypress run --spec cypress/e2e/oauth-api-chain.cy.js",
     "test:e2e:open": "cypress open",
     "test:e2e:headed": "cypress run --headed",
     "preview": "vite preview",

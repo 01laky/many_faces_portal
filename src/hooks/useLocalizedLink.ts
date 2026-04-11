@@ -3,12 +3,15 @@ import { useTranslation } from 'react-i18next';
 import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useFaceConfig } from '../contexts/FaceConfigContext';
-import { getTranslatedRoute } from '../utils/routeTranslations';
+import { buildLocalizedLinkPath } from '../utils/buildLocalizedLinkPath';
+import type { SupportedLanguage } from '../i18n/config';
 
 /**
- * Hook that returns a function to create localized links with translated paths.
- * When not authenticated and a public face is selected, paths are prefixed with the face
- * so the URL always reflects the current face (e.g. /en/public/login).
+ * Returns **`getLocalizedPath(path)`** for `<Link to={...}>` / anchors: combines route language, i18n route
+ * translation (`common` namespace keys consumed by `getTranslatedRoute`), and **guest face scoping**.
+ *
+ * **Why a hook:** needs `useParams().lang`, auth + face contexts, and `useTranslation` for the active `lng`.
+ * **Why not `navigate`:** use `useLocalizedNavigate` for imperative router moves — this helper only builds strings.
  */
 export function useLocalizedLink() {
   const { lang } = useParams<{ lang: string }>();
@@ -17,24 +20,16 @@ export function useLocalizedLink() {
   const { isAuthenticated } = useAuth();
   const { selectedFace } = useFaceConfig();
 
+  /** Memo-free factory: delegates to pure `buildLocalizedLinkPath` for testability. */
   const getLocalizedPath = (path: string): string => {
-    // Remove leading slash if present
-    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-
-    // Get current language from URL or context
-    const targetLang = (lang as typeof currentLanguage) || currentLanguage;
-
-    // Translate the path based on target language
-    const translatedPath = getTranslatedRoute(cleanPath, targetLang, (key: string) => {
-      return i18nT(key, { lng: targetLang });
+    const targetLang = (lang as SupportedLanguage) || currentLanguage;
+    return buildLocalizedLinkPath({
+      path,
+      targetLang,
+      isAuthenticated,
+      selectedFace,
+      translate: (key: string) => i18nT(key, { lng: targetLang }),
     });
-
-    const pathSegment = translatedPath || cleanPath;
-    // When guest and we have a selected (public) face, include face prefix so URL matches UI
-    if (!isAuthenticated && selectedFace && pathSegment) {
-      return `/${targetLang}/${selectedFace.index}/${pathSegment}`;
-    }
-    return `/${targetLang}${pathSegment ? `/${pathSegment}` : ''}`;
   };
 
   return getLocalizedPath;

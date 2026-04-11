@@ -1,5 +1,9 @@
 /**
- * Tests for face-prefixed API URLs (/ {face} /api/...) aligned with backend RoutingMiddleware.
+ * Axios URL rewriting helpers (`faceApiRouting.ts`) must mirror **be_demo** `RoutingMiddleware`:
+ * guest sessions embed the active face segment before `/api/...` while admin/public prefixes stay stable.
+ *
+ * **Window mock:** some helpers read `window.location.pathname`; tests stub `globalThis.window` when absent
+ * and reset axios interceptors between cases so order-dependent assertions stay isolated.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -68,6 +72,10 @@ describe('Face Path Routing', () => {
 
     it('returns face from /acme-corp/en/login', () => {
       expect(extractFacePathFromPathname('/acme-corp/en/login')).toBe('acme-corp');
+    });
+
+    it('treats path with double slash after lang as having face segment', () => {
+      expect(extractFacePathFromPathname('/en//public/home')).toBe('public');
     });
   });
 
