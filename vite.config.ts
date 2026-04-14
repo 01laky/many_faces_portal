@@ -79,7 +79,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks(id) {
+        manualChunks(id: string) {
           if (!id.includes('node_modules')) return;
           if (id.includes('node_modules/react-dom')) return 'vendor-react-dom';
           if (id.includes('node_modules/react-router')) return 'vendor-router';
@@ -88,6 +88,26 @@ export default defineConfig({
           if (id.includes('react-quill') || id.includes('node_modules/quill'))
             return 'vendor-quill';
           if (id.includes('node_modules/react/')) return 'vendor-react';
+          if (
+            id.includes('node_modules/react-grid-layout') ||
+            id.includes('node_modules/react-resizable') ||
+            id.includes('node_modules/react-draggable')
+          ) {
+            return 'vendor-grid-layout';
+          }
+          if (id.includes('node_modules/@radix-ui')) return 'vendor-radix';
+          if (id.includes('node_modules/react-bootstrap') || id.includes('node_modules/bootstrap'))
+            return 'vendor-bootstrap';
+          if (id.includes('node_modules/i18next') || id.includes('node_modules/react-i18next'))
+            return 'vendor-i18n';
+          if (
+            id.includes('node_modules/react-hook-form') ||
+            id.includes('node_modules/@hookform') ||
+            id.includes('node_modules/yup')
+          ) {
+            return 'vendor-forms';
+          }
+          if (id.includes('node_modules/axios')) return 'vendor-axios';
           return 'vendor';
         },
       },
