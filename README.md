@@ -1,10 +1,34 @@
-# Fe Demo - Frontend Application
-
-React + TypeScript + Vite frontend application for the BeDemo project.
+# Many Faces AI (MFAI) - frontend application
 
 ## Overview
 
-The Frontend (fe_demo) is a modern React application built with TypeScript and Vite. It provides a user-friendly interface for interacting with the BeDemo API, including user registration, login, and protected content management.
+The MFAI frontend is the user-facing React application for the Many Faces AI demo. It is responsible for rendering configurable face pages, localized navigation, authenticated social experiences, dynamic page grids, media-rich content blocks, profiles, chats, stories, albums, blogs, reels, wall listings, and role-aware user flows on top of the backend API.
+
+The application is built around the concept of **faces**: configurable community spaces with their own route prefix, visual context, page structure, available modules, content, and access rules. A face can represent a public community, private group, branded space, or specialized social environment. The frontend resolves the active face from the URL and shared face configuration, then uses that context to load the correct page layout, scope API requests, render the right components, and expose only the actions available to the current user.
+
+At the UI level, the app combines an admin-managed grid system with reusable social building blocks. Pages are not treated as one-off hardcoded screens: the backend can provide layout schemas, and the frontend turns those schemas into responsive blocks such as albums, blogs, reels, chat rooms, story rings, profile cards, wall ticket listings, and other social modules. This makes the frontend suitable for experimenting with different community experiences without rewriting the whole page structure each time.
+
+The frontend also acts as the main interaction layer for authenticated users. It handles login and registration flows, protected routes, JWT-backed API calls, selected face context, localized route handling, content creation entry points, responsive navigation, and user-facing feedback such as loading states, empty states, and disabled unavailable actions. It is designed to keep the user experience clear even when a face has different permissions, modules, or available content than another one.
+
+Security and trust boundaries are visible in the frontend design. Authentication state, protected route guards, role-aware controls, capability-aware actions, face-aware data loading, and explicit unsupported states help users understand what they can and cannot do in the current context. Enforcement remains the responsibility of the backend, but the frontend mirrors those rules intentionally so sensitive or unavailable actions are not presented as normal user options.
+
+From an engineering perspective, this submodule is also a playground for a modern React architecture: generated OpenAPI clients, TypeScript models, React contexts, TanStack Query data loading, i18n route support, reusable component blocks, responsive grid rendering, Docker-based local development, linting, type checks, unit tests, and Cypress smoke coverage are all part of the application. The goal is to keep the frontend understandable, testable, and easy to extend as new face modules and social workflows are added.
+
+## What This Frontend Shows
+
+- Face-aware routing based on URL prefixes and shared face configuration.
+- Dynamic page grids rendered from backend-managed layout schemas.
+- Reusable grid blocks for social content, media, messaging, profiles, and listings.
+- User-facing modules for albums, blogs, reels, stories, wall tickets, chat rooms, profiles, follows, blocks, comments, likes, and notifications.
+- Authenticated and unauthenticated flows with protected routes and JWT-backed API calls.
+- Role/capability-aware UI behaviour for create flows, admin-dependent actions, and unavailable features.
+- Localized routes and UI strings for English, Slovak, and Czech.
+- Responsive rendering for grid layouts, cards, carousels, pagination, and mobile-friendly views.
+- Generated OpenAPI API client with typed services and models.
+- React contexts for auth, face configuration, grid top panel state, and shared application state.
+- Neutral local placeholders and explicit empty states instead of relying on external placeholder services.
+- Docker-first local development that works both standalone and through the root monorepo scripts.
+- Validation through ESLint, TypeScript checks, Vitest tests, and Cypress smoke coverage.
 
 ## Features
 
@@ -36,7 +60,7 @@ The Frontend (fe_demo) is a modern React application built with TypeScript and V
   - Type-safe API calls
   - Error handling and retry logic
 
-- **Face Path Routing (Multi-Tenant Support)**
+- **Face Path Routing**
   - Automatic face prefix extraction from URL (e.g., `/acme-corp/dashboard`)
   - URL transformation: `/api/users` → `/api/acme-corp/users`
   - Language prefix handling: correctly identifies `/en/login` vs `/acme-corp/en/login`
@@ -246,9 +270,9 @@ const loginResult = await AuthService.login({
 });
 ```
 
-## Face Path Routing (Multi-Tenant Support)
+## Face Path Routing
 
-The frontend implements automatic face path routing for multi-tenant support. This allows the application to automatically scope API requests to specific tenants based on the URL path.
+The frontend implements automatic face path routing. This allows the application to scope API requests to the active face based on the URL path.
 
 ### How It Works
 
