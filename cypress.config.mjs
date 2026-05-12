@@ -3,7 +3,7 @@
  * compile `cypress.config.ts` (simpler CI, fewer `downlevelIteration` surprises).
  *
  * - **baseUrl** matches `vite preview` on port **4173** over **HTTP** — see `vite.config.ts` `preview.https: false`.
- * - **E2E_API_URL** points at the ASP.NET demo (`be_demo`) for optional API-chain specs; default matches local Kestrel.
+ * - **E2E_API_URL** points at the ASP.NET demo (`many_faces_backend`) for optional API-chain specs; default matches local Kestrel.
  */
 import { defineConfig } from 'cypress';
 

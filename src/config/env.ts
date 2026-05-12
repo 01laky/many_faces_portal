@@ -21,7 +21,7 @@ export interface EnvConfig {
    */
   defaultFacePrefix: string;
 
-  /** OAuth2 **client_id** registered with be_demo (Resource Owner + refresh flows). */
+  /** OAuth2 **client_id** registered with many_faces_backend (Resource Owner + refresh flows). */
   oauth2ClientId: string;
   /** OAuth2 **client_secret** (public demo — replace in real deployments; never commit production secrets). */
   oauth2ClientSecret: string;

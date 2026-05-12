@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 
 /**
- * TanStack Query defaults for `fe_demo`.
+ * TanStack Query defaults for `many_faces_portal`.
  *
  * **Stale vs fresh (matrix in code, not only defaults):**
  * - **Global `staleTime` (5 min):** list/read-mostly data where showing slightly old UI is OK.

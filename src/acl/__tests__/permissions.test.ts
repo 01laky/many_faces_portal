@@ -1,6 +1,6 @@
 /**
  * Regression tests for ACL parsing (`parseMeCapabilities`) and helper predicates used by route guards.
- * Keeps **fe_demo** `permissions.ts` aligned with backend `GET /api/me/capabilities` JSON (security hardening).
+ * Keeps **many_faces_portal** `permissions.ts` aligned with backend `GET /api/me/capabilities` JSON (security hardening).
  */
 import { describe, expect, it } from 'vitest';
 import { ACL_PERMISSION_KEYS, ALL_ACL_PERMISSION_KEYS_SORTED } from '../aclPermissionKeys';

@@ -148,7 +148,7 @@ flowchart LR
 ## Project Structure
 
 ```
-fe_demo/
+many_faces_portal/
 ├── src/
 │   ├── api/                # Auto-generated API client
 │   │   ├── services/       # API service classes
@@ -399,7 +399,7 @@ yarn test
 
 ## Development Workflow
 
-1. **Start backend**: Ensure backend API is running (via **many_faces_backend** / `be_demo/` or monorepo `./scripts/start-all-dev.sh`)
+1. **Start backend**: Ensure backend API is running (via **many_faces_backend** / `many_faces_backend/` or monorepo `./scripts/start-all-dev.sh`)
 
 2. **Start frontend**: Run `./start-dev.sh` or use monorepo `./scripts/start-all-dev.sh` to start all services
 
@@ -493,12 +493,12 @@ Output will be in `dist/` directory, ready for deployment.
 
 ## Integration with Root Project
 
-This frontend is part of the **`many_faces_main`** monorepo (`fe_demo/` submodule on GitHub: `many_faces_portal`) and integrates with:
+This frontend is part of the **`many_faces_main`** monorepo (`many_faces_portal/` submodule on GitHub: `many_faces_portal`) and integrates with:
 
-- **Backend API**: **many_faces_backend** (`be_demo/`, ASP.NET Core)
-- **Database**: **many_faces_database** (`db_demo/`, PostgreSQL) — via backend
-- **Redis**: **many_faces_redis** (`redis_demo/`) — job queue via backend
-- **Admin**: **many_faces_admin** (`admin_demo/`, separate admin panel)
+- **Backend API**: **many_faces_backend** (`many_faces_backend/`, ASP.NET Core)
+- **Database**: **many_faces_database** (`many_faces_database/`, PostgreSQL) — via backend
+- **Redis**: **many_faces_redis** (`many_faces_redis/`) — job queue via backend
+- **Admin**: **many_faces_admin** (`many_faces_admin/`, separate admin panel)
 
 Use root-level scripts to manage all services:
 

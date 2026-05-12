@@ -1,7 +1,7 @@
 /**
- * Optional integration spec: hits **be_demo** REST endpoints with `cy.request` (no browser OAuth redirect).
+ * Optional integration spec: hits **many_faces_backend** REST endpoints with `cy.request` (no browser OAuth redirect).
  *
- * Why `before(function () { ... this.skip() })`: the parent monorepo CI job often builds `fe_demo` alone.
+ * Why `before(function () { ... this.skip() })`: the parent monorepo CI job often builds `many_faces_portal` alone.
  * Probing `/swagger/index.html` is a cheap liveness check — if the API is down we **skip** the whole suite
  * instead of failing red, while full-stack pipelines still get regression coverage of register → token →
  * capabilities → refresh.

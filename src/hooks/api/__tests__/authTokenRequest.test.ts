@@ -1,6 +1,6 @@
 /**
  * Ensures the OAuth2 password-grant payload builder normalizes **`rememberMe`** (strict boolean) and
- * forwards static grant fields expected by `OAuth2Service.postApiOauth2Token` / be_demo token endpoint.
+ * forwards static grant fields expected by `OAuth2Service.postApiOauth2Token` / many_faces_backend token endpoint.
  */
 import { describe, it, expect } from 'vitest';
 import { buildPasswordGrantTokenRequest } from '../authTokenRequest';

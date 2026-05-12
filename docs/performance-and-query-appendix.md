@@ -1,10 +1,10 @@
-# fe_demo — performance & data layer appendix
+# many_faces_portal — performance & data layer appendix
 
-Companion to [`docs/prompts/fe-performance-and-refactor-agent-prompt.md`](../../docs/prompts/fe-performance-and-refactor-agent-prompt.md). For the admin SPA mirror, see [`admin_demo/docs/performance-and-query-appendix.md`](../../admin_demo/docs/performance-and-query-appendix.md) when both submodules are checked out. Copy sections into a PR as evidence or waivers.
+Companion to [`docs/prompts/fe-performance-and-refactor-agent-prompt.md`](../../docs/prompts/fe-performance-and-refactor-agent-prompt.md). For the admin SPA mirror, see [`many_faces_admin/docs/performance-and-query-appendix.md`](../../many_faces_admin/docs/performance-and-query-appendix.md) when both submodules are checked out. Copy sections into a PR as evidence or waivers.
 
 ## Node / toolchain
 
-- **Vite 8:** Node **20.19+** or **22.12+**; see `fe_demo/.nvmrc` and `yarn check-node`.
+- **Vite 8:** Node **20.19+** or **22.12+**; see `many_faces_portal/.nvmrc` and `yarn check-node`.
 
 ## TanStack Query — defaults vs hooks
 

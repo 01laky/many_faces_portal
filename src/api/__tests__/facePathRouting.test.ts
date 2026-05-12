@@ -1,5 +1,5 @@
 /**
- * Axios URL rewriting helpers (`faceApiRouting.ts`) must mirror **be_demo** `RoutingMiddleware`:
+ * Axios URL rewriting helpers (`faceApiRouting.ts`) must mirror **many_faces_backend** `RoutingMiddleware`:
  * guest sessions embed the active face segment before `/api/...` while admin/public prefixes stay stable.
  *
  * **Window mock:** some helpers read `window.location.pathname`; tests stub `globalThis.window` when absent
