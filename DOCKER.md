@@ -1,4 +1,4 @@
-# Docker Setup for Be Demo Frontend
+# Docker Setup for Many Faces Portal
 
 ## Quick Start
 
@@ -34,7 +34,7 @@ The application uses environment variables from `.env` file:
 
 - `VITE_API_URL` - Backend API URL (default: http://localhost:8000)
 - `VITE_API_HTTPS_URL` - Backend API HTTPS URL (default: https://localhost:8001)
-- `VITE_APP_NAME` - Application name (default: Be Demo Frontend)
+- `VITE_APP_NAME` - Application name (default: Many Faces Portal)
 - `VITE_APP_VERSION` - Application version (default: 1.0.0)
 - `VITE_PORT` - Development server port (default: 8081)
 

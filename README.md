@@ -2,7 +2,7 @@
 
 ## Overview
 
-The MFAI frontend is the user-facing React application for the Many Faces AI demo. It is responsible for rendering configurable face pages, localized navigation, authenticated social experiences, dynamic page grids, media-rich content blocks, profiles, chats, stories, albums, blogs, reels, wall listings, and role-aware user flows on top of the backend API.
+The MFAI frontend is the user-facing React application for Many Faces AI. It is responsible for rendering configurable face pages, localized navigation, authenticated social experiences, dynamic page grids, media-rich content blocks, profiles, chats, stories, albums, blogs, reels, wall listings, and role-aware user flows on top of the backend API.
 
 The application is built around the concept of **faces**: configurable community spaces with their own route prefix, visual context, page structure, available modules, content, and access rules. A face can represent a public community, private group, branded space, or specialized social environment. The frontend resolves the active face from the URL and shared face configuration, then uses that context to load the correct page layout, scope API requests, render the right components, and expose only the actions available to the current user.
 

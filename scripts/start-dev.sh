@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to start Be Demo Frontend in Docker container for development
+# Script to start Many Faces Portal in Docker container for development
 # Runs code validation (TypeScript + ESLint) before starting
 
 set -e
@@ -102,7 +102,7 @@ fi
 echo ""
 echo "✅ All code validation and tests passed!"
 echo ""
-echo "🚀 Starting Be Demo Frontend in Docker container..."
+echo "🚀 Starting Many Faces Portal in Docker container..."
 
 # Stop existing containers if running
 echo "🛑 Stopping existing containers..."

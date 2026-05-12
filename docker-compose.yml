@@ -15,7 +15,7 @@ services:
     environment:
       - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
       - VITE_API_HTTPS_URL=${VITE_API_HTTPS_URL:-https://localhost:8001}
-      - VITE_APP_NAME=${VITE_APP_NAME:-Be Demo Frontend}
+      - VITE_APP_NAME=${VITE_APP_NAME:-Many Faces Portal}
       - VITE_APP_VERSION=${VITE_APP_VERSION:-1.0.0}
       - VITE_PORT=${VITE_PORT:-8081}
     env_file:
