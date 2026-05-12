@@ -27,15 +27,26 @@ From an engineering perspective, this submodule is also a playground for a moder
 - Generated OpenAPI API client with typed services and models.
 - React contexts for auth, face configuration, grid top panel state, and shared application state.
 - Neutral local placeholders and explicit empty states instead of relying on external placeholder services.
-- Submitted-for-approval feedback for user-created albums, blogs, and reels so users understand new content is waiting for moderation and is not public yet.
+- Submitted-for-approval feedback for user-created albums, blogs, and reels, plus a **My submissions** hub (`/my-submissions`) backed by `GET /api/my/content-submissions`, so users see queue state, safe reasons, and deep links to detail with optional `?edit=1` when edits are allowed.
 - Docker-first local development that works both standalone and through the root monorepo scripts.
 - Validation through ESLint, TypeScript checks, Vitest tests, and Cypress smoke coverage.
 
 ## User Content Approval UX
 
-Albums, blogs, and reels created from the user-facing frontend now follow the moderation workflow described in the monorepo guide. The frontend sends create requests through the existing content services, receives backend-owned approval status fields, and shows clear submitted-for-approval copy after a successful create.
+Albums, blogs, and reels created from the user-facing frontend follow the moderation workflow in [`docs/guides/ai-assisted-content-approval.md`](../docs/guides/ai-assisted-content-approval.md). Create flows use the existing OpenAPI services, read backend-owned `approvalStatus` / `aiReviewStatus` fields, and show **submitted-for-approval** copy after a successful create.
 
-The UI deliberately does not mark freshly created content as public. Public grid/list/detail visibility remains enforced by the backend, and creator-facing copy avoids exposing internal AI flags, model trace IDs, or policy details. Local helpers in `src/utils/contentModeration.ts` map approval/AI statuses to safe labels, trim creator-safe reasons, and drive reusable moderation badges for creator-owned pending/rejected/removed items returned by the API. These helpers are covered by Vitest tests.
+**My submissions** loads the unified moderation list, groups rows by pipeline state (pending, AI in progress, needs human review, terminal outcomes), and links to `/album/{id}`, `/blog/{id}`, or `/reel/{id}` (with `faceId` for reels when needed). **`?edit=1`** opens the editor when the backend allows owner edits (typically **pending** or **rejected**). Edit and delete controls on album/blog/reel detail pages are gated the same way.
+
+Public grid/list/detail views stay **`Approved`-only** for other users; the UI never presents internal AI diagnostics (raw model reasons, trace IDs, flag dumps). Helpers in `src/utils/contentModeration.ts` map statuses to safe labels, trim creator-safe reasons, and back moderation badges — covered by Vitest.
+
+```mermaid
+flowchart LR
+    create["Create album blog reel"] --> pending["PendingApproval response"]
+    pending --> copy["Success copy not public"]
+    pending --> my["My submissions page"]
+    my --> detail["Detail + optional ?edit=1"]
+    detail --> api["Owner-gated PUT DELETE"]
+```
 
 ## Route And Grid Rendering
 

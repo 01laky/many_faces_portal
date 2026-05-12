@@ -1,5 +1,5 @@
-import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useState, useCallback } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Heart, MessageSquare, Loader2, Pencil, Trash2, Send } from 'lucide-react';
 import { toast } from 'react-toastify';
@@ -18,17 +18,28 @@ import {
   type ReelComment,
 } from '../api/services/ReelsService';
 import { ReelForm } from '../components/grid/ReelForm';
+import {
+  canOwnerUseModerationEditorActions,
+  isCreatorModerationDeleteAllowed,
+} from '../utils/contentModeration';
 import './AlbumDetailPage.scss';
 import './ReelDetailPage.scss';
 
+/**
+ * Reel detail page (reuses album layout styles). API calls are face-scoped via `FaceConfigContext` so multi-face reels resolve correctly.
+ * Edit/delete gating matches blogs/albums: owner + pending/rejected only, with optional `?edit=1` deep link support.
+ */
 export function ReelDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const autoEditApplied = useRef(false);
   const { selectedFace } = useFaceConfig();
   const { t } = useTranslation('common');
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
 
+  /** Current face from shell navigation; forwarded to reel APIs for visibility checks. */
   const faceId = selectedFace?.id;
 
   const [reel, setReel] = useState<ReelItem | null>(null);
@@ -73,6 +84,25 @@ export function ReelDetailPage() {
       await loadComments();
     })();
   }, [loadReel, loadComments]);
+
+  // Ownership + moderation policy: mirrors backend creator edit/delete rules for header UX only.
+  const isOwner = Boolean(user?.id && reel?.creatorId && user.id === reel.creatorId);
+  const showEditUi = isOwner && canOwnerUseModerationEditorActions(reel?.approvalStatus);
+  const showDeleteUi = isOwner && isCreatorModerationDeleteAllowed(reel?.approvalStatus);
+
+  useEffect(() => {
+    // Reset deep-link auto edit when navigating between reel ids in-session.
+    autoEditApplied.current = false;
+  }, [id]);
+
+  useEffect(() => {
+    // Honor `?edit=1` from "My submissions" once the entity is loaded and edits are permitted.
+    if (!reel || !showEditUi || autoEditApplied.current) return;
+    if (searchParams.get('edit') !== '1') return;
+    autoEditApplied.current = true;
+    const schedule = window.setTimeout(() => setEditing(true), 0);
+    return () => window.clearTimeout(schedule);
+  }, [reel, searchParams, showEditUi]);
 
   const handleLike = async () => {
     if (!reel || !token) return;
@@ -169,31 +199,35 @@ export function ReelDetailPage() {
           <span>{t('back')}</span>
         </button>
         <div className="album-detail-header-actions">
-          <button
-            type="button"
-            className="album-detail-action-btn"
-            onClick={() => setEditing(!editing)}
-            title="Edit"
-          >
-            <Pencil size={16} />
-          </button>
-          <button
-            type="button"
-            className="album-detail-action-btn album-detail-action-btn--danger"
-            onClick={handleDelete}
-            disabled={deleting}
-            title="Delete"
-          >
-            {deleting ? (
-              <Loader2 size={16} className="album-detail-spinner" />
-            ) : (
-              <Trash2 size={16} />
-            )}
-          </button>
+          {showEditUi && (
+            <button
+              type="button"
+              className="album-detail-action-btn"
+              onClick={() => setEditing(!editing)}
+              title="Edit"
+            >
+              <Pencil size={16} />
+            </button>
+          )}
+          {showDeleteUi && (
+            <button
+              type="button"
+              className="album-detail-action-btn album-detail-action-btn--danger"
+              onClick={handleDelete}
+              disabled={deleting}
+              title="Delete"
+            >
+              {deleting ? (
+                <Loader2 size={16} className="album-detail-spinner" />
+              ) : (
+                <Trash2 size={16} />
+              )}
+            </button>
+          )}
         </div>
       </div>
 
-      {editing && (
+      {editing && showEditUi && (
         <div className="album-detail-edit-panel">
           <ReelForm editReel={reel} onSaved={handleReelSaved} onCancel={() => setEditing(false)} />
         </div>

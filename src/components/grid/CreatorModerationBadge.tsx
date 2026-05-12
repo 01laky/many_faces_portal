@@ -7,6 +7,7 @@ import {
 } from '../../utils/contentModeration';
 import './CreatorModerationBadge.scss';
 
+/** Props mirror the subset of blog/album/reel DTO fields that are safe to show next to creator-owned content. */
 interface CreatorModerationBadgeProps {
   approvalStatus?: ContentApprovalStatus | string | null;
   aiReviewStatus?: AiReviewStatus | string | null;
@@ -14,6 +15,10 @@ interface CreatorModerationBadgeProps {
   humanDecisionReason?: string | null;
 }
 
+/**
+ * Inline badge for grids/cards where the viewer owns non-approved content.
+ * Tooltip prefers the safe user-facing reason; falls back to the status label.
+ */
 export function CreatorModerationBadge({
   approvalStatus,
   aiReviewStatus,

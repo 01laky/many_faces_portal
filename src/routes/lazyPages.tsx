@@ -33,3 +33,6 @@ export const FaceProfileDetailPage = lazy(() =>
 export const StoriesListPage = lazy(() =>
   import('../pages/StoriesListPage').then((m) => ({ default: m.StoriesListPage }))
 );
+export const MySubmissionsPage = lazy(() =>
+  import('../pages/MySubmissionsPage').then((m) => ({ default: m.MySubmissionsPage }))
+);

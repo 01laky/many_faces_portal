@@ -17,6 +17,7 @@ import {
   FaceProfilesListPage,
   FaceProfileDetailPage,
   StoriesListPage,
+  MySubmissionsPage,
 } from './lazyPages';
 import { GuestRedirectToFaceHome, GuestRedirectToFacePath } from './GuestRedirects';
 import { SyncFaceFromProfileRoutes } from './SyncFaceFromProfileRoutes';
@@ -188,6 +189,15 @@ export function renderTranslatedAndFeatureRouteElements({
       element={
         <ProtectedRoute>
           <ReelDetailPage />
+        </ProtectedRoute>
+      }
+    />,
+    <Route
+      key="my-submissions"
+      path="my-submissions"
+      element={
+        <ProtectedRoute>
+          <MySubmissionsPage />
         </ProtectedRoute>
       }
     />,

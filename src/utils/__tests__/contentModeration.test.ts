@@ -2,8 +2,13 @@ import { describe, expect, it } from 'vitest';
 import {
   getCreatorSafeReason,
   getCreatorStatusLabel,
+  getSubmissionGroupKey,
   getSubmittedForApprovalCopy,
+  groupSubmissionsByStatus,
   shouldShowCreatorStatusBadge,
+  isCreatorModerationEditAllowed,
+  canOwnerUseModerationEditorActions,
+  buildMySubmissionDetailRelativePath,
 } from '../contentModeration';
 
 describe('content moderation helpers', () => {
@@ -45,5 +50,74 @@ describe('content moderation helpers', () => {
     expect(getCreatorSafeReason(null, 'Human reason')).toBe('Human reason');
     expect(getCreatorSafeReason(null, null)).toBeNull();
     expect(getCreatorSafeReason('x'.repeat(300))).toHaveLength(243);
+  });
+
+  it.each([
+    ['PendingApproval', 'Queued', 'underAiReview'],
+    ['PendingApproval', 'InProgress', 'underAiReview'],
+    ['PendingApproval', 'NeedsHumanReview', 'needsReview'],
+    ['PendingApproval', 'Failed', 'needsReview'],
+    ['PendingApproval', 'RecommendedApprove', 'pendingApproval'],
+    ['Approved', 'RecommendedApprove', 'approved'],
+    ['Rejected', 'RecommendedReject', 'rejected'],
+    ['Removed', 'Failed', 'removed'],
+  ] as const)('groups %s/%s into %s', (approvalStatus, aiReviewStatus, expected) => {
+    expect(getSubmissionGroupKey(approvalStatus, aiReviewStatus)).toBe(expected);
+  });
+
+  it('groups my submissions by creator-facing status', () => {
+    const grouped = groupSubmissionsByStatus([
+      {
+        contentType: 'Blog',
+        contentId: 1,
+        title: 'Queued',
+        faceId: 1,
+        faceTitle: 'Face',
+        approvalStatus: 'PendingApproval',
+        aiReviewStatus: 'Queued',
+        creatorStatusLabel: 'Under AI review',
+        createdAt: '2026-05-12T00:00:00Z',
+        canEdit: true,
+        canDelete: true,
+      },
+      {
+        contentType: 'Reel',
+        contentId: 2,
+        title: 'Rejected',
+        faceId: 1,
+        faceTitle: 'Face',
+        approvalStatus: 'Rejected',
+        aiReviewStatus: 'RecommendedReject',
+        creatorStatusLabel: 'Rejected',
+        createdAt: '2026-05-12T00:00:00Z',
+        canEdit: true,
+        canDelete: true,
+      },
+    ]);
+
+    expect(grouped.underAiReview).toHaveLength(1);
+    expect(grouped.rejected).toHaveLength(1);
+    expect(grouped.approved).toHaveLength(0);
+  });
+
+  it('allows creator edit/delete only for pending or rejected approval', () => {
+    expect(isCreatorModerationEditAllowed('PendingApproval')).toBe(true);
+    expect(isCreatorModerationEditAllowed('Rejected')).toBe(true);
+    expect(isCreatorModerationEditAllowed('Approved')).toBe(false);
+    expect(isCreatorModerationEditAllowed('Removed')).toBe(false);
+  });
+
+  it('gates owner editor actions by moderation state', () => {
+    expect(canOwnerUseModerationEditorActions(true, 'Rejected')).toBe(true);
+    expect(canOwnerUseModerationEditorActions(false, 'Rejected')).toBe(false);
+    expect(canOwnerUseModerationEditorActions(true, 'Approved')).toBe(false);
+  });
+
+  it('builds relative detail paths for my submissions links', () => {
+    expect(buildMySubmissionDetailRelativePath('Blog', 9)).toBe('../blog/9');
+    expect(buildMySubmissionDetailRelativePath('Album', 3, { openEditor: true })).toBe(
+      '../album/3?edit=1'
+    );
+    expect(buildMySubmissionDetailRelativePath('Reel', 100)).toBe('../reel/100');
   });
 });

@@ -1,5 +1,5 @@
-import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useState, useCallback } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Heart, MessageSquare, Loader2, Pencil, Trash2, Send } from 'lucide-react';
 import { toast } from 'react-toastify';
@@ -17,11 +17,21 @@ import {
   type BlogComment,
 } from '../api/services/BlogsService';
 import { BlogForm } from '../components/grid/BlogForm';
+import {
+  canOwnerUseModerationEditorActions,
+  isCreatorModerationDeleteAllowed,
+} from '../utils/contentModeration';
 import './BlogDetailPage.scss';
 
+/**
+ * Public blog detail with social features. Edit/delete header actions are shown only when the viewer owns the blog
+ * and the server still allows creator edits (pending or rejected). `?edit=1` auto-opens the editor once per navigation.
+ */
 export function BlogDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const autoEditApplied = useRef(false);
   const { t } = useTranslation('common');
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
@@ -67,6 +77,25 @@ export function BlogDetailPage() {
       await loadComments();
     })();
   }, [loadBlog, loadComments]);
+
+  // Ownership + moderation policy: mirrors backend creator edit/delete rules for header UX only.
+  const isOwner = Boolean(user?.id && blog?.creatorId && user.id === blog.creatorId);
+  const showEditUi = isOwner && canOwnerUseModerationEditorActions(blog?.approvalStatus);
+  const showDeleteUi = isOwner && isCreatorModerationDeleteAllowed(blog?.approvalStatus);
+
+  useEffect(() => {
+    // Reset deep-link auto edit when navigating between blog ids in-session.
+    autoEditApplied.current = false;
+  }, [id]);
+
+  useEffect(() => {
+    // Honor `?edit=1` from "My submissions" once the entity is loaded and edits are permitted.
+    if (!blog || !showEditUi || autoEditApplied.current) return;
+    if (searchParams.get('edit') !== '1') return;
+    autoEditApplied.current = true;
+    const schedule = window.setTimeout(() => setEditing(true), 0);
+    return () => window.clearTimeout(schedule);
+  }, [blog, searchParams, showEditUi]);
 
   const handleLike = async () => {
     if (!blog || !token) return;
@@ -163,29 +192,33 @@ export function BlogDetailPage() {
           <span>{t('back')}</span>
         </button>
         <div className="blog-detail-header-actions">
-          <button
-            className="blog-detail-action-btn"
-            onClick={() => setEditing(!editing)}
-            title="Edit"
-          >
-            <Pencil size={16} />
-          </button>
-          <button
-            className="blog-detail-action-btn blog-detail-action-btn--danger"
-            onClick={handleDelete}
-            disabled={deleting}
-            title="Delete"
-          >
-            {deleting ? (
-              <Loader2 size={16} className="blog-detail-spinner" />
-            ) : (
-              <Trash2 size={16} />
-            )}
-          </button>
+          {showEditUi && (
+            <button
+              className="blog-detail-action-btn"
+              onClick={() => setEditing(!editing)}
+              title="Edit"
+            >
+              <Pencil size={16} />
+            </button>
+          )}
+          {showDeleteUi && (
+            <button
+              className="blog-detail-action-btn blog-detail-action-btn--danger"
+              onClick={handleDelete}
+              disabled={deleting}
+              title="Delete"
+            >
+              {deleting ? (
+                <Loader2 size={16} className="blog-detail-spinner" />
+              ) : (
+                <Trash2 size={16} />
+              )}
+            </button>
+          )}
         </div>
       </div>
 
-      {editing && (
+      {editing && showEditUi && (
         <div className="blog-detail-edit-panel">
           <BlogForm editBlog={blog} onSaved={handleBlogSaved} onCancel={() => setEditing(false)} />
         </div>
