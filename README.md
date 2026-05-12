@@ -493,7 +493,7 @@ Output will be in `dist/` directory, ready for deployment.
 
 ## Integration with Root Project
 
-This frontend is part of the `_mfai_demo` monorepo and integrates with:
+This frontend is part of the **`many_faces_main`** monorepo (`fe_demo/` submodule on GitHub: `many_faces_portal`) and integrates with:
 
 - **Backend API**: `be_demo` (ASP.NET Core)
 - **Database**: `db_demo` (PostgreSQL) - via backend
