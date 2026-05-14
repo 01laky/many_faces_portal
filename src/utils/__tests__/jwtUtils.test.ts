@@ -26,6 +26,10 @@ describe('isTokenExpired', () => {
     expect(isTokenExpired('not-a-jwt')).toBe(true);
   });
 
+  it('returns true for empty token', () => {
+    expect(isTokenExpired('')).toBe(true);
+  });
+
   it('returns true when payload is not valid JSON after decode', () => {
     expect(isTokenExpired('xx.yy.zz')).toBe(true);
   });
@@ -46,6 +50,12 @@ describe('isTokenExpired', () => {
 
   it('returns false when exp is in the future', () => {
     const jwt = makeJwt({ exp: Math.floor(Date.now() / 1000) + 3600 });
+    expect(isTokenExpired(jwt)).toBe(false);
+  });
+
+  it('returns false when exp equals current second (not strictly before now)', () => {
+    const nowSec = Math.floor(Date.now() / 1000);
+    const jwt = makeJwt({ exp: nowSec });
     expect(isTokenExpired(jwt)).toBe(false);
   });
 });

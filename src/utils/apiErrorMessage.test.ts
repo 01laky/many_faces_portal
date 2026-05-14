@@ -32,6 +32,21 @@ describe('parseApiErrorBody', () => {
   it('uses fallback for empty string', () => {
     expect(parseApiErrorBody('   ', 'fb')).toBe('fb');
   });
+
+  it('ignores blank error string and uses ProblemDetails detail', () => {
+    const j = JSON.stringify({ error: '   ', detail: 'Real message' });
+    expect(parseApiErrorBody(j, 'fb')).toBe('Real message');
+  });
+
+  it('uses fallback when errors object has only empty messages', () => {
+    const j = JSON.stringify({ errors: { Email: ['', '  '] } });
+    expect(parseApiErrorBody(j, 'fb')).toBe('fb');
+  });
+
+  it('uses fallback when error field is not a string', () => {
+    const j = JSON.stringify({ error: 500, title: 'T' });
+    expect(parseApiErrorBody(j, 'fb')).toBe('T');
+  });
 });
 
 describe('getApiErrorMessage', () => {
