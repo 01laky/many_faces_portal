@@ -1,8 +1,8 @@
-import { SettingsSidePanelHeader } from './SettingsSidePanelHeader';
-import { SettingsSidePanelBody } from './SettingsSidePanelBody';
-import type { SettingsSidePanelShellProps } from './types';
+import { SettingsSidePanelHeader } from '../SettingsSidePanelHeader';
+import { SettingsSidePanelBody } from '../SettingsSidePanelBody';
+import type { SettingsSidePanelShellProps } from '../types';
 
-export type { SettingsSidePanelShellProps as SettingsSidePanelProps } from './types';
+export type { SettingsSidePanelShellProps as SettingsSidePanelProps } from '../types';
 
 export function SettingsSidePanel({
   open,

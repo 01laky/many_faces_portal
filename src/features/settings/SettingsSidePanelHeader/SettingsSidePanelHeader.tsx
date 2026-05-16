@@ -9,12 +9,12 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../contexts/AuthContext';
-import { useFaceConfig } from '../../contexts/FaceConfigContext';
-import type { GridTopPanelState } from '../../contexts/GridTopPanelContext';
-import { gridTopPanelHeaderTitle } from '../../components/gridTopPanelCreateMeta';
-import { shouldShowFaceRolePanel } from '../../components/FaceRoleSelectPanel';
-import type { SettingsTabId } from './types';
+import { useAuth } from '../../../contexts/AuthContext';
+import { useFaceConfig } from '../../../contexts/FaceConfigContext';
+import type { GridTopPanelState } from '../../../contexts/GridTopPanelContext';
+import { gridTopPanelHeaderTitle } from '../../../components/gridTopPanelCreateMeta';
+import { shouldShowFaceRolePanel } from '../../../components/FaceRoleSelectPanel';
+import type { SettingsTabId } from '../types';
 
 export interface SettingsSidePanelHeaderProps {
   gridTopPanel: GridTopPanelState;

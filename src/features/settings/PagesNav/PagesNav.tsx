@@ -1,10 +1,10 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Home, LogIn, UserPlus, Users, IdCard, LayoutGrid } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
-import { useFaceConfig } from '../../contexts/FaceConfigContext';
-import { useLocalizedLink } from '../../hooks/useLocalizedLink';
+import { useAuth } from '../../../contexts/AuthContext';
+import { useFaceConfig } from '../../../contexts/FaceConfigContext';
+import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
 import { useTranslation } from 'react-i18next';
-import { getPageIcon } from '../../utils/pageIcons';
+import { getPageIcon } from '../../../utils/pageIcons';
 
 export function PagesNav({ onNavigate }: { onNavigate: () => void }) {
   const { isAuthenticated } = useAuth();
