@@ -1,0 +1,1 @@
+export { FacePageView } from './FacePageView';

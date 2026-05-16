@@ -1,0 +1,1 @@
+export { FriendRequestsTab } from './FriendRequestsTab';

@@ -1,0 +1,1 @@
+export { LanguageRouter } from './LanguageRouter';

@@ -1,0 +1,1 @@
+export { WallTicketsSection } from './WallTicketsSection';
