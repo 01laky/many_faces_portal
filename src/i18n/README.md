@@ -14,13 +14,12 @@ This app uses **react-i18next** for UI copy and localized **app routes** (`route
 | Piece | Role |
 | ----- | ---- |
 | `config.ts` | `initI18n()` — hydrates i18next from `GET /api/localization/portal` |
+| `fetchLocalizationBundle.ts` | Fetches bundle, caches by `version` in `localStorage` |
 | `constants.ts` | `supportedLanguages`: `en`, `sk`, `cz` |
 | `../utils/routeTranslations.ts` | Maps `routes.login` etc. to localized URL segments |
 | `../api/faceApiRouting.ts` | `/api/localization` exempt from face prefix (with OAuth) |
 
-**Source of truth:** `many_faces_backend/BeDemo.Api/Localization/Portal/*.resx` (not JSON in this repo after rollout).
-
-**Transitional:** `locales/{en,sk,cz}.json` may still exist until centralized static i18n is merged.
+**Source of truth:** `many_faces_backend/BeDemo.Api/Localization/Portal/*.resx` (no `locales/*.json` in this repo).
 
 ## CMS page slugs (not in i18n JSON)
 
