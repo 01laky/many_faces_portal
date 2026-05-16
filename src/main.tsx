@@ -1,11 +1,9 @@
 /**
- * main.tsx - Application entry point for Frontend Demo
- *
- * Initialization order:
- * 1. Validate environment
- * 2. Load i18n from GET /api/localization/portal
- * 3. Reset face API static route cache (depends on loaded routes.*)
- * 4. Configure API client (interceptors)
+ * Application entry — bootstrap order (static i18n must load before face-scoped API calls):
+ * 1. Validate environment variables
+ * 2. GET /api/localization/portal (face-prefix exempt; cached by version in localStorage)
+ * 3. initI18n + resetLangLevelStaticRouteSegmentsCache (routes.* for faceApiRouting)
+ * 4. configureApiClient + axios interceptors
  * 5. Render React tree
  */
 
@@ -19,12 +17,20 @@ import { resetLangLevelStaticRouteSegmentsCache } from './api/faceApiRouting';
 import { validateEnv, logEnvConfig, env } from './config/env';
 import { logger } from './utils/logger';
 import { QueryProvider } from './providers/QueryProvider';
+import { renderBootstrapError, renderBootstrapLoading } from './utils/bootstrapShell';
 import App from './App.tsx';
 
 validateEnv();
 logEnvConfig();
 
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
+  const rootEl = document.getElementById('root');
+  if (!rootEl) {
+    throw new Error('Missing #root element');
+  }
+
+  renderBootstrapLoading(rootEl);
+
   try {
     await initI18n();
     resetLangLevelStaticRouteSegmentsCache();
@@ -36,7 +42,7 @@ async function bootstrap() {
       Environment: env.environment,
     });
 
-    createRoot(document.getElementById('root')!).render(
+    createRoot(rootEl).render(
       <StrictMode>
         <QueryProvider>
           <App />
@@ -45,15 +51,9 @@ async function bootstrap() {
     );
   } catch (err) {
     logger.error('Failed to bootstrap application', err);
-    const root = document.getElementById('root');
-    if (root) {
-      root.innerHTML =
-        '<div style="padding:2rem;font-family:system-ui">' +
-        '<h1>Could not load translations</h1>' +
-        '<p>Check that the API is running and reachable at <code>' +
-        env.apiUrl +
-        '</code>, then refresh.</p></div>';
-    }
+    renderBootstrapError(rootEl, env.apiUrl, () => {
+      void bootstrap();
+    });
   }
 }
 

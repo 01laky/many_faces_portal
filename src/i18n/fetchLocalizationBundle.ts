@@ -1,3 +1,8 @@
+/**
+ * Fetches the portal static UI bundle from GET /api/localization/portal.
+ * Called before React render; uses absolute env.apiUrl (face-prefix exempt path).
+ * Caches body + version in localStorage; sends ?v= for 304 when unchanged.
+ */
 import { env } from '../config/env';
 
 export interface LocalizationBundleResponse {
