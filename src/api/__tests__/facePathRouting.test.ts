@@ -6,8 +6,28 @@
  * and reset axios interceptors between cases so order-dependent assertions stay isolated.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
 import axios from 'axios';
+
+vi.mock('../../i18n/fetchLocalizationBundle', () => {
+  const common = {
+    'routes.login': 'login',
+    'routes.register': 'register',
+    'routes.homepage': 'homepage',
+    'routes.chat': 'chat',
+    'routes.profile': 'profile',
+    'routes.users': 'users',
+  };
+  return {
+    fetchLocalizationBundle: vi.fn(async () => ({
+      app: 'portal',
+      version: 'test',
+      defaultNamespace: 'common',
+      supportedLanguages: ['en', 'sk', 'cz'],
+      resources: { en: { common }, sk: { common }, cz: { common } },
+    })),
+  };
+});
 import {
   extractFacePathFromPathname,
   prependFaceBeforeApi,
