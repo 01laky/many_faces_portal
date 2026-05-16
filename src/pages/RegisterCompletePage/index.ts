@@ -1,0 +1,1 @@
+export { RegisterCompletePage } from './RegisterCompletePage';

@@ -1,0 +1,1 @@
+export { FaceProfileDetailPage } from './FaceProfileDetailPage';

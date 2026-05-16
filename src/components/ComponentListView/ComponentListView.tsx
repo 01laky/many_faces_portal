@@ -7,7 +7,7 @@ import { ChatRoomGrid } from '../grid/ChatRoomGrid';
 import { UserProfileGrid } from '../grid/UserProfileGrid';
 import { StoryGrid } from '../grid/StoryGrid';
 import { ReelGrid } from '../grid/ReelGrid';
-import '../../pages/ComponentListPage.scss';
+import '../../pages/ComponentListPage/ComponentListPage.scss';
 
 /** ComponentTypeId enum matching BE ComponentTypeId. */
 const COMPONENT_CONFIG: Record<number, { title: string; grid: () => React.ReactNode }> = {

@@ -1,0 +1,1 @@
+export { HomePageProtected } from './HomePageProtected';

@@ -1,0 +1,1 @@
+export { ChatRoomDetailPage } from './ChatRoomDetailPage';
