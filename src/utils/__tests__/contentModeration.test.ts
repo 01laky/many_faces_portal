@@ -7,6 +7,7 @@ import {
   groupSubmissionsByStatus,
   shouldShowCreatorStatusBadge,
   isCreatorModerationEditAllowed,
+  isCreatorModerationDeleteAllowed,
   canOwnerUseModerationEditorActions,
   buildMySubmissionDetailRelativePath,
 } from '../contentModeration';
@@ -105,6 +106,8 @@ describe('content moderation helpers', () => {
     expect(isCreatorModerationEditAllowed('Rejected')).toBe(true);
     expect(isCreatorModerationEditAllowed('Approved')).toBe(false);
     expect(isCreatorModerationEditAllowed('Removed')).toBe(false);
+    expect(isCreatorModerationDeleteAllowed('PendingApproval')).toBe(true);
+    expect(isCreatorModerationDeleteAllowed('Approved')).toBe(false);
   });
 
   it('gates owner editor actions by moderation state', () => {

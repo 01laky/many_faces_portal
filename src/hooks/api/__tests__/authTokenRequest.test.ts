@@ -32,4 +32,14 @@ describe('buildPasswordGrantTokenRequest', () => {
       rememberMe: true,
     });
   });
+
+  it('coerces truthy non-boolean rememberMe values to false', () => {
+    expect(
+      buildPasswordGrantTokenRequest({ ...base, rememberMe: 'true' as unknown as boolean })
+        .rememberMe
+    ).toBe(false);
+    expect(
+      buildPasswordGrantTokenRequest({ ...base, rememberMe: 1 as unknown as boolean }).rememberMe
+    ).toBe(false);
+  });
 });
