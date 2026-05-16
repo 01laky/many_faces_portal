@@ -1,10 +1,10 @@
 /**
- * i18n runtime — async initialization so only the active locale JSON is in the initial chunk.
- * Call `initI18n()` once from `main.tsx` before `createRoot().render()`.
+ * i18n runtime — bundles loaded from GET /api/localization/portal before render.
  */
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { supportedLanguages, type SupportedLanguage } from './constants';
+import { fetchLocalizationBundle } from './fetchLocalizationBundle';
 
 export { supportedLanguages, type SupportedLanguage } from './constants';
 
@@ -35,20 +35,31 @@ function readHtmlLang(): SupportedLanguage | null {
   return null;
 }
 
-/** Same priority as former `i18next-browser-languagedetector` order (without running the plugin twice). */
 function pickInitialLanguage(): SupportedLanguage {
   return readStoredLanguage() ?? readNavigatorLanguage() ?? readHtmlLang() ?? 'en';
 }
 
 let initPromise: Promise<void> | null = null;
+let bundleLoaded = false;
+let cachedBundle: Awaited<ReturnType<typeof fetchLocalizationBundle>> | null = null;
+
+function addAllResourceBundles(bundle: Awaited<ReturnType<typeof fetchLocalizationBundle>>): void {
+  for (const lang of supportedLanguages) {
+    const nsMap = bundle.resources[lang];
+    if (!nsMap) continue;
+    for (const [ns, data] of Object.entries(nsMap)) {
+      i18n.addResourceBundle(lang, ns, data, true, true);
+    }
+  }
+}
 
 export async function ensureLanguageLoaded(lng: SupportedLanguage): Promise<void> {
   if (!i18n.isInitialized) {
     await initI18n();
+    return;
   }
-  if (!i18n.hasResourceBundle(lng, 'common')) {
-    const common = (await import(`./locales/${lng}.json`)).default;
-    i18n.addResourceBundle(lng, 'common', common, true, true);
+  if (!i18n.hasResourceBundle(lng, 'common') && cachedBundle) {
+    addAllResourceBundles(cachedBundle);
   }
 }
 
@@ -61,26 +72,29 @@ export function initI18n(): Promise<void> {
   }
   initPromise = (async () => {
     const lng = pickInitialLanguage();
-    const common = (await import(`./locales/${lng}.json`)).default;
+    const bundle = await fetchLocalizationBundle('portal');
+    cachedBundle = bundle;
+
     await i18n.use(initReactI18next).init({
       lng,
       fallbackLng: 'en',
       supportedLngs: [...supportedLanguages],
       defaultNS: 'common',
       ns: ['common'],
-      resources: {
-        [lng]: { common },
-      },
+      resources: {},
       partialBundledLanguages: true,
-      react: {
-        useSuspense: false,
-      },
-      interpolation: {
-        escapeValue: false,
-      },
+      react: { useSuspense: false },
+      interpolation: { escapeValue: false },
     });
+
+    addAllResourceBundles(bundle);
+    bundleLoaded = true;
   })();
   return initPromise;
+}
+
+export function isLocalizationBundleLoaded(): boolean {
+  return bundleLoaded;
 }
 
 export default i18n;

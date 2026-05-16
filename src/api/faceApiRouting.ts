@@ -64,7 +64,11 @@ export function getEffectiveFacePrefix(pathname: string, defaultFacePrefix: stri
 
 export function isApiPathExemptFromFacePrefix(absPath: string): boolean {
   const p = absPath.split('?')[0].toLowerCase();
-  return p.startsWith('/api/oauth2') || p.startsWith('/api/auth');
+  return (
+    p.startsWith('/api/oauth2') ||
+    p.startsWith('/api/auth') ||
+    p.startsWith('/api/localization')
+  );
 }
 
 /** True when path already matches /{segment}/api/... */
