@@ -5,6 +5,7 @@ import { ProtectedRoute } from '../components/ProtectedRoute';
 import { HomePageProtected } from '../pages/HomePageProtected';
 import { LoginPage } from '../pages/LoginPage';
 import { RegisterPage } from '../pages/RegisterPage';
+import { RegisterCompletePage } from '../pages/RegisterCompletePage';
 import {
   ProfilePage,
   UsersPage,
@@ -94,6 +95,7 @@ export function renderFaceDynamicRouteElements(
   });
 }
 
+/** Guest routes for login/register; `register/complete` matches mail links `/{locale}/register/complete?hash=`. */
 export function renderTranslatedAndFeatureRouteElements({
   loginPaths,
   registerPaths,
@@ -125,6 +127,15 @@ export function renderTranslatedAndFeatureRouteElements({
         }
       />
     )),
+    <Route
+      key="register-complete"
+      path="register/complete"
+      element={
+        <GuestRoute>
+          <RegisterCompletePage />
+        </GuestRoute>
+      }
+    />,
     ...homepagePaths.map((path) => (
       <Route
         key={`home-${path}`}
