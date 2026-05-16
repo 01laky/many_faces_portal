@@ -21,6 +21,11 @@ import {
   canOwnerUseModerationEditorActions,
   isCreatorModerationDeleteAllowed,
 } from '../../utils/contentModeration';
+import {
+  htmlToPlainTextPreview,
+  shouldUsePlainTextModerationPreview,
+} from '../../utils/moderationPreview';
+import { ModerationSafeText } from '../../components/moderation/ModerationSafeText';
 import './BlogDetailPage.scss';
 
 /**
@@ -82,6 +87,7 @@ export function BlogDetailPage() {
   const isOwner = Boolean(user?.id && blog?.creatorId && user.id === blog.creatorId);
   const showEditUi = canOwnerUseModerationEditorActions(isOwner, blog?.approvalStatus);
   const showDeleteUi = isOwner && isCreatorModerationDeleteAllowed(blog?.approvalStatus);
+  const usePlainTextPreview = shouldUsePlainTextModerationPreview(blog?.approvalStatus, isOwner);
 
   useEffect(() => {
     // Reset deep-link auto edit when navigating between blog ids in-session.
@@ -248,8 +254,15 @@ export function BlogDetailPage() {
         </div>
       )}
 
-      {/* Blog content (HTML) */}
-      <div className="blog-detail-content" dangerouslySetInnerHTML={{ __html: blog.content }} />
+      {/* PI-8: pending/rejected owner view uses plain text; approved public content may render stored HTML */}
+      {usePlainTextPreview ? (
+        <ModerationSafeText
+          className="blog-detail-content blog-detail-content--plain"
+          text={htmlToPlainTextPreview(blog.content)}
+        />
+      ) : (
+        <div className="blog-detail-content" dangerouslySetInnerHTML={{ __html: blog.content }} />
+      )}
 
       {/* Like + stats bar */}
       <div className="blog-detail-stats">
