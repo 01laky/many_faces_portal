@@ -3,6 +3,8 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -13,6 +15,7 @@ import { storyRingImageUrl } from '../gridDisplayHelpers';
 import './Story.scss';
 
 export function Story() {
+  const { t } = useTranslation('common');
   const { token } = useAuth();
   const { selectedFace } = useFaceConfig();
   const getLocalizedPath = useLocalizedLink();
@@ -62,7 +65,7 @@ export function Story() {
   if (!token || faceId == null || !faceIndex) {
     return (
       <div className="story-component story-component--message">
-        <span className="story-empty-text">Sign in to see stories.</span>
+        <span className="story-empty-text">{t(k.guest.stories)}</span>
       </div>
     );
   }
@@ -70,7 +73,7 @@ export function Story() {
   if (loading) {
     return (
       <div className="story-component story-component--message">
-        <Loader2 size={24} aria-label="Loading" />
+        <Loader2 size={24} aria-label={t(k.loadingAria)} />
       </div>
     );
   }
@@ -78,7 +81,7 @@ export function Story() {
   if (loadError) {
     return (
       <div className="story-component story-component--message">
-        <span className="story-empty-text">Could not load stories.</span>
+        <span className="story-empty-text">{t(k.loadError.stories)}</span>
       </div>
     );
   }
@@ -86,7 +89,7 @@ export function Story() {
   if (!story) {
     return (
       <div className="story-component story-component--message">
-        <span className="story-empty-text">No active stories.</span>
+        <span className="story-empty-text">{t(k.empty.storiesActive)}</span>
       </div>
     );
   }

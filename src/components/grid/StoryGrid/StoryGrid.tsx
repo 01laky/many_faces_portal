@@ -12,6 +12,8 @@ import {
   useMemo,
   type CSSProperties,
 } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -106,6 +108,7 @@ export interface StoryGridProps {
 }
 
 export function StoryGrid({ page: controlledPage, onPageChange }: StoryGridProps = {}) {
+  const { t } = useTranslation('common');
   const itemsRef = useRef<HTMLDivElement>(null);
   const getLocalizedPath = useLocalizedLink();
   const { token } = useAuth();
@@ -219,7 +222,7 @@ export function StoryGrid({ page: controlledPage, onPageChange }: StoryGridProps
   if (!token || faceId == null || !faceIndex) {
     return (
       <div className="story-grid-component story-grid-component--message">
-        <p>Sign in to see stories.</p>
+        <p>{t(k.guest.stories)}</p>
       </div>
     );
   }
@@ -227,7 +230,7 @@ export function StoryGrid({ page: controlledPage, onPageChange }: StoryGridProps
   if (loading) {
     return (
       <div className="story-grid-component story-grid-component--message">
-        <Loader2 size={28} aria-label="Loading" />
+        <Loader2 size={28} aria-label={t(k.loadingAria)} />
       </div>
     );
   }
@@ -235,7 +238,7 @@ export function StoryGrid({ page: controlledPage, onPageChange }: StoryGridProps
   if (loadError) {
     return (
       <div className="story-grid-component story-grid-component--message">
-        <p>Could not load stories.</p>
+        <p>{t(k.loadError.stories)}</p>
       </div>
     );
   }
@@ -277,7 +280,7 @@ export function StoryGrid({ page: controlledPage, onPageChange }: StoryGridProps
           )
         )}
       </div>
-      {stories.length === 0 && <p className="story-grid-empty">No active stories.</p>}
+      {stories.length === 0 && <p className="story-grid-empty">{t(k.empty.storiesActive)}</p>}
       {showInternalPagination && totalPages > 1 && (
         <div className="story-grid-pagination">
           <button type="button" disabled={clampedPage === 0} onClick={() => setPage((p) => p - 1)}>

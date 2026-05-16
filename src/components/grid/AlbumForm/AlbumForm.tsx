@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { Save, Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
@@ -29,6 +31,7 @@ const MEDIA_TYPES = [
 ];
 
 export function AlbumForm({ editAlbum, onSaved, onCancel }: AlbumFormProps) {
+  const { t } = useTranslation('common');
   const { token } = useAuth();
   const { allFaces, selectedFace } = useFaceConfig();
 
@@ -163,7 +166,7 @@ export function AlbumForm({ editAlbum, onSaved, onCancel }: AlbumFormProps) {
       </label>
 
       <fieldset className="album-form-fieldset">
-        <legend>Faces</legend>
+        <legend>{t(k.formFacesLegend)}</legend>
         <div className="album-form-faces">
           {allFaces.map((face) => (
             <label key={face.id} className="album-form-face-option">
@@ -175,7 +178,7 @@ export function AlbumForm({ editAlbum, onSaved, onCancel }: AlbumFormProps) {
               <span>{face.title}</span>
             </label>
           ))}
-          {allFaces.length === 0 && <span className="album-form-no-faces">No faces available</span>}
+          {allFaces.length === 0 && <span className="album-form-no-faces">{t(k.formNoFaces)}</span>}
         </div>
       </fieldset>
 

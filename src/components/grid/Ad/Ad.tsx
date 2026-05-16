@@ -3,6 +3,8 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
@@ -14,6 +16,7 @@ import { wallTicketListingImageUrl } from '../gridDisplayHelpers';
 import './Ad.scss';
 
 export function Ad() {
+  const { t } = useTranslation('common');
   const { token } = useAuth();
   const { selectedFace } = useFaceConfig();
   const faceId = selectedFace?.id;
@@ -50,7 +53,7 @@ export function Ad() {
   if (!token || faceId == null) {
     return (
       <div className="ad-component ad-component--message">
-        <span className="ad-empty-text">Sign in to see listings.</span>
+        <span className="ad-empty-text">{t(k.guest.listings)}</span>
       </div>
     );
   }
@@ -58,7 +61,7 @@ export function Ad() {
   if (loading) {
     return (
       <div className="ad-component ad-component--message">
-        <Loader2 size={28} aria-label="Loading" />
+        <Loader2 size={28} aria-label={t(k.loadingAria)} />
       </div>
     );
   }
@@ -66,7 +69,7 @@ export function Ad() {
   if (!ticket) {
     return (
       <div className="ad-component ad-component--message">
-        <span className="ad-empty-text">No listings on the wall yet.</span>
+        <span className="ad-empty-text">{t(k.empty.listingsWall)}</span>
       </div>
     );
   }
@@ -80,7 +83,7 @@ export function Ad() {
         loading="lazy"
       />
       <div className="ad-overlay">
-        <span className="ad-price">Wall</span>
+        <span className="ad-price">{t(k.wallLabel)}</span>
         <span className="ad-title">{ticket.title}</span>
         <span className="ad-location">{ticket.creatorName}</span>
       </div>

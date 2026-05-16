@@ -3,6 +3,8 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -24,6 +26,7 @@ function excerpt(text: string, max = 120): string {
 }
 
 export function Blog() {
+  const { t } = useTranslation('common');
   const { token } = useAuth();
   const { selectedFace } = useFaceConfig();
   const getLocalizedPath = useLocalizedLink();
@@ -61,7 +64,7 @@ export function Blog() {
   if (!token || faceId == null) {
     return (
       <div className="blog-component blog-component--message">
-        <p>Sign in to see blog posts.</p>
+        <p>{t(k.guest.blogs)}</p>
       </div>
     );
   }
@@ -69,7 +72,7 @@ export function Blog() {
   if (loading) {
     return (
       <div className="blog-component blog-component--message">
-        <Loader2 size={28} aria-label="Loading" />
+        <Loader2 size={28} aria-label={t(k.loadingAria)} />
       </div>
     );
   }
@@ -77,7 +80,7 @@ export function Blog() {
   if (!post) {
     return (
       <div className="blog-component blog-component--message">
-        <p>No blog posts for this face yet.</p>
+        <p>{t(k.empty.blogsFace)}</p>
       </div>
     );
   }

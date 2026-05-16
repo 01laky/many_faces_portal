@@ -3,6 +3,8 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -58,6 +60,7 @@ export function StoryCarousel({
   totalPages: _totalPages,
   onPageChange,
 }: StoryCarouselProps = {}) {
+  const { t } = useTranslation('common');
   const containerRef = useRef<HTMLDivElement>(null);
   const getLocalizedPath = useLocalizedLink();
   const { token } = useAuth();
@@ -152,7 +155,7 @@ export function StoryCarousel({
         className="story-carousel-component story-carousel-component--message"
         ref={containerRef}
       >
-        <p>Sign in to see stories.</p>
+        <p>{t(k.guest.stories)}</p>
       </div>
     );
   }
@@ -163,7 +166,7 @@ export function StoryCarousel({
         className="story-carousel-component story-carousel-component--message"
         ref={containerRef}
       >
-        <Loader2 size={28} aria-label="Loading" />
+        <Loader2 size={28} aria-label={t(k.loadingAria)} />
       </div>
     );
   }
@@ -174,7 +177,7 @@ export function StoryCarousel({
         className="story-carousel-component story-carousel-component--message"
         ref={containerRef}
       >
-        <p>Could not load stories.</p>
+        <p>{t(k.loadError.stories)}</p>
       </div>
     );
   }

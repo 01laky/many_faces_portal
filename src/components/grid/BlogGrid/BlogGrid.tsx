@@ -3,6 +3,8 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo, type CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -36,6 +38,7 @@ export interface BlogGridProps {
 }
 
 export function BlogGrid({ page: controlledPage, onPageChange }: BlogGridProps = {}) {
+  const { t } = useTranslation('common');
   const itemsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
@@ -117,7 +120,7 @@ export function BlogGrid({ page: controlledPage, onPageChange }: BlogGridProps =
   if (!token || faceId == null) {
     return (
       <div className="blog-grid-component blog-grid-component--message">
-        <p>Sign in to see blog posts.</p>
+        <p>{t(k.guest.blogs)}</p>
       </div>
     );
   }
@@ -125,7 +128,7 @@ export function BlogGrid({ page: controlledPage, onPageChange }: BlogGridProps =
   if (loading) {
     return (
       <div className="blog-grid-component blog-grid-component--message">
-        <Loader2 size={28} aria-label="Loading" />
+        <Loader2 size={28} aria-label={t(k.loadingAria)} />
       </div>
     );
   }
@@ -133,7 +136,7 @@ export function BlogGrid({ page: controlledPage, onPageChange }: BlogGridProps =
   if (loadError) {
     return (
       <div className="blog-grid-component blog-grid-component--message">
-        <p>Could not load blog posts.</p>
+        <p>{t(k.loadError.blogs)}</p>
       </div>
     );
   }
@@ -171,7 +174,7 @@ export function BlogGrid({ page: controlledPage, onPageChange }: BlogGridProps =
           </div>
         ))}
       </div>
-      {posts.length === 0 && <p className="blog-grid-empty">No blog posts yet.</p>}
+      {posts.length === 0 && <p className="blog-grid-empty">{t(k.empty.blogs)}</p>}
       {showInternalPagination && totalPages > 1 && (
         <div className="blog-grid-pagination">
           <button type="button" disabled={clampedPage === 0} onClick={() => setPage((p) => p - 1)}>

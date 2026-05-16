@@ -3,6 +3,8 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo, type CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -27,6 +29,7 @@ export interface UserProfileGridProps {
 }
 
 export function UserProfileGrid({ page: controlledPage, onPageChange }: UserProfileGridProps = {}) {
+  const { t } = useTranslation('common');
   const itemsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
@@ -109,7 +112,7 @@ export function UserProfileGrid({ page: controlledPage, onPageChange }: UserProf
   if (faceId == null || !faceIndex) {
     return (
       <div className="userprofile-grid-component userprofile-grid-component--message">
-        <p>Select a face.</p>
+        <p>{t(k.selectFace)}</p>
       </div>
     );
   }
@@ -117,7 +120,7 @@ export function UserProfileGrid({ page: controlledPage, onPageChange }: UserProf
   if (!token) {
     return (
       <div className="userprofile-grid-component userprofile-grid-component--message">
-        <p>Sign in to see profiles.</p>
+        <p>{t(k.guest.profiles)}</p>
       </div>
     );
   }
@@ -125,7 +128,7 @@ export function UserProfileGrid({ page: controlledPage, onPageChange }: UserProf
   if (loading) {
     return (
       <div className="userprofile-grid-component userprofile-grid-component--message">
-        <Loader2 size={28} aria-label="Loading" />
+        <Loader2 size={28} aria-label={t(k.loadingAria)} />
       </div>
     );
   }
@@ -133,7 +136,7 @@ export function UserProfileGrid({ page: controlledPage, onPageChange }: UserProf
   if (loadError) {
     return (
       <div className="userprofile-grid-component userprofile-grid-component--message">
-        <p>Could not load profiles.</p>
+        <p>{t(k.loadError.profiles)}</p>
       </div>
     );
   }
@@ -144,7 +147,7 @@ export function UserProfileGrid({ page: controlledPage, onPageChange }: UserProf
     <div className="userprofile-grid-component">
       <div className="userprofile-grid-items" ref={itemsRef} style={itemsStyle}>
         {visibleProfiles.map((profile) => {
-          const name = profile.displayName?.trim() || 'Member';
+          const name = profile.displayName?.trim() || t(k.profileCardRoleMember);
           const path = getLocalizedPath(
             `${faceIndex}/profile/${encodeURIComponent(profile.userId)}`
           );
@@ -166,12 +169,14 @@ export function UserProfileGrid({ page: controlledPage, onPageChange }: UserProf
                 loading="lazy"
               />
               <span className="userprofile-grid-card-name">{name}</span>
-              <span className="userprofile-grid-card-role">Member</span>
+              <span className="userprofile-grid-card-role">{t(k.profileCardRoleMember)}</span>
             </div>
           );
         })}
       </div>
-      {profiles.length === 0 && <p className="userprofile-grid-empty">No profiles in directory.</p>}
+      {profiles.length === 0 && (
+        <p className="userprofile-grid-empty">{t(k.empty.profilesDirectory)}</p>
+      )}
       {showInternalPagination && totalPages > 1 && (
         <div className="userprofile-grid-pagination">
           <button type="button" disabled={clampedPage === 0} onClick={() => setPage((p) => p - 1)}>

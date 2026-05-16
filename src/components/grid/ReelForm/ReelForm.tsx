@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { Save, Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
@@ -18,6 +20,7 @@ interface ReelFormProps {
 }
 
 export function ReelForm({ editReel, onSaved, onCancel }: ReelFormProps) {
+  const { t } = useTranslation('common');
   const { token } = useAuth();
   const { allFaces, selectedFace } = useFaceConfig();
 
@@ -131,7 +134,7 @@ export function ReelForm({ editReel, onSaved, onCancel }: ReelFormProps) {
       </label>
 
       <fieldset className="album-form-fieldset">
-        <legend>Faces</legend>
+        {<legend>{t(k.formFacesLegend)}</legend>}
         <p className="album-form-reel-faces-hint">
           Creating from a face page selects the current face by default. Select multiple faces only
           when this reel should be shared intentionally.
@@ -147,7 +150,7 @@ export function ReelForm({ editReel, onSaved, onCancel }: ReelFormProps) {
               <span>{face.title}</span>
             </label>
           ))}
-          {allFaces.length === 0 && <span className="album-form-no-faces">No faces available</span>}
+          {allFaces.length === 0 && <span className="album-form-no-faces">{t(k.formNoFaces)}</span>}
         </div>
       </fieldset>
 

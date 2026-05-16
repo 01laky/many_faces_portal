@@ -1,0 +1,50 @@
+/**
+ * i18n keys for grid block UI copy (`PortalResources` → `gridBlocks.*` in `common` namespace).
+ * Use with `useTranslation('common')` and `t(key)`.
+ */
+export const gridBlockI18nKeys = {
+  guest: {
+    albums: 'gridBlocks.guest.albums',
+    blogs: 'gridBlocks.guest.blogs',
+    reels: 'gridBlocks.guest.reels',
+    stories: 'gridBlocks.guest.stories',
+    chatRooms: 'gridBlocks.guest.chatRooms',
+    profiles: 'gridBlocks.guest.profiles',
+    listings: 'gridBlocks.guest.listings',
+  },
+  loadError: {
+    albums: 'gridBlocks.loadError.albums',
+    blogs: 'gridBlocks.loadError.blogs',
+    reels: 'gridBlocks.loadError.reels',
+    stories: 'gridBlocks.loadError.stories',
+    chatRooms: 'gridBlocks.loadError.chatRooms',
+    profiles: 'gridBlocks.loadError.profiles',
+    listings: 'gridBlocks.loadError.listings',
+    wallListings: 'gridBlocks.loadError.wallListings',
+  },
+  empty: {
+    albumsFace: 'gridBlocks.empty.albumsFace',
+    albums: 'gridBlocks.empty.albums',
+    blogsFace: 'gridBlocks.empty.blogsFace',
+    blogs: 'gridBlocks.empty.blogs',
+    reels: 'gridBlocks.empty.reels',
+    reelsAdd: 'gridBlocks.empty.reelsAdd',
+    reelsCreate: 'gridBlocks.empty.reelsCreate',
+    storiesActive: 'gridBlocks.empty.storiesActive',
+    chatRooms: 'gridBlocks.empty.chatRooms',
+    profilesFace: 'gridBlocks.empty.profilesFace',
+    profilesDirectory: 'gridBlocks.empty.profilesDirectory',
+    listings: 'gridBlocks.empty.listings',
+    listingsWall: 'gridBlocks.empty.listingsWall',
+  },
+  selectFace: 'gridBlocks.selectFace',
+  selectFaceProfiles: 'gridBlocks.selectFaceProfiles',
+  profileCardRoleMember: 'gridBlocks.profile.cardRoleMember',
+  profileRoleMember: 'gridBlocks.profile.roleMember',
+  profileBioHint: 'gridBlocks.profile.bioHint',
+  wallLabel: 'gridBlocks.wallLabel',
+  loadingAria: 'gridBlocks.loadingAria',
+  loadingEditor: 'gridBlocks.loadingEditor',
+  formFacesLegend: 'gridBlocks.form.facesLegend',
+  formNoFaces: 'gridBlocks.form.noFaces',
+} as const;

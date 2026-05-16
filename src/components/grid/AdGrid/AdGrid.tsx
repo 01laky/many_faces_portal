@@ -3,6 +3,8 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo, type CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
@@ -25,6 +27,7 @@ export interface AdGridProps {
 }
 
 export function AdGrid({ page: controlledPage, onPageChange }: AdGridProps = {}) {
+  const { t } = useTranslation('common');
   const itemsRef = useRef<HTMLDivElement>(null);
   const { token } = useAuth();
   const { selectedFace } = useFaceConfig();
@@ -104,7 +107,7 @@ export function AdGrid({ page: controlledPage, onPageChange }: AdGridProps = {})
   if (!token || faceId == null) {
     return (
       <div className="ad-grid-component ad-grid-component--message">
-        <p>Sign in to see listings.</p>
+        <p>{t(k.guest.listings)}</p>
       </div>
     );
   }
@@ -112,7 +115,7 @@ export function AdGrid({ page: controlledPage, onPageChange }: AdGridProps = {})
   if (loading) {
     return (
       <div className="ad-grid-component ad-grid-component--message">
-        <Loader2 size={28} aria-label="Loading" />
+        <Loader2 size={28} aria-label={t(k.loadingAria)} />
       </div>
     );
   }
@@ -120,7 +123,7 @@ export function AdGrid({ page: controlledPage, onPageChange }: AdGridProps = {})
   if (loadError) {
     return (
       <div className="ad-grid-component ad-grid-component--message">
-        <p>Could not load wall listings.</p>
+        <p>{t(k.loadError.wallListings)}</p>
       </div>
     );
   }
@@ -134,14 +137,14 @@ export function AdGrid({ page: controlledPage, onPageChange }: AdGridProps = {})
           <div key={ad.id} className="ad-grid-card">
             <img src={wallTicketListingImageUrl(ad.id)} alt={ad.title} loading="lazy" />
             <div className="ad-grid-card-info">
-              <span className="ad-grid-card-price">Wall</span>
+              <span className="ad-grid-card-price">{t(k.wallLabel)}</span>
               <span className="ad-grid-card-title">{ad.title}</span>
               <span className="ad-grid-card-location">{ad.creatorName}</span>
             </div>
           </div>
         ))}
       </div>
-      {items.length === 0 && <p className="ad-grid-empty">No listings yet.</p>}
+      {items.length === 0 && <p className="ad-grid-empty">{t(k.empty.listings)}</p>}
       {showInternalPagination && totalPages > 1 && (
         <div className="ad-grid-pagination">
           <button type="button" disabled={clampedPage === 0} onClick={() => setPage((p) => p - 1)}>

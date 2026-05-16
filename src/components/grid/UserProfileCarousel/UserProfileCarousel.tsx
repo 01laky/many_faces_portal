@@ -3,6 +3,8 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -33,6 +35,7 @@ export function UserProfileCarousel({
   totalPages: _totalPages,
   onPageChange,
 }: UserProfileCarouselProps = {}) {
+  const { t } = useTranslation('common');
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
@@ -127,7 +130,7 @@ export function UserProfileCarousel({
         className="userprofile-carousel-component userprofile-carousel-component--message"
         ref={containerRef}
       >
-        <p>Select a face.</p>
+        <p>{t(k.selectFace)}</p>
       </div>
     );
   }
@@ -138,7 +141,7 @@ export function UserProfileCarousel({
         className="userprofile-carousel-component userprofile-carousel-component--message"
         ref={containerRef}
       >
-        <p>Sign in to see profiles.</p>
+        <p>{t(k.guest.profiles)}</p>
       </div>
     );
   }
@@ -149,7 +152,7 @@ export function UserProfileCarousel({
         className="userprofile-carousel-component userprofile-carousel-component--message"
         ref={containerRef}
       >
-        <Loader2 size={28} aria-label="Loading" />
+        <Loader2 size={28} aria-label={t(k.loadingAria)} />
       </div>
     );
   }
@@ -160,7 +163,7 @@ export function UserProfileCarousel({
         className="userprofile-carousel-component userprofile-carousel-component--message"
         ref={containerRef}
       >
-        <p>Could not load profiles.</p>
+        <p>{t(k.loadError.profiles)}</p>
       </div>
     );
   }
@@ -180,7 +183,7 @@ export function UserProfileCarousel({
 
       <div className="userprofile-carousel-track">
         {visibleProfiles.map((profile) => {
-          const name = profile.displayName?.trim() || 'Member';
+          const name = profile.displayName?.trim() || t(k.profileCardRoleMember);
           const path = getLocalizedPath(
             `${faceIndex}/profile/${encodeURIComponent(profile.userId)}`
           );
@@ -203,7 +206,7 @@ export function UserProfileCarousel({
                 loading="lazy"
               />
               <span className="userprofile-carousel-card-name">{name}</span>
-              <span className="userprofile-carousel-card-role">Member</span>
+              <span className="userprofile-carousel-card-role">{t(k.profileCardRoleMember)}</span>
             </div>
           );
         })}

@@ -3,6 +3,8 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -31,6 +33,7 @@ export function ChatRoomCarousel({
   totalPages: _totalPages,
   onPageChange,
 }: ChatRoomCarouselProps = {}) {
+  const { t } = useTranslation('common');
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
@@ -116,7 +119,7 @@ export function ChatRoomCarousel({
   if (!selectedFace || !token) {
     return (
       <div className="chatroom-carousel-component" ref={containerRef}>
-        <p className="chatroom-carousel-hint">Sign in to see chat rooms.</p>
+        <p className="chatroom-carousel-hint">{t(k.guest.chatRooms)}</p>
       </div>
     );
   }

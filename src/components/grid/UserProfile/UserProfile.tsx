@@ -3,6 +3,8 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -16,6 +18,7 @@ import { profileAvatarUrl } from '../gridDisplayHelpers';
 import './UserProfile.scss';
 
 export function UserProfile() {
+  const { t } = useTranslation('common');
   const { token } = useAuth();
   const { selectedFace } = useFaceConfig();
   const getLocalizedPath = useLocalizedLink();
@@ -54,7 +57,7 @@ export function UserProfile() {
   if (faceId == null || !faceIndex) {
     return (
       <div className="userprofile-component userprofile-component--message">
-        <p>Select a face to see profiles.</p>
+        <p>{t(k.selectFaceProfiles)}</p>
       </div>
     );
   }
@@ -62,7 +65,7 @@ export function UserProfile() {
   if (!token) {
     return (
       <div className="userprofile-component userprofile-component--message">
-        <p>Sign in to see profiles.</p>
+        <p>{t(k.guest.profiles)}</p>
       </div>
     );
   }
@@ -70,7 +73,7 @@ export function UserProfile() {
   if (loading) {
     return (
       <div className="userprofile-component userprofile-component--message">
-        <Loader2 size={28} aria-label="Loading" />
+        <Loader2 size={28} aria-label={t(k.loadingAria)} />
       </div>
     );
   }
@@ -78,12 +81,12 @@ export function UserProfile() {
   if (!profile) {
     return (
       <div className="userprofile-component userprofile-component--message">
-        <p>No profiles in this face directory yet.</p>
+        <p>{t(k.empty.profilesFace)}</p>
       </div>
     );
   }
 
-  const name = profile.displayName?.trim() || 'Member';
+  const name = profile.displayName?.trim() || t(k.profileCardRoleMember);
   const href = getLocalizedPath(`${faceIndex}/profile/${encodeURIComponent(profile.userId)}`);
 
   return (
@@ -96,8 +99,8 @@ export function UserProfile() {
       />
       <div className="userprofile-info">
         <span className="userprofile-name">{name}</span>
-        <span className="userprofile-role">Face member</span>
-        <span className="userprofile-bio">Open profile for details.</span>
+        <span className="userprofile-role">{t(k.profileRoleMember)}</span>
+        <span className="userprofile-bio">{t(k.profileBioHint)}</span>
       </div>
     </Link>
   );

@@ -3,6 +3,8 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -12,6 +14,7 @@ import { getReels, type ReelItem } from '../../../api/services/ReelsService';
 import './Reel.scss';
 
 export function Reel() {
+  const { t } = useTranslation('common');
   const { token } = useAuth();
   const { selectedFace } = useFaceConfig();
   const getLocalizedPath = useLocalizedLink();
@@ -49,7 +52,7 @@ export function Reel() {
   if (!token || faceId == null) {
     return (
       <div className="reel-component reel-component--message">
-        <p>Sign in to see reels.</p>
+        <p>{t(k.guest.reels)}</p>
       </div>
     );
   }
@@ -57,7 +60,7 @@ export function Reel() {
   if (loading) {
     return (
       <div className="reel-component reel-component--message">
-        <Loader2 size={28} className="reel-component-spinner" aria-label="Loading" />
+        <Loader2 size={28} className="reel-component-spinner" aria-label={t(k.loadingAria)} />
       </div>
     );
   }
@@ -65,7 +68,7 @@ export function Reel() {
   if (!item) {
     return (
       <div className="reel-component reel-component--message">
-        <p>No reels yet. Use + to add one.</p>
+        <p>{t(k.empty.reelsAdd)}</p>
       </div>
     );
   }

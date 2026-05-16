@@ -3,6 +3,8 @@
  */
 
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -22,6 +24,7 @@ export interface ChatRoomProps {
 }
 
 export function ChatRoom({ boundChatRoomId }: ChatRoomProps) {
+  const { t } = useTranslation('common');
   const { token } = useAuth();
   const { selectedFace } = useFaceConfig();
   const navigate = useNavigate();
@@ -69,7 +72,7 @@ export function ChatRoom({ boundChatRoomId }: ChatRoomProps) {
   if (!selectedFace || !token) {
     return (
       <div className="chatroom-component chatroom-component--empty">
-        <span className="chatroom-empty-text">Sign in to see chat rooms.</span>
+        <span className="chatroom-empty-text">{t(k.guest.chatRooms)}</span>
       </div>
     );
   }
@@ -85,7 +88,7 @@ export function ChatRoom({ boundChatRoomId }: ChatRoomProps) {
   if (!room) {
     return (
       <div className="chatroom-component chatroom-component--empty">
-        <span className="chatroom-empty-text">No chat rooms yet.</span>
+        <span className="chatroom-empty-text">{t(k.empty.chatRooms)}</span>
       </div>
     );
   }

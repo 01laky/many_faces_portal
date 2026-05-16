@@ -12,6 +12,8 @@ import {
   useMemo,
   type CSSProperties,
 } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -69,6 +71,7 @@ export interface AlbumGridProps {
 }
 
 export function AlbumGrid({ page: controlledPage, onPageChange }: AlbumGridProps = {}) {
+  const { t } = useTranslation('common');
   const itemsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
@@ -180,7 +183,7 @@ export function AlbumGrid({ page: controlledPage, onPageChange }: AlbumGridProps
   if (!token || faceId == null) {
     return (
       <div className="album-grid-component album-grid-component--message">
-        <p>Sign in to see albums.</p>
+        <p>{t(k.guest.albums)}</p>
       </div>
     );
   }
@@ -188,7 +191,7 @@ export function AlbumGrid({ page: controlledPage, onPageChange }: AlbumGridProps
   if (loading) {
     return (
       <div className="album-grid-component album-grid-component--message">
-        <Loader2 size={28} className="album-grid-spinner" aria-label="Loading" />
+        <Loader2 size={28} className="album-grid-spinner" aria-label={t(k.loadingAria)} />
       </div>
     );
   }
@@ -196,7 +199,7 @@ export function AlbumGrid({ page: controlledPage, onPageChange }: AlbumGridProps
   if (loadError) {
     return (
       <div className="album-grid-component album-grid-component--message">
-        <p>Could not load albums.</p>
+        <p>{t(k.loadError.albums)}</p>
       </div>
     );
   }
@@ -248,7 +251,7 @@ export function AlbumGrid({ page: controlledPage, onPageChange }: AlbumGridProps
           );
         })}
       </div>
-      {albums.length === 0 && <p className="album-grid-empty">No albums for this face yet.</p>}
+      {albums.length === 0 && <p className="album-grid-empty">{t(k.empty.albumsFace)}</p>}
       {showInternalPagination && totalPages > 1 && (
         <div className="album-grid-pagination">
           <button type="button" disabled={clampedPage === 0} onClick={() => setPage((p) => p - 1)}>

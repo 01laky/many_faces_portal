@@ -11,6 +11,8 @@ import {
   type CSSProperties,
   type SyntheticEvent,
 } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -32,6 +34,7 @@ export interface ReelGridProps {
 }
 
 export function ReelGrid({ page: controlledPage, onPageChange }: ReelGridProps = {}) {
+  const { t } = useTranslation('common');
   const itemsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
@@ -128,7 +131,7 @@ export function ReelGrid({ page: controlledPage, onPageChange }: ReelGridProps =
   if (!token || faceId == null) {
     return (
       <div className="reel-grid-component reel-grid-component--message">
-        <p>Sign in to see reels.</p>
+        <p>{t(k.guest.reels)}</p>
       </div>
     );
   }
@@ -136,7 +139,7 @@ export function ReelGrid({ page: controlledPage, onPageChange }: ReelGridProps =
   if (loading) {
     return (
       <div className="reel-grid-component reel-grid-component--message">
-        <Loader2 size={28} className="reel-grid-spinner" aria-label="Loading" />
+        <Loader2 size={28} className="reel-grid-spinner" aria-label={t(k.loadingAria)} />
       </div>
     );
   }
@@ -144,7 +147,7 @@ export function ReelGrid({ page: controlledPage, onPageChange }: ReelGridProps =
   if (loadError) {
     return (
       <div className="reel-grid-component reel-grid-component--message">
-        <p>Could not load reels.</p>
+        <p>{t(k.loadError.reels)}</p>
       </div>
     );
   }
@@ -188,7 +191,7 @@ export function ReelGrid({ page: controlledPage, onPageChange }: ReelGridProps =
           </div>
         ))}
       </div>
-      {items.length === 0 && <p className="reel-grid-empty">No reels yet. Use + to create one.</p>}
+      {items.length === 0 && <p className="reel-grid-empty">{t(k.empty.reelsCreate)}</p>}
       {showInternalPagination && totalPages > 1 && (
         <div className="reel-grid-pagination">
           <button type="button" disabled={clampedPage === 0} onClick={() => setPage((p) => p - 1)}>

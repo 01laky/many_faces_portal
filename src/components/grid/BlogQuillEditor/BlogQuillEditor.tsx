@@ -1,4 +1,6 @@
 import { forwardRef, lazy, Suspense } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 
 const LazyReactQuill = lazy(async () => {
   await import('react-quill-new/dist/quill.snow.css');
@@ -19,8 +21,9 @@ export const BlogQuillEditor = forwardRef<unknown, BlogQuillEditorProps>(functio
   { theme, value, onChange, modules, formats, placeholder },
   ref
 ) {
+  const { t } = useTranslation('common');
   return (
-    <Suspense fallback={<div className="blog-form-quill-loading">Loading editor…</div>}>
+    <Suspense fallback={<div className="blog-form-quill-loading">{t(k.loadingEditor)}</div>}>
       <LazyReactQuill
         ref={ref as never}
         theme={theme}

@@ -3,6 +3,8 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo, type CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -25,6 +27,7 @@ export interface ChatRoomGridProps {
 }
 
 export function ChatRoomGrid({ page: controlledPage, onPageChange }: ChatRoomGridProps = {}) {
+  const { t } = useTranslation('common');
   const itemsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
@@ -100,7 +103,7 @@ export function ChatRoomGrid({ page: controlledPage, onPageChange }: ChatRoomGri
   if (!selectedFace || !token) {
     return (
       <div className="chatroom-grid-component">
-        <p className="chatroom-grid-hint">Sign in to see chat rooms.</p>
+        <p className="chatroom-grid-hint">{t(k.guest.chatRooms)}</p>
       </div>
     );
   }

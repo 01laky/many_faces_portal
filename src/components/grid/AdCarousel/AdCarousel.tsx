@@ -3,6 +3,8 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
@@ -31,6 +33,7 @@ export function AdCarousel({
   totalPages: _totalPages,
   onPageChange,
 }: AdCarouselProps = {}) {
+  const { t } = useTranslation('common');
   const containerRef = useRef<HTMLDivElement>(null);
   const { token } = useAuth();
   const { selectedFace } = useFaceConfig();
@@ -119,7 +122,7 @@ export function AdCarousel({
   if (!token || faceId == null) {
     return (
       <div className="ad-carousel-component ad-carousel-component--message" ref={containerRef}>
-        <p>Sign in to see listings.</p>
+        <p>{t(k.guest.listings)}</p>
       </div>
     );
   }
@@ -127,7 +130,7 @@ export function AdCarousel({
   if (loading) {
     return (
       <div className="ad-carousel-component ad-carousel-component--message" ref={containerRef}>
-        <Loader2 size={28} aria-label="Loading" />
+        <Loader2 size={28} aria-label={t(k.loadingAria)} />
       </div>
     );
   }
@@ -135,7 +138,7 @@ export function AdCarousel({
   if (loadError) {
     return (
       <div className="ad-carousel-component ad-carousel-component--message" ref={containerRef}>
-        <p>Could not load listings.</p>
+        <p>{t(k.loadError.listings)}</p>
       </div>
     );
   }
@@ -158,7 +161,7 @@ export function AdCarousel({
           <div key={ad.id} className="ad-carousel-card" style={{ width: CARD_WIDTH }}>
             <img src={wallTicketListingImageUrl(ad.id)} alt={ad.title} loading="lazy" />
             <div className="ad-carousel-card-info">
-              <span className="ad-carousel-card-price">Wall</span>
+              <span className="ad-carousel-card-price">{t(k.wallLabel)}</span>
               <span className="ad-carousel-card-title">{ad.title}</span>
               <span className="ad-carousel-card-location">{ad.creatorName}</span>
             </div>

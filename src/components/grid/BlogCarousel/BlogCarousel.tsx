@@ -3,6 +3,8 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -36,6 +38,7 @@ export function BlogCarousel({
   totalPages: _totalPages,
   onPageChange,
 }: BlogCarouselProps = {}) {
+  const { t } = useTranslation('common');
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
@@ -126,7 +129,7 @@ export function BlogCarousel({
   if (!token || faceId == null) {
     return (
       <div className="blog-carousel-component blog-carousel-component--message" ref={containerRef}>
-        <p>Sign in to see blog posts.</p>
+        <p>{t(k.guest.blogs)}</p>
       </div>
     );
   }
@@ -134,7 +137,7 @@ export function BlogCarousel({
   if (loading) {
     return (
       <div className="blog-carousel-component blog-carousel-component--message" ref={containerRef}>
-        <Loader2 size={28} aria-label="Loading" />
+        <Loader2 size={28} aria-label={t(k.loadingAria)} />
       </div>
     );
   }
@@ -142,7 +145,7 @@ export function BlogCarousel({
   if (loadError) {
     return (
       <div className="blog-carousel-component blog-carousel-component--message" ref={containerRef}>
-        <p>Could not load posts.</p>
+        <p>{t(k.loadError.blogs)}</p>
       </div>
     );
   }
