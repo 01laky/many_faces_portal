@@ -1,19 +1,9 @@
-# eslint-plugin-react-hooks — ESLint 10 peer alignment
+# ESLint 10 + `eslint-plugin-react-hooks` (Yarn 4)
 
-## Strategy: A2 (canary bridge)
+Canonical write-up: **[`docs/guides/development.md`](https://github.com/01laky/many_faces_main/blob/main/docs/guides/development.md#eslint-10-and-eslint-plugin-react-hooks-many_faces_portal-many_faces_admin)** in **`many_faces_main`**.
 
-- **Pinned version (exact):** `7.1.0-canary-705268dc-20260409`
-- **ESLint config:** `eslint.config.js` extends **`reactHooks.configs.flat.recommended`** (full preset) with **`eslint-config-prettier` last**. The canary pin remains for ESLint **10** peer alignment until stable `@latest` lists `eslint@^10`.
-- **Why:** `eslint-plugin-react-hooks@latest` (7.0.x) did not declare ESLint 10 in `peerDependencies`, which produced Yarn **`YN0060`** / **`YN0086`** while this workspace uses ESLint 10. The canary line widens peers to include **`^10.0.0`**.
-- **Risk:** Canary is a pre-release channel; behavior and metadata can change without a major semver bump on npm tags.
-- **Removal trigger:** When `npm view eslint-plugin-react-hooks@latest peerDependencies` shows `eslint` including **`^10.0.0`**, bump `package.json` to that **stable** version (range as team policy allows), run `yarn install --immutable`, then `yarn validate`, `yarn test`, and `yarn build`, and delete or rewrite this document.
-- **Automation:** This submodule does not ship Renovate/Dependabot rules; treat `eslint-plugin-react-hooks` bumps as **manual** until stable supports ESLint 10 in peers.
+**Summary:** both SPAs pin an **exact canary** of `eslint-plugin-react-hooks` whose `peerDependencies` include **ESLint ^10** (strategy **A2** in [`docs/prompts/eslint10-react-hooks-peer-yarn-agent-prompt.md`](https://github.com/01laky/many_faces_main/blob/main/docs/prompts/eslint10-react-hooks-peer-yarn-agent-prompt.md)).
 
-## Upstream references
+Flat config extends **`reactHooks.configs.flat.recommended`** with **`eslint-config-prettier` last**.
 
-- [facebook/react#35758](https://github.com/facebook/react/issues/35758)
-- [facebook/react#35720](https://github.com/facebook/react/pull/35720)
-
-## Tracking issue
-
-Open a repository issue titled **chore: replace eslint-plugin-react-hooks canary when @latest supports ESLint 10 peers**, link it from the PR that introduced the canary pin, and close it when stable is adopted.
+**When to remove the pin:** when stable `eslint-plugin-react-hooks` lists ESLint 10 in peers and `yarn install` has no `YN0060` for that pair — then bump to stable and drop this note.

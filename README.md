@@ -195,6 +195,8 @@ This script will:
 5. Start the Vite dev server in Docker
 6. Make the app available at `http://localhost:8081`
 
+**Monorepo full stack:** when you use **`many_faces_main`** `./scripts/start-all-dev.sh`, the browser entry is usually **`https://localhost:9081`** (or **`http://localhost:9080`**) via **fe-demo-proxy** — see [`docs/guides/dev-https.md`](../docs/guides/dev-https.md). Port **8081** is the Vite container port mapped for standalone submodule Docker or host `yarn dev`.
+
 **Note**: The script runs tests before starting. If tests fail, the startup is stopped.
 
 ### Manual Docker Compose
@@ -573,3 +575,4 @@ When viewing **only** this repository on GitHub, open the canonical monorepo pat
 - [AI-assisted content approval](https://github.com/01laky/many_faces_main/blob/main/docs/guides/ai-assisted-content-approval.md)
 - [Git submodules workflow](https://github.com/01laky/many_faces_main/blob/main/docs/guides/git-submodules.md)
 - [Development and CI](https://github.com/01laky/many_faces_main/blob/main/docs/guides/development.md) (`scripts/lint-all.sh`, `scripts/ci-local.sh`)
+- [Mobile Expo client](https://github.com/01laky/many_faces_main/blob/main/docs/guides/mobile-expo-development.md) · [`many_faces_mobile` submodule](https://github.com/01laky/many_faces_mobile)
