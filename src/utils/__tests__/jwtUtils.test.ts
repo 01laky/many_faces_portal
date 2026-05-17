@@ -53,9 +53,9 @@ describe('isTokenExpired', () => {
     expect(isTokenExpired(jwt)).toBe(false);
   });
 
-  it('returns false when exp equals current second (not strictly before now)', () => {
+  it('returns true when exp equals current second (RFC 7519: not before exp)', () => {
     const nowSec = Math.floor(Date.now() / 1000);
     const jwt = makeJwt({ exp: nowSec });
-    expect(isTokenExpired(jwt)).toBe(false);
+    expect(isTokenExpired(jwt)).toBe(true);
   });
 });
