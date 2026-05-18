@@ -4,13 +4,13 @@ Each UI block lives in its own folder next to its styles and barrel export.
 
 ## Convention
 
-| Area | Path pattern |
-| ---- | ------------ |
+| Area            | Path pattern                                                             |
+| --------------- | ------------------------------------------------------------------------ |
 | Root components | `src/components/<Name>/<Name>.tsx` + optional `<Name>.scss` + `index.ts` |
-| Grid blocks | `src/components/grid/<Name>/<Name>.tsx` + optional SCSS + `index.ts` |
-| Radix wrappers | `src/components/radix/<Name>/…` |
-| Pages | `src/pages/<Name>/<Name>.tsx` + optional SCSS + `index.ts` |
-| Settings | `src/features/settings/<Name>/…` |
+| Grid blocks     | `src/components/grid/<Name>/<Name>.tsx` + optional SCSS + `index.ts`     |
+| Radix wrappers  | `src/components/radix/<Name>/…`                                          |
+| Pages           | `src/pages/<Name>/<Name>.tsx` + optional SCSS + `index.ts`               |
+| Settings        | `src/features/settings/<Name>/…`                                         |
 
 ## New component
 

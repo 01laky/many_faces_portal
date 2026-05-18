@@ -8,21 +8,21 @@ Companion to [`docs/prompts/fe-performance-and-refactor-agent-prompt.md`](../../
 
 ## TanStack Query — defaults vs hooks
 
-| Layer | `staleTime` | `gcTime` / notes |
-| ----- | ----------- | ---------------- |
-| **Global** (`QueryProvider.tsx`) | `5 * 60 * 1000` | `20 * 60 * 1000`; inline matrix documents auth + capabilities |
-| **`useAuthToken`** | `60_000` | `10 * 60 * 1000` |
-| **`useMeCapabilities`** | `60_000` | `15 * 60 * 1000` |
-| **`useProfile`** (and related) | inherits default | `gcTime: 15 * 60 * 1000` where set in hook |
+| Layer                            | `staleTime`      | `gcTime` / notes                                              |
+| -------------------------------- | ---------------- | ------------------------------------------------------------- |
+| **Global** (`QueryProvider.tsx`) | `5 * 60 * 1000`  | `20 * 60 * 1000`; inline matrix documents auth + capabilities |
+| **`useAuthToken`**               | `60_000`         | `10 * 60 * 1000`                                              |
+| **`useMeCapabilities`**          | `60_000`         | `15 * 60 * 1000`                                              |
+| **`useProfile`** (and related)   | inherits default | `gcTime: 15 * 60 * 1000` where set in hook                    |
 
 **`enabled`:** detail/list hooks use `enabled: !!id` or token guards as implemented per hook.
 
 ## ACL / `/me/capabilities`
 
-| Consumer | Role |
-| -------- | ---- |
+| Consumer                                        | Role                                                                          |
+| ----------------------------------------------- | ----------------------------------------------------------------------------- |
 | **`MeCapabilitiesWarmup`** in `AuthContext.tsx` | Single **`useMeCapabilities(token, Boolean(token))`** for session-wide cache. |
-| **`useAuthApi`** | **`meCapabilitiesKeys`** for **logout / query cleanup** only. |
+| **`useAuthApi`**                                | **`meCapabilitiesKeys`** for **logout / query cleanup** only.                 |
 
 ## Session / logout (source of truth)
 
@@ -32,11 +32,11 @@ Companion to [`docs/prompts/fe-performance-and-refactor-agent-prompt.md`](../../
 
 ## Phase D–style waivers (deferred unless product asks)
 
-| Topic | Decision |
-| ----- | -------- |
-| **Further route splitting** | Many routes already lazy in `routes/lazyPages.tsx`; deeper `App.tsx` decomposition not required (shell is thin). |
-| **Lighthouse / bundle visualizer** | Run on `yarn build && yarn preview` and attach tables in performance PRs; not a CI gate. |
-| **Messenger / SignalR dedup** | Messenger hub lifecycle is context-owned; no second full-hub builder extracted yet—acceptable while single hub pattern holds. |
+| Topic                              | Decision                                                                                                                      |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| **Further route splitting**        | Many routes already lazy in `routes/lazyPages.tsx`; deeper `App.tsx` decomposition not required (shell is thin).              |
+| **Lighthouse / bundle visualizer** | Run on `yarn build && yarn preview` and attach tables in performance PRs; not a CI gate.                                      |
+| **Messenger / SignalR dedup**      | Messenger hub lifecycle is context-owned; no second full-hub builder extracted yet—acceptable while single hub pattern holds. |
 
 ## Vite build
 
