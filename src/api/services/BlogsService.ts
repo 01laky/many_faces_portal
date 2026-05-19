@@ -1,4 +1,5 @@
 import { authAwareFetch } from '../utils/authAwareFetch';
+import { fetchAllListItems, parsePaginatedListEnvelope } from '../utils/parsePaginatedListEnvelope';
 import { absoluteScopedUrl } from '../faceApiRouting';
 import type { AiReviewStatus, ContentApprovalStatus } from '../../utils/contentModeration';
 
@@ -75,10 +76,15 @@ export interface UpdateBlogDto {
 // ── Blogs CRUD ──
 
 export async function getBlogs(token: string, faceId?: number): Promise<BlogItem[]> {
-  const query = faceId ? `?faceId=${faceId}` : '';
-  const res = await apiFetch(`/api/Blogs${query}`, { method: 'GET', token });
-  if (!res.ok) throw new Error('Failed to fetch blogs');
-  return res.json();
+  const faceQ = faceId != null ? `faceId=${faceId}&` : '';
+  return fetchAllListItems<BlogItem>(async (page, pageSize) => {
+    const res = await apiFetch(`/api/Blogs?${faceQ}page=${page}&pageSize=${pageSize}`, {
+      method: 'GET',
+      token,
+    });
+    if (!res.ok) throw new Error('Failed to fetch blogs');
+    return parsePaginatedListEnvelope<BlogItem>(await res.json());
+  });
 }
 
 export async function getBlog(id: number, token: string): Promise<BlogItem> {

@@ -1,4 +1,5 @@
 import { authAwareFetch } from '../utils/authAwareFetch';
+import { fetchAllListItems, parsePaginatedListEnvelope } from '../utils/parsePaginatedListEnvelope';
 import { buildFaceQuery } from '../utils/reelQuery';
 import { absoluteScopedUrl } from '../faceApiRouting';
 import type { AiReviewStatus, ContentApprovalStatus } from '../../utils/contentModeration';
@@ -67,9 +68,15 @@ export interface UpdateReelDto {
 }
 
 export async function getReels(token: string, faceId?: number): Promise<ReelItem[]> {
-  const res = await apiFetch(`/api/Reels${buildFaceQuery(faceId)}`, { method: 'GET', token });
-  if (!res.ok) throw new Error('Failed to fetch reels');
-  return res.json();
+  const facePart = faceId != null ? `faceId=${encodeURIComponent(String(faceId))}&` : '';
+  return fetchAllListItems<ReelItem>(async (page, pageSize) => {
+    const res = await apiFetch(`/api/Reels?${facePart}page=${page}&pageSize=${pageSize}`, {
+      method: 'GET',
+      token,
+    });
+    if (!res.ok) throw new Error('Failed to fetch reels');
+    return parsePaginatedListEnvelope<ReelItem>(await res.json());
+  });
 }
 
 export async function getReel(id: number, token: string, faceId?: number): Promise<ReelItem> {

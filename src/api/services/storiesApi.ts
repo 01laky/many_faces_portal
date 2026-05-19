@@ -83,11 +83,17 @@ export async function fetchStoriesForFace(
   token: string,
   faceId: number
 ): Promise<StoryListItem[]> {
-  const { data } = await axios.get<StoryListItem[]>(`${env.apiUrl}/api/stories`, {
-    params: { faceId },
+  const { data } = await axios.get<{
+    items: StoryListItem[];
+    page: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+  }>(`${env.apiUrl}/api/stories`, {
+    params: { faceId, page: 1, pageSize: 10 },
     headers: authHeaders(token),
   });
-  return data;
+  return Array.isArray(data) ? data : data.items ?? [];
 }
 
 export async function fetchMyStories(

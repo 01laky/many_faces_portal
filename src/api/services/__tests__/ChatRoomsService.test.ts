@@ -21,10 +21,13 @@ describe('ChatRoomsService', () => {
       'fetch',
       vi.fn(() =>
         Promise.resolve(
-          new Response(JSON.stringify([]), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          })
+          new Response(
+            JSON.stringify({ items: [], page: 1, pageSize: 10, totalCount: 0, totalPages: 0 }),
+            {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' },
+            }
+          )
         )
       )
     );
@@ -40,7 +43,9 @@ describe('ChatRoomsService', () => {
     await listChatRooms(7, token);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe('http://test-api/public/api/faces/7/chat-rooms');
+    expect(url).toMatch(
+      /^http:\/\/test-api\/public\/api\/faces\/7\/chat-rooms\?page=1&pageSize=10$/
+    );
     expect(init.method).toBe('GET');
     expect((init.headers as Record<string, string>).Authorization).toBe('Bearer t1');
   });

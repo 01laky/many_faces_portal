@@ -1,4 +1,5 @@
 import { authAwareFetch } from '../utils/authAwareFetch';
+import { fetchAllListItems, parsePaginatedListEnvelope } from '../utils/parsePaginatedListEnvelope';
 import { absoluteScopedUrl } from '../faceApiRouting';
 
 async function apiFetch(path: string, options: RequestInit & { token?: string }) {
@@ -42,9 +43,14 @@ export async function listChatRooms(
   faceId: number,
   token: string
 ): Promise<FaceChatRoomDto[]> {
-  const res = await apiFetch(`/api/faces/${faceId}/chat-rooms`, { method: 'GET', token });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return fetchAllListItems<FaceChatRoomDto>(async (page, pageSize) => {
+    const res = await apiFetch(
+      `/api/faces/${faceId}/chat-rooms?page=${page}&pageSize=${pageSize}`,
+      { method: 'GET', token },
+    );
+    if (!res.ok) throw new Error(await res.text());
+    return parsePaginatedListEnvelope<FaceChatRoomDto>(await res.json());
+  });
 }
 
 export async function getChatRoom(

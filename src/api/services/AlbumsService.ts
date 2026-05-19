@@ -1,5 +1,6 @@
 import { authAwareFetch } from '../utils/authAwareFetch';
 import { absoluteScopedUrl } from '../faceApiRouting';
+import { fetchAllListItems, parsePaginatedListEnvelope } from '../utils/parsePaginatedListEnvelope';
 import type { AiReviewStatus, ContentApprovalStatus } from '../../utils/contentModeration';
 
 async function apiFetch(path: string, options: RequestInit & { token?: string }) {
@@ -71,10 +72,15 @@ export interface UpdateAlbumDto {
 // ── Albums CRUD ──
 
 export async function getAlbums(token: string, faceId?: number): Promise<AlbumItem[]> {
-  const q = faceId != null ? `?faceId=${encodeURIComponent(String(faceId))}` : '';
-  const res = await apiFetch(`/api/Albums${q}`, { method: 'GET', token });
-  if (!res.ok) throw new Error('Failed to fetch albums');
-  return res.json();
+  const faceQ = faceId != null ? `faceId=${encodeURIComponent(String(faceId))}&` : '';
+  return fetchAllListItems<AlbumItem>(async (page, pageSize) => {
+    const res = await apiFetch(`/api/Albums?${faceQ}page=${page}&pageSize=${pageSize}`, {
+      method: 'GET',
+      token,
+    });
+    if (!res.ok) throw new Error('Failed to fetch albums');
+    return parsePaginatedListEnvelope<AlbumItem>(await res.json());
+  });
 }
 
 export async function getAlbum(id: number, token: string): Promise<AlbumItem> {
