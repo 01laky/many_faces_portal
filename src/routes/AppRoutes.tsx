@@ -13,6 +13,7 @@ import { useWallHostViewer } from '../hooks/useWallHostViewer';
 import { useLocalizedLink } from '../hooks/useLocalizedLink';
 import { useTranslation } from 'react-i18next';
 import { useAnimatedGradientStyle } from '../hooks/useAnimatedGradient';
+import { useGradientAnimationPreference } from '../contexts/GradientAnimationPreferenceContext';
 import { isFirstVisitToFace } from '../components/FaceRoleSelectPanel';
 import type { GridComponentType } from '../components/PageGridLayout';
 import { logger } from '../utils/logger';
@@ -44,7 +45,8 @@ export function AppRoutes() {
   const [wallCreateOpen, setWallCreateOpen] = useState(false);
   const [wallRefreshKey, setWallRefreshKey] = useState(0);
   const location = useLocation();
-  const gradientVars = useAnimatedGradientStyle(selectedFace?.gradientSettings);
+  const { animationEnabled } = useGradientAnimationPreference();
+  const gradientVars = useAnimatedGradientStyle(selectedFace?.gradientSettings, animationEnabled);
   const isWallPage = pathnameMatchesWallPage(location.pathname, selectedFace);
   const storiesHomePath = selectedFace ? getLocalizedPath(`/${selectedFace.index}/stories`) : '';
   const isStoriesPage =

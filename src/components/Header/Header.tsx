@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { useProfile } from '../../hooks/api/useProfileApi';
 import { useAnimatedGradientStyle } from '../../hooks/useAnimatedGradient';
+import { useGradientAnimationPreference } from '../../contexts/GradientAnimationPreferenceContext';
 import { MainLogo } from '../MainLogo';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import {
@@ -64,7 +65,8 @@ export function Header({
   const { isAuthenticated, user } = useAuth();
   const { selectedFace, getFaceHomePath } = useFaceConfig();
   const { profile, resolvedAvatarUrl } = useProfile();
-  const gradientVars = useAnimatedGradientStyle(selectedFace?.gradientSettings);
+  const { animationEnabled } = useGradientAnimationPreference();
+  const gradientVars = useAnimatedGradientStyle(selectedFace?.gradientSettings, animationEnabled);
 
   const displayName =
     profile?.firstName?.trim() || profile?.lastName?.trim()

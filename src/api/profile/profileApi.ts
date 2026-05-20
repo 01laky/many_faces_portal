@@ -12,6 +12,7 @@ export interface ProfileMe {
   firstName: string | null;
   lastName: string | null;
   email: string | null;
+  enableAnimatedGradient: boolean;
   globalAvatarUrl: string | null;
   faceAvatarUrl: string | null;
 }
@@ -29,12 +30,19 @@ export async function getProfile(
   const base = env.apiUrl;
   const url = faceId != null ? `${base}/api/profile/me?faceId=${faceId}` : `${base}/api/profile/me`;
   const res = await axios.get<ProfileMe>(url, { headers: headers(token) });
-  return res.data;
+  return {
+    ...res.data,
+    enableAnimatedGradient: res.data.enableAnimatedGradient ?? false,
+  };
 }
 
 export async function updateProfile(
   token: string | null,
-  data: { firstName?: string | null; lastName?: string | null }
+  data: {
+    firstName?: string | null;
+    lastName?: string | null;
+    enableAnimatedGradient?: boolean;
+  },
 ): Promise<void> {
   await axios.put(`${env.apiUrl}/api/profile/me`, data, { headers: headers(token) });
 }

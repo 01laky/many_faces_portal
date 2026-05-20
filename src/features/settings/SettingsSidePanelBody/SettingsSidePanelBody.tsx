@@ -5,6 +5,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
 import type { GridTopPanelState } from '../../../contexts/GridTopPanelContext';
 import { LanguageSwitcher } from '../../../components/LanguageSwitcher';
+import { AnimatedGradientToggle } from '../AnimatedGradientToggle';
 import { FriendRequestsTab } from '../../../components/FriendRequestsTab';
 import { MessengerTab } from '../../../components/MessengerTab';
 import { NotificationsTab } from '../../../components/NotificationsTab';
@@ -69,6 +70,7 @@ export function SettingsSidePanelBody({
             {t('settingsPanel.language')}
           </label>
           <LanguageSwitcher />
+          <AnimatedGradientToggle />
           {isAuthenticated && (
             <div className="settings-section" style={{ marginTop: 16 }}>
               <button

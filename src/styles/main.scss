@@ -212,6 +212,72 @@ body {
   color: rgba(255, 255, 255, 0.85);
 }
 
+.settings-toggle-section {
+  margin-top: 12px;
+}
+
+.settings-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.settings-toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+
+  &:checked + .settings-toggle-track {
+    background: rgba(99, 102, 241, 0.85);
+
+    &::after {
+      transform: translateX(18px);
+    }
+  }
+
+  &:focus-visible + .settings-toggle-track {
+    outline: 2px solid rgba(255, 255, 255, 0.6);
+    outline-offset: 2px;
+  }
+
+  &:disabled + .settings-toggle-track {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.settings-toggle-track {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s ease;
+  }
+}
+
+.settings-toggle-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.65);
+}
+
 .settings-logout-btn {
   padding: 10px 16px;
   border: 1px solid rgba(255, 255, 255, 0.3);

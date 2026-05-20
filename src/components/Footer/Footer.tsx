@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { MessageCircle } from 'lucide-react';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { useAnimatedGradientStyle } from '../../hooks/useAnimatedGradient';
+import { useGradientAnimationPreference } from '../../contexts/GradientAnimationPreferenceContext';
 import './Footer.scss';
 
 interface FooterProps {
@@ -11,7 +12,8 @@ interface FooterProps {
 export function Footer({ onMessagesClick }: FooterProps) {
   const { t } = useTranslation('common');
   const { selectedFace } = useFaceConfig();
-  const gradientVars = useAnimatedGradientStyle(selectedFace?.gradientSettings);
+  const { animationEnabled } = useGradientAnimationPreference();
+  const gradientVars = useAnimatedGradientStyle(selectedFace?.gradientSettings, animationEnabled);
 
   return (
     <footer className="app-footer" style={gradientVars}>

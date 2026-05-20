@@ -36,37 +36,53 @@ function buildGradientCSS(s: GradientSettings): string {
   return `linear-gradient(${s.angle}deg, ${colors})`;
 }
 
+/** Pure builder — Vitest and {@link useAnimatedGradientStyle} share this logic. */
+export function buildAnimatedGradientStyleVars(
+  raw?: string | null,
+  animationEnabled = false
+): CSSProperties {
+  const parsed = parseGradientSettings(raw);
+  if (!parsed) return {};
+
+  const settings: GradientSettings = animationEnabled ? parsed : { ...parsed, animation: 'none' };
+
+  const vars: Record<string, string> = {
+    '--gradient-bg': buildGradientCSS(settings),
+  };
+
+  if (settings.animation !== 'none') {
+    vars['--gradient-size'] = '200% 200%';
+    const name =
+      settings.animation === 'rotate'
+        ? 'gradient-rotate'
+        : settings.animation === 'shift'
+          ? 'gradient-shift'
+          : 'gradient-pulse';
+    const timing =
+      settings.animation === 'pulse'
+        ? 'ease-in-out'
+        : settings.animation === 'shift'
+          ? 'ease'
+          : 'linear';
+    vars['--gradient-animation'] = `${name} ${settings.animationSpeed}s ${timing} infinite`;
+  }
+
+  return vars as unknown as CSSProperties;
+}
+
 /**
  * Returns CSS custom properties for animated gradient background.
  * Use with ::before overlay technique for glassmorphism.
  * Pair with the gradient animation keyframes from AnimatedGradient.scss.
+ *
+ * @param animationEnabled User preference (default false) — when false, face animation JSON is ignored.
  */
-export function useAnimatedGradientStyle(raw?: string | null): CSSProperties {
-  return useMemo(() => {
-    const settings = parseGradientSettings(raw);
-    if (!settings) return {};
-
-    const vars: Record<string, string> = {
-      '--gradient-bg': buildGradientCSS(settings),
-    };
-
-    if (settings.animation !== 'none') {
-      vars['--gradient-size'] = '200% 200%';
-      const name =
-        settings.animation === 'rotate'
-          ? 'gradient-rotate'
-          : settings.animation === 'shift'
-            ? 'gradient-shift'
-            : 'gradient-pulse';
-      const timing =
-        settings.animation === 'pulse'
-          ? 'ease-in-out'
-          : settings.animation === 'shift'
-            ? 'ease'
-            : 'linear';
-      vars['--gradient-animation'] = `${name} ${settings.animationSpeed}s ${timing} infinite`;
-    }
-
-    return vars as unknown as CSSProperties;
-  }, [raw]);
+export function useAnimatedGradientStyle(
+  raw?: string | null,
+  animationEnabled = false
+): CSSProperties {
+  return useMemo(
+    () => buildAnimatedGradientStyleVars(raw, animationEnabled),
+    [raw, animationEnabled]
+  );
 }

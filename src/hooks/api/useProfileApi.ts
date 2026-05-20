@@ -40,8 +40,11 @@ export function useProfile() {
   const resolvedAvatarUrl = profile?.faceAvatarUrl ?? profile?.globalAvatarUrl ?? null;
 
   const updateMutation = useMutation({
-    mutationFn: (data: { firstName?: string | null; lastName?: string | null }) =>
-      profileApi.updateProfile(token, data),
+    mutationFn: (data: {
+      firstName?: string | null;
+      lastName?: string | null;
+      enableAnimatedGradient?: boolean;
+    }) => profileApi.updateProfile(token, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: profileQueryKey() }),
   });
 

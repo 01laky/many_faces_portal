@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ApiContextProvider } from './contexts/ApiContext';
 import { MessengerProvider } from './contexts/MessengerContext';
 import { FaceConfigProvider } from './contexts/FaceConfigContext';
+import { GradientAnimationPreferenceProvider } from './contexts/GradientAnimationPreferenceContext';
 import { AppRoutes } from './routes';
 
 function MessengerProviderWithToken({ children }: { children: ReactNode }) {
@@ -28,7 +29,9 @@ function App() {
           <ApiContextProviderWithToken>
             <MessengerProviderWithToken>
               <FaceConfigProvider>
-                <AppRoutes />
+                <GradientAnimationPreferenceProvider>
+                  <AppRoutes />
+                </GradientAnimationPreferenceProvider>
               </FaceConfigProvider>
             </MessengerProviderWithToken>
           </ApiContextProviderWithToken>

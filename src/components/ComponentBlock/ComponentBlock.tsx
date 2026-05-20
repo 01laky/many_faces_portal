@@ -35,6 +35,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { useAnimatedGradientStyle } from '../../hooks/useAnimatedGradient';
+import { useGradientAnimationPreference } from '../../contexts/GradientAnimationPreferenceContext';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import { useGridTopPanel } from '../../contexts/GridTopPanelContext';
 import { COMPONENT_TYPE_ID } from '../../constants/componentTypeIds';
@@ -158,7 +159,8 @@ export function ComponentBlock({
   const { openGridCreate } = useGridTopPanel();
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
-  const gradientVars = useAnimatedGradientStyle(selectedFace?.gradientSettings);
+  const { animationEnabled } = useGradientAnimationPreference();
+  const gradientVars = useAnimatedGradientStyle(selectedFace?.gradientSettings, animationEnabled);
   const defaults = COMPONENT_DEFAULTS[componentType];
   const TitleIcon = defaults.icon;
   const title = titleProp ?? defaults.title;
