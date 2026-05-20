@@ -53,15 +53,17 @@ function getEnv(key: string, defaultValue: string): string {
  * HTTPS entry (host :9081 → nginx :443) uses the same proxy pattern so Safari only trusts nginx TLS;
  * a direct browser call to https://localhost:8001 often fails there (no HTTP status in Network tab).
  */
-function resolveApiUrl(): string {
-  const fallback = 'https://localhost:8001';
-  const fromEnv = getEnv('VITE_API_URL', fallback);
-  if (!import.meta.env.DEV) return fromEnv;
-  if (
-    typeof window !== 'undefined' &&
-    (window.location.port === '9080' || window.location.port === '9081')
-  ) {
-    return window.location.origin;
+const PORTAL_DEV_PROXY_PORTS = new Set(['9080', '9081']);
+
+/** Pure helper — Vitest covers LAN hostnames on nginx proxy ports. */
+export function resolveApiUrl(
+  fromEnv: string,
+  isDev: boolean,
+  location?: Pick<Location, 'port' | 'origin'>
+): string {
+  if (!isDev || !location) return fromEnv;
+  if (PORTAL_DEV_PROXY_PORTS.has(location.port)) {
+    return location.origin;
   }
   return fromEnv;
 }
@@ -74,9 +76,14 @@ function getBoolEnv(key: string, defaultValue: boolean): boolean {
 }
 
 /** Live singleton parsed once at module load — tests should override via `collectEnvValidationErrors` clones. */
+const viteApiFallback = getEnv('VITE_API_URL', 'https://localhost:8001');
+
 export const env: EnvConfig = {
   // API Configuration
-  apiUrl: resolveApiUrl(),
+  apiUrl:
+    typeof window !== 'undefined'
+      ? resolveApiUrl(viteApiFallback, !!import.meta.env.DEV, window.location)
+      : resolveApiUrl(viteApiFallback, !!import.meta.env.DEV),
   defaultFacePrefix: getEnv('VITE_DEFAULT_FACE_PREFIX', 'public'),
 
   // OAuth2 Configuration
