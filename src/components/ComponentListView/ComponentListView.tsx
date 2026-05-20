@@ -4,6 +4,7 @@ import { AdGrid } from '../grid/AdGrid';
 import { AlbumGrid } from '../grid/AlbumGrid';
 import { BlogGrid } from '../grid/BlogGrid';
 import { ChatRoomGrid } from '../grid/ChatRoomGrid';
+import { VideoLoungeGrid } from '../grid/VideoLoungeGrid';
 import { UserProfileGrid } from '../grid/UserProfileGrid';
 import { StoryGrid } from '../grid/StoryGrid';
 import { ReelGrid } from '../grid/ReelGrid';
@@ -18,6 +19,7 @@ const COMPONENT_CONFIG: Record<number, { title: string; grid: () => React.ReactN
   5: { title: 'User Profiles', grid: () => <UserProfileGrid /> },
   6: { title: 'Stories', grid: () => <StoryGrid /> },
   7: { title: 'Reels', grid: () => <ReelGrid /> },
+  8: { title: 'Video Lounges', grid: () => <VideoLoungeGrid /> },
 };
 
 export function ComponentListView({

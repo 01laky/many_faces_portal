@@ -6,6 +6,7 @@ import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import { COMPONENT_TYPE_ID } from '../../constants/componentTypeIds';
 import { ChatRoomForm } from '../grid/ChatRoomForm';
+import { VideoLoungeForm } from '../grid/VideoLoungeForm';
 import { AlbumForm } from '../grid/AlbumForm';
 import { BlogForm } from '../grid/BlogForm';
 import { ReelForm } from '../grid/ReelForm';
@@ -16,6 +17,11 @@ const ALBUM_TYPES: GridComponentType[] = ['album', 'albumGrid', 'albumCarousel']
 const BLOG_TYPES: GridComponentType[] = ['blog', 'blogGrid', 'blogCarousel'];
 const REEL_TYPES: GridComponentType[] = ['reel', 'reelGrid', 'reelCarousel'];
 const CHAT_TYPES: GridComponentType[] = ['chatRoom', 'chatRoomGrid', 'chatRoomCarousel'];
+const VIDEO_LOUNGE_TYPES: GridComponentType[] = [
+  'videoLounge',
+  'videoLoungeGrid',
+  'videoLoungeCarousel',
+];
 const UNSUPPORTED_CREATE_COPY_KEY: Partial<Record<GridComponentType, string>> = {
   ad: 'gridBlocks.createUnsupported.ad',
   adGrid: 'gridBlocks.createUnsupported.ad',
@@ -55,8 +61,11 @@ function GridTopPanelCreateBody({
   const isBlogType = BLOG_TYPES.includes(componentType);
   const isReelType = REEL_TYPES.includes(componentType);
   const isChatRoomType = CHAT_TYPES.includes(componentType);
+  const isVideoLoungeType = VIDEO_LOUNGE_TYPES.includes(componentType);
   const isFaceHost = selectedFace?.myFaceRoleName === 'FACE_HOST';
   const canCreateChatRoom = isChatRoomType && selectedFace?.chatRoomsCreate === true && !isFaceHost;
+  const canCreateVideoLounge =
+    isVideoLoungeType && selectedFace?.videoLoungesCreate === true && !isFaceHost;
 
   const handleChatRoomSaved = useCallback(
     (roomId: number) => {
@@ -65,6 +74,15 @@ function GridTopPanelCreateBody({
       navigate(getLocalizedPath(`/detail/${COMPONENT_TYPE_ID[componentType]}/${roomId}`));
     },
     [navigate, getLocalizedPath, componentType, onSavedClose]
+  );
+
+  const handleVideoLoungeSaved = useCallback(
+    (loungeId: number) => {
+      toast.success(t('pages.videoLounge.create.success', 'Video lounge created'));
+      onSavedClose();
+      navigate(getLocalizedPath(`/detail/${COMPONENT_TYPE_ID[componentType]}/${loungeId}`));
+    },
+    [navigate, getLocalizedPath, componentType, onSavedClose, t]
   );
 
   if (isAlbumType) {
@@ -91,6 +109,26 @@ function GridTopPanelCreateBody({
             : t(
                 'gridBlocks.createUnsupported.chatRoomDisabled',
                 'Creating chat rooms is not enabled for this face.'
+              )}
+        </p>
+      </div>
+    );
+  }
+  if (isVideoLoungeType && canCreateVideoLounge) {
+    return <VideoLoungeForm onSaved={handleVideoLoungeSaved} onCancel={onCancel} />;
+  }
+  if (isVideoLoungeType && !canCreateVideoLounge) {
+    return (
+      <div className="grid-top-panel-create-fallback">
+        <p>
+          {isFaceHost
+            ? t(
+                'gridBlocks.createUnsupported.faceHostVideoLounge',
+                'Face hosts can browse video lounges but cannot create them or connect.'
+              )
+            : t(
+                'gridBlocks.createUnsupported.videoLoungeDisabled',
+                'Creating video lounges is not enabled for this face.'
               )}
         </p>
       </div>

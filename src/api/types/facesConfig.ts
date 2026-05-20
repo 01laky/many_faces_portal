@@ -39,6 +39,8 @@ export interface FaceConfig {
   allowRecensions?: boolean;
   /** When true, non-host members may create chat rooms from the app */
   chatRoomsCreate?: boolean;
+  /** When true, non-host members may create video lounges from the app */
+  videoLoungesCreate?: boolean;
   /** Current user's face role (only when authenticated) */
   myFaceRoleId?: number | null;
   myFaceRoleName?: string | null;

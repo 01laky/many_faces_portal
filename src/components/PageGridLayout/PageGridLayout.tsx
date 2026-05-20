@@ -31,6 +31,9 @@ import {
   Story,
   StoryGrid,
   StoryCarousel,
+  VideoLounge,
+  VideoLoungeGrid,
+  VideoLoungeCarousel,
 } from '../grid';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -70,6 +73,9 @@ const HAS_FOOTER: Record<GridComponentType, boolean> = {
   story: false,
   storyGrid: true,
   storyCarousel: true,
+  videoLounge: false,
+  videoLoungeGrid: true,
+  videoLoungeCarousel: true,
 };
 
 export type GridComponentType =
@@ -93,7 +99,10 @@ export type GridComponentType =
   | 'reelCarousel'
   | 'story'
   | 'storyGrid'
-  | 'storyCarousel';
+  | 'storyCarousel'
+  | 'videoLounge'
+  | 'videoLoungeGrid'
+  | 'videoLoungeCarousel';
 
 interface GridItem {
   i: string;
@@ -111,6 +120,8 @@ interface GridItem {
   icon?: string | null;
   /** When set, single `chatRoom` tile loads this room; otherwise first room in the face */
   boundChatRoomId?: number;
+  /** When set, single `videoLounge` tile loads this lounge; otherwise first lounge in the face */
+  boundVideoLoungeId?: number;
 }
 
 interface GridSchema {
@@ -256,6 +267,11 @@ export function PageGridLayout({ gridSchemaJson }: PageGridLayoutProps) {
       return <StoryGrid page={page} totalPages={totalPages} onPageChange={onChange} />;
     if (ct === 'storyCarousel')
       return <StoryCarousel page={page} totalPages={totalPages} onPageChange={onChange} />;
+    if (ct === 'videoLounge') return <VideoLounge boundVideoLoungeId={item.boundVideoLoungeId} />;
+    if (ct === 'videoLoungeGrid')
+      return <VideoLoungeGrid page={page} totalPages={totalPages} onPageChange={onChange} />;
+    if (ct === 'videoLoungeCarousel')
+      return <VideoLoungeCarousel page={page} totalPages={totalPages} onPageChange={onChange} />;
     return <span className="page-grid-item-label">{item.label || item.i}</span>;
   }
 

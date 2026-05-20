@@ -29,6 +29,7 @@ import {
   User,
   Film,
   BookOpen,
+  Video,
   type LucideIcon,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -71,6 +72,9 @@ const COMPONENT_DEFAULTS: Record<
   story: { title: 'Story', icon: BookOpen, hasFooter: false },
   storyGrid: { title: 'Stories', icon: LayoutGrid, hasFooter: true },
   storyCarousel: { title: 'Stories', icon: LayoutGrid, hasFooter: true },
+  videoLounge: { title: 'Video lounge', icon: Video, hasFooter: false },
+  videoLoungeGrid: { title: 'Video lounges', icon: LayoutGrid, hasFooter: true },
+  videoLoungeCarousel: { title: 'Video lounges', icon: LayoutGrid, hasFooter: true },
 };
 
 const STORAGE_PREFIX = 'component-settings-';
@@ -99,6 +103,11 @@ const CHAT_ROOM_COMPONENT_TYPES: GridComponentType[] = [
   'chatRoom',
   'chatRoomGrid',
   'chatRoomCarousel',
+];
+const VIDEO_LOUNGE_COMPONENT_TYPES: GridComponentType[] = [
+  'videoLounge',
+  'videoLoungeGrid',
+  'videoLoungeCarousel',
 ];
 
 export interface ComponentBlockProps {
@@ -159,8 +168,11 @@ export function ComponentBlock({
   const isBlogType = BLOG_COMPONENT_TYPES.includes(componentType);
   const isReelType = REEL_COMPONENT_TYPES.includes(componentType);
   const isChatRoomType = CHAT_ROOM_COMPONENT_TYPES.includes(componentType);
+  const isVideoLoungeType = VIDEO_LOUNGE_COMPONENT_TYPES.includes(componentType);
   const isFaceHost = selectedFace?.myFaceRoleName === 'FACE_HOST';
   const canCreateChatRoom = isChatRoomType && selectedFace?.chatRoomsCreate === true && !isFaceHost;
+  const canCreateVideoLounge =
+    isVideoLoungeType && selectedFace?.videoLoungesCreate === true && !isFaceHost;
   const unsupportedCreateType =
     componentType === 'ad' ||
     componentType === 'adGrid' ||
@@ -171,7 +183,10 @@ export function ComponentBlock({
     componentType === 'userProfile' ||
     componentType === 'userProfileGrid' ||
     componentType === 'userProfileCarousel';
-  const createDisabled = (isChatRoomType && !canCreateChatRoom) || unsupportedCreateType;
+  const createDisabled =
+    (isChatRoomType && !canCreateChatRoom) ||
+    (isVideoLoungeType && !canCreateVideoLounge) ||
+    unsupportedCreateType;
   const createTitle =
     isChatRoomType && !canCreateChatRoom
       ? isFaceHost
@@ -180,9 +195,19 @@ export function ComponentBlock({
             'gridBlocks.actions.chatRoomCreationDisabled',
             'Chat room creation is disabled for this face'
           )
-      : unsupportedCreateType
-        ? t('gridBlocks.actions.creationUnavailable', 'Creation is not available from this block')
-        : t('gridBlocks.actions.createNew', 'Create new');
+      : isVideoLoungeType && !canCreateVideoLounge
+        ? isFaceHost
+          ? t(
+              'gridBlocks.actions.hostCannotCreateVideoLounges',
+              'Hosts cannot create video lounges'
+            )
+          : t(
+              'gridBlocks.actions.videoLoungeCreationDisabled',
+              'Video lounge creation is disabled for this face'
+            )
+        : unsupportedCreateType
+          ? t('gridBlocks.actions.creationUnavailable', 'Creation is not available from this block')
+          : t('gridBlocks.actions.createNew', 'Create new');
 
   type LocalPanelMode = 'edit' | 'sort' | 'block';
   const [localPanelOpen, setLocalPanelOpen] = useState(false);

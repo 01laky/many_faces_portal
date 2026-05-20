@@ -12,4 +12,10 @@ describe('COMPONENT_TYPE_ID', () => {
     expect(COMPONENT_TYPE_ID.storyGrid).toBe(6);
     expect(COMPONENT_TYPE_ID.reel).toBe(7);
   });
+
+  it('VL-FE-09: maps all video lounge grid variants to type id 8', () => {
+    expect(COMPONENT_TYPE_ID.videoLounge).toBe(8);
+    expect(COMPONENT_TYPE_ID.videoLoungeGrid).toBe(8);
+    expect(COMPONENT_TYPE_ID.videoLoungeCarousel).toBe(8);
+  });
 });

@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
 import { ChatRoomDetailPage } from '../ChatRoomDetailPage';
+import { VideoLoungeDetailPage } from '../VideoLoungeDetailPage';
 
 /**
  * Unified detail route: `/detail/:componentTypeId/:entityId`
@@ -33,6 +34,10 @@ export function ComponentDetailPage() {
 
   if (typeId === 4) {
     return <ChatRoomDetailPage roomId={entity} />;
+  }
+
+  if (typeId === 8) {
+    return <VideoLoungeDetailPage loungeId={entity} />;
   }
 
   return (

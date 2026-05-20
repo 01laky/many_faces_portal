@@ -26,4 +26,7 @@ export const COMPONENT_TYPE_ID: Record<GridComponentType, number> = {
   reel: 7,
   reelGrid: 7,
   reelCarousel: 7,
+  videoLounge: 8,
+  videoLoungeGrid: 8,
+  videoLoungeCarousel: 8,
 };

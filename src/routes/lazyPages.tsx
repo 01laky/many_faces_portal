@@ -36,3 +36,6 @@ export const StoriesListPage = lazy(() =>
 export const MySubmissionsPage = lazy(() =>
   import('../pages/MySubmissionsPage').then((m) => ({ default: m.MySubmissionsPage }))
 );
+export const VideoLoungeDetailPage = lazy(() =>
+  import('../pages/VideoLoungeDetailPage').then((m) => ({ default: m.VideoLoungeDetailPage }))
+);

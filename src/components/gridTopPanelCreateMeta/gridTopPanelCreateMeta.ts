@@ -22,6 +22,9 @@ export const GRID_TOP_PANEL_CREATE_LABEL: Record<GridComponentType, string> = {
   story: 'Story',
   storyGrid: 'Stories',
   storyCarousel: 'Stories',
+  videoLounge: 'Video lounge',
+  videoLoungeGrid: 'Video lounges',
+  videoLoungeCarousel: 'Video lounges',
 };
 
 export function gridTopPanelHeaderTitle(state: { componentType: GridComponentType }): string {

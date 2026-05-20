@@ -1,0 +1,1 @@
+export { VideoLoungeCarousel } from './VideoLoungeCarousel';

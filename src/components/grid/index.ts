@@ -19,3 +19,6 @@ export { ReelCarousel } from './ReelCarousel';
 export { Story } from './Story';
 export { StoryGrid } from './StoryGrid';
 export { StoryCarousel } from './StoryCarousel';
+export { VideoLounge } from './VideoLounge';
+export { VideoLoungeGrid } from './VideoLoungeGrid';
+export { VideoLoungeCarousel } from './VideoLoungeCarousel';
