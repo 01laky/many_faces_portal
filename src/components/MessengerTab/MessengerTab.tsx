@@ -12,6 +12,11 @@ import {
   type MessageItem,
 } from '../../api/services/MessagesService';
 import { useMessenger } from '../../contexts/MessengerContext';
+import {
+  applyIncomingChatMessage,
+  createOptimisticOutgoingMessage,
+  removeOptimisticOutgoingMessages,
+} from '../../utils/messengerMessageMerge';
 import './MessengerTab.scss';
 
 type View = 'none' | 'chat' | 'request';
@@ -45,6 +50,7 @@ export function MessengerTab({ token }: { token: string }) {
     onMessageRequest,
     onMessageRequestAccepted,
     onMessageRequestRejected,
+    onPlatformChatError,
   } = useMessenger();
 
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
@@ -85,22 +91,31 @@ export function MessengerTab({ token }: { token: string }) {
     })();
   }, [loadData]);
 
+  const currentUserId = (() => {
+    try {
+      const stored = localStorage.getItem('auth_user');
+      if (!stored) return '';
+      const u = JSON.parse(stored) as { id?: string };
+      return u?.id || '';
+    } catch {
+      return '';
+    }
+  })();
+
   useEffect(() => {
     const unsubChat = onChatMessage((senderId, _senderName, content, sentAt, messageId) => {
-      if (selectedUserId === senderId) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: messageId,
-            senderId,
-            senderName: _senderName,
-            content,
-            sentAt,
-            readAt: null,
-          },
-        ]);
-        markMessagesAsRead(senderId, token).catch(() => {});
-      }
+      setMessages((prev) =>
+        applyIncomingChatMessage(prev, {
+          selectedUserId,
+          currentUserId,
+          senderId,
+          senderName: _senderName,
+          content,
+          sentAt,
+          messageId,
+        })
+      );
+      if (selectedUserId === senderId) markMessagesAsRead(senderId, token).catch(() => {});
       loadData();
     });
     const unsubReq = onMessageRequest((senderId, senderName, content, sentAt) => {
@@ -149,18 +164,25 @@ export function MessengerTab({ token }: { token: string }) {
         setSelectedUserId(null);
       }
     });
+    const unsubPlatformError = onPlatformChatError(() => {
+      setMessages((prev) => removeOptimisticOutgoingMessages(prev));
+      toast.error(t('messenger.sendError'));
+    });
     return () => {
       unsubChat();
       unsubReq();
       unsubAccept();
       unsubReject();
+      unsubPlatformError();
     };
   }, [
     onChatMessage,
     onMessageRequest,
     onMessageRequestAccepted,
     onMessageRequestRejected,
+    onPlatformChatError,
     selectedUserId,
+    currentUserId,
     token,
     loadData,
     t,
@@ -233,24 +255,19 @@ export function MessengerTab({ token }: { token: string }) {
   const handleSend = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!selectedUserId || !inputValue.trim() || sending) return;
+      const trimmed = inputValue.trim();
+      if (!selectedUserId || !trimmed || sending) return;
+
+      const optimisticId = -Date.now();
+      setInputValue('');
+      setMessages((prev) => [...prev, createOptimisticOutgoingMessage(trimmed, optimisticId)]);
+
       try {
         setSending(true);
-        await sendMessage(selectedUserId, inputValue.trim());
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: -1,
-            senderId: 'me',
-            senderName: '',
-            content: inputValue.trim(),
-            sentAt: new Date().toISOString(),
-            readAt: null,
-          },
-        ]);
-        setInputValue('');
+        await sendMessage(selectedUserId, trimmed);
         loadData();
       } catch {
+        setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
         toast.error(t('messenger.sendError'));
       } finally {
         setSending(false);
@@ -262,17 +279,6 @@ export function MessengerTab({ token }: { token: string }) {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  const currentUserId = (() => {
-    try {
-      const stored = localStorage.getItem('auth_user');
-      if (!stored) return '';
-      const u = JSON.parse(stored) as { id?: string };
-      return u?.id || '';
-    } catch {
-      return '';
-    }
-  })();
 
   return (
     <div className="messenger-tab">

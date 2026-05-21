@@ -111,7 +111,7 @@ export function getAllRouteTranslations(
   const translations: string[] = [englishRoute]; // Always include English
 
   // Get translations for all supported languages
-  const supportedLanguages: SupportedLanguage[] = ['en', 'sk', 'cz'];
+  const supportedLanguages: SupportedLanguage[] = ['en', 'sk', 'cz', 'de', 'fr', 'it'];
   supportedLanguages.forEach((lang) => {
     const translated = t(routeKey, { lng: lang });
     if (

@@ -36,6 +36,7 @@ interface MessengerContextValue {
   onNotification: (
     cb: (id: number, title: string, message: string, type: string, createdAt: string) => void
   ) => () => void;
+  onPlatformChatError: (cb: (code: string) => void) => () => void;
 }
 
 const MessengerContext = createContext<MessengerContextValue | null>(null);
@@ -63,6 +64,7 @@ export function MessengerProvider({
     messageRequestAccepted: new Set<(a: string, b: string) => void>(),
     messageRequestRejected: new Set<(a: string) => void>(),
     notification: new Set<(a: number, b: string, c: string, d: string, e: string) => void>(),
+    platformChatError: new Set<(code: string) => void>(),
   });
 
   const onChatMessage = useCallback(
@@ -109,6 +111,11 @@ export function MessengerProvider({
     },
     []
   );
+
+  const onPlatformChatError = useCallback((cb: (code: string) => void) => {
+    callbacksRef.current.platformChatError.add(cb);
+    return () => callbacksRef.current.platformChatError.delete(cb);
+  }, []);
 
   const sendMessage = useCallback(
     async (receiverId: string, content: string) => {
@@ -187,6 +194,10 @@ export function MessengerProvider({
       }
     );
 
+    connection.on('ReceivePlatformChatError', (code: string) => {
+      callbacksRef.current.platformChatError.forEach((cb) => cb(code));
+    });
+
     queueMicrotask(() => setConnectionState('Connecting'));
     connection
       .start()
@@ -212,6 +223,7 @@ export function MessengerProvider({
       onMessageRequestAccepted,
       onMessageRequestRejected,
       onNotification,
+      onPlatformChatError,
     }),
     [
       connectionState,
@@ -224,6 +236,7 @@ export function MessengerProvider({
       onMessageRequestAccepted,
       onMessageRequestRejected,
       onNotification,
+      onPlatformChatError,
     ]
   );
 
