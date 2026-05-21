@@ -1,6 +1,7 @@
 import { DEFAULT_PROFILE_DETAIL_GRID_SCHEMA } from './defaultProfileDetailSchema';
 import {
   PROFILE_DETAIL_SECTION_TYPES,
+  type ProfileDetailGridItem,
   type ProfileDetailGridSchema,
   type ProfileDetailSectionType,
 } from './profileDetailGridTypes';
@@ -23,6 +24,10 @@ function isSectionType(value: unknown): value is ProfileDetailSectionType {
     typeof value === 'string' &&
     PROFILE_DETAIL_SECTION_TYPES.includes(value as ProfileDetailSectionType)
   );
+}
+
+function isLayoutNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
 }
 
 /**
@@ -64,7 +69,29 @@ export function parseProfileDetailGridSchema(
     if (ids.has(item.i)) return { ok: false, error: 'duplicate_item_id' };
     ids.add(item.i);
     if (!isSectionType(item.sectionType)) return { ok: false, error: 'unknown_section_type' };
-    normalizedItems.push(item as ProfileDetailGridSchema['items'][number]);
+    if (
+      !isLayoutNumber(item.x) ||
+      !isLayoutNumber(item.y) ||
+      !isLayoutNumber(item.w) ||
+      !isLayoutNumber(item.h)
+    ) {
+      return { ok: false, error: 'invalid_item' };
+    }
+
+    const normalized: ProfileDetailGridItem = {
+      i: item.i,
+      x: item.x,
+      y: item.y,
+      w: item.w,
+      h: item.h,
+      sectionType: item.sectionType,
+    };
+    if (isLayoutNumber(item.minW)) normalized.minW = item.minW;
+    if (isLayoutNumber(item.minH)) normalized.minH = item.minH;
+    if (item.props && typeof item.props === 'object' && !Array.isArray(item.props)) {
+      normalized.props = item.props as Record<string, unknown>;
+    }
+    normalizedItems.push(normalized);
   }
 
   const breakpoints =

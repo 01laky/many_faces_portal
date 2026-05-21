@@ -45,7 +45,7 @@ describe('parseProfileDetailGridSchema', () => {
 
   it('rejects duplicate item ids', () => {
     const result = parseProfileDetailGridSchema(
-      '{"items":[{"i":"a","sectionType":"spacer"},{"i":"a","sectionType":"spacer"}],"rowHeight":80,"breakpoints":{},"cols":{}}'
+      '{"items":[{"i":"a","sectionType":"spacer","x":0,"y":0,"w":1,"h":1},{"i":"a","sectionType":"spacer","x":1,"y":0,"w":1,"h":1}],"rowHeight":80,"breakpoints":{},"cols":{}}'
     );
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toBe('duplicate_item_id');

@@ -44,7 +44,6 @@ export function BlogDetailPage() {
   const [likeLoading, setLikeLoading] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [commentLoading, setCommentLoading] = useState(false);
-  const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const loadBlog = useCallback(async () => {

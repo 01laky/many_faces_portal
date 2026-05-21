@@ -43,10 +43,10 @@ export function ProfilePageGridLayout({ schema }: ProfilePageGridLayoutProps) {
           cols={schema.cols}
           rowHeight={schema.rowHeight}
           compactor={verticalCompactor}
+          dragConfig={{ enabled: false }}
+          resizeConfig={{ enabled: false }}
           margin={[16, 16]}
           containerPadding={[0, 0]}
-          isDraggable={false}
-          isResizable={false}
         >
           {schema.items.map((item) => (
             <div key={item.i} className="profile-page-grid-layout__cell">

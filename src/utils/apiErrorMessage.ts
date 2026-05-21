@@ -42,12 +42,15 @@ export function parseApiErrorBody(raw: string, fallback: string): string {
 /** Maps axios failures (profile API, etc.) to a short user-facing message. */
 export function getAxiosApiErrorMessage(error: unknown, fallback: string): string {
   if (!error || typeof error !== 'object') return fallback;
-  const ax = error as AxiosError<{
-    error?: string;
-    title?: string;
-    detail?: string;
-    errors?: unknown;
-  }>;
+  const ax = error as AxiosError<
+    | string
+    | {
+        error?: string;
+        title?: string;
+        detail?: string;
+        errors?: unknown;
+      }
+  >;
   const data = ax.response?.data;
   if (typeof data === 'string' && data.trim()) {
     return parseApiErrorBody(data, fallback);
