@@ -4,42 +4,15 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { absoluteScopedUrl } from '../../api/faceApiRouting';
 import { Button } from '../../components/radix/Button';
+import { buildChatAiHistory, type ChatAiMessage } from '../../utils/chatAiHistory';
 import './ChatPage.scss';
 
-type MessageRole = 'user' | 'ai';
-
-interface ChatMessage {
-  role: MessageRole;
-  content: string;
-}
-
 type ConnectionState = 'Connecting' | 'Connected' | 'Disconnected' | 'Reconnecting';
-
-/** Max number of previous user/AI message pairs sent as conversation context to the AI. */
-const MAX_HISTORY_PAIRS = 5;
-
-interface ChatHistoryEntry {
-  userMessage: string;
-  aiResponse: string;
-}
-
-function buildHistory(messages: ChatMessage[]): ChatHistoryEntry[] {
-  const pairs: ChatHistoryEntry[] = [];
-  for (let i = 0; i + 1 < messages.length; i += 2) {
-    if (messages[i].role === 'user' && messages[i + 1].role === 'ai') {
-      pairs.push({
-        userMessage: messages[i].content,
-        aiResponse: messages[i + 1].content,
-      });
-    }
-  }
-  return pairs.length <= MAX_HISTORY_PAIRS ? pairs : pairs.slice(-MAX_HISTORY_PAIRS);
-}
 
 export function ChatPage() {
   const { t } = useTranslation('common');
   const { token } = useAuth();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatAiMessage[]>([]);
   const [input, setInput] = useState('');
   const [connectionState, setConnectionState] = useState<ConnectionState>('Disconnected');
   const [isSending, setIsSending] = useState(false);
@@ -103,7 +76,7 @@ export function ChatPage() {
 
     setInput('');
     setIsSending(true);
-    const history = buildHistory(messages);
+    const history = buildChatAiHistory(messages);
     try {
       await conn.invoke('SendToAi', text, history);
     } catch {
@@ -129,8 +102,7 @@ export function ChatPage() {
 
   return (
     <div className="chat-page">
-      <div className="chat-page__header">
-        <h1 className="chat-page__title">{t('pages.chat.title')}</h1>
+      <div className="chat-page__status-bar">
         <span
           className={`chat-page__status chat-page__status--${connectionState.toLowerCase()}`}
           title={connectionState}

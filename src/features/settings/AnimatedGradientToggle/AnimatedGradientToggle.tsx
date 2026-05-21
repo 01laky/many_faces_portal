@@ -9,10 +9,10 @@ export function AnimatedGradientToggle() {
 
   return (
     <div className="settings-section settings-toggle-section">
-      <label className="settings-label" htmlFor="settings-animated-gradient">
+      <div className="settings-label">
         <Sparkles size={18} />
         {t('settingsPanel.animatedGradient')}
-      </label>
+      </div>
       <label className="settings-toggle-row">
         <input
           id="settings-animated-gradient"

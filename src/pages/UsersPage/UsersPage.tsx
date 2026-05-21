@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Users, LayoutGrid, List } from 'lucide-react';
+import { Loader2, LayoutGrid, List } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { getUsers, type UserListItem } from '../../api/services/UsersListService';
 import { UserGrid } from '../../components/UserGrid';
@@ -45,10 +45,6 @@ export function UsersPage({ token }: { token: string }) {
   return (
     <div className="users-page">
       <div className="users-page-header">
-        <h1 className="users-page-title">
-          <Users size={24} />
-          {t('pages.users.title')}
-        </h1>
         <div className="users-page-view-toggle">
           <button
             type="button"

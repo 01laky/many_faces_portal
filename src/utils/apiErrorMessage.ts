@@ -1,3 +1,5 @@
+import type { AxiosError } from 'axios';
+
 /**
  * Parse API error payloads into a short user-facing string.
  * Supports: { error }, ASP.NET ProblemDetails { title, detail }, Identity-style { errors: {} }.
@@ -35,6 +37,32 @@ export function parseApiErrorBody(raw: string, fallback: string): string {
     if (trimmed.length <= 280) return trimmed;
     return fallback;
   }
+}
+
+/** Maps axios failures (profile API, etc.) to a short user-facing message. */
+export function getAxiosApiErrorMessage(error: unknown, fallback: string): string {
+  if (!error || typeof error !== 'object') return fallback;
+  const ax = error as AxiosError<{
+    error?: string;
+    title?: string;
+    detail?: string;
+    errors?: unknown;
+  }>;
+  const data = ax.response?.data;
+  if (typeof data === 'string' && data.trim()) {
+    return parseApiErrorBody(data, fallback);
+  }
+  if (data && typeof data === 'object') {
+    const obj = data as Record<string, unknown>;
+    if (typeof obj.error === 'string' && obj.error.trim()) return obj.error.trim();
+    const detail = typeof obj.detail === 'string' ? obj.detail.trim() : '';
+    const title = typeof obj.title === 'string' ? obj.title.trim() : '';
+    if (detail) return detail;
+    if (title) return title;
+    return parseApiErrorBody(JSON.stringify(obj), fallback);
+  }
+  if (error instanceof Error && error.message.trim()) return error.message.trim();
+  return fallback;
 }
 
 /** Read response body and parse; use when !res.ok (consumes body). */

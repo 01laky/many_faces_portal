@@ -7,8 +7,13 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';
-import { useProfile } from '../hooks/api/useProfileApi';
+import { useFaceConfig } from './FaceConfigContext';
+import { profileQueryKey, useProfile } from '../hooks/api/useProfileApi';
+import type { ProfileMe } from '../api/profile/profileApi';
 import {
   readGuestGradientAnimationEnabled,
   writeGuestGradientAnimationEnabled,
@@ -34,9 +39,15 @@ function readPrefersReducedMotion(): boolean {
 }
 
 export function GradientAnimationPreferenceProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { t } = useTranslation('common');
+  const { isAuthenticated, token } = useAuth();
+  const { selectedFace } = useFaceConfig();
+  const queryClient = useQueryClient();
+  const faceId = selectedFace?.id ?? null;
   const { profile, updateProfile, updateProfileLoading } = useProfile();
   const [guestEnabled, setGuestEnabled] = useState(() => readGuestGradientAnimationEnabled());
+  /** Optimistic UI while PUT is in flight (checkbox must not wait on slow profile refetch). */
+  const [pendingAuthGradient, setPendingAuthGradient] = useState<boolean | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(readPrefersReducedMotion);
 
   useEffect(() => {
@@ -47,7 +58,7 @@ export function GradientAnimationPreferenceProvider({ children }: { children: Re
   }, []);
 
   const userWantsAnimation = isAuthenticated
-    ? (profile?.enableAnimatedGradient ?? false)
+    ? (pendingAuthGradient ?? profile?.enableAnimatedGradient ?? false)
     : guestEnabled;
 
   const animationEnabled = !prefersReducedMotion && userWantsAnimation;
@@ -56,13 +67,44 @@ export function GradientAnimationPreferenceProvider({ children }: { children: Re
     async (enabled: boolean) => {
       if (prefersReducedMotion) return;
       if (isAuthenticated) {
-        await updateProfile({ enableAnimatedGradient: enabled });
+        if (!token) {
+          toast.error(
+            t('settingsPanel.animatedGradientSaveFailed', 'Could not save animation preference.')
+          );
+          return;
+        }
+        const profileKey = profileQueryKey(faceId);
+        const previous = queryClient.getQueryData<ProfileMe>(profileKey);
+        setPendingAuthGradient(enabled);
+        if (previous) {
+          queryClient.setQueryData<ProfileMe>(profileKey, {
+            ...previous,
+            enableAnimatedGradient: enabled,
+          });
+        }
+        try {
+          await updateProfile({ enableAnimatedGradient: enabled });
+          setPendingAuthGradient(null);
+        } catch (err) {
+          setPendingAuthGradient(null);
+          if (previous) {
+            queryClient.setQueryData(profileKey, previous);
+          }
+          const detail = err instanceof Error ? err.message : '';
+          toast.error(
+            detail ||
+              t(
+                'settingsPanel.animatedGradientSaveFailed',
+                'Could not save animation preference. Please try again.'
+              )
+          );
+        }
         return;
       }
       writeGuestGradientAnimationEnabled(enabled);
       setGuestEnabled(enabled);
     },
-    [isAuthenticated, prefersReducedMotion, updateProfile]
+    [isAuthenticated, token, prefersReducedMotion, updateProfile, queryClient, faceId, t]
   );
 
   const value = useMemo(

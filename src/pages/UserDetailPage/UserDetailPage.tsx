@@ -1,17 +1,8 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ArrowLeft,
-  UserCircle,
-  Loader2,
-  ShieldBan,
-  ShieldCheck,
-  UserPlus,
-  UserCheck,
-} from 'lucide-react';
+import { UserCircle, Loader2, ShieldBan, ShieldCheck, UserPlus, UserCheck } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import { getUser, type UserListItem } from '../../api/services/UsersListService';
 import { getBlockStatus, blockUser, unblockUser } from '../../api/services/UserBlocksService';
 import { getFollowStatus, followUser, unfollowUser } from '../../api/services/UserFollowsService';
@@ -20,8 +11,6 @@ import './UserDetailPage.scss';
 export function UserDetailPage({ token }: { token: string }) {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation('common');
-  const navigate = useNavigate();
-  const getLocalizedPath = useLocalizedLink();
   const [user, setUser] = useState<UserListItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -107,8 +96,6 @@ export function UserDetailPage({ token }: { token: string }) {
     }
   };
 
-  const handleBack = () => navigate(getLocalizedPath('/users'));
-
   if (loading) {
     return (
       <div className="user-detail-page user-detail-page--loading">
@@ -122,10 +109,6 @@ export function UserDetailPage({ token }: { token: string }) {
     return (
       <div className="user-detail-page user-detail-page--error">
         <h2>{t('pages.userDetail.notFound')}</h2>
-        <button type="button" className="user-detail-back-btn" onClick={handleBack}>
-          <ArrowLeft size={18} />
-          {t('common.back', 'Back')}
-        </button>
       </div>
     );
   }
@@ -137,10 +120,6 @@ export function UserDetailPage({ token }: { token: string }) {
 
   return (
     <div className="user-detail-page">
-      <button type="button" className="user-detail-back-btn" onClick={handleBack}>
-        <ArrowLeft size={18} />
-        {t('common.back', 'Back')}
-      </button>
       <div className="user-detail-card">
         <div className="user-detail-avatar">
           <UserCircle size={80} />

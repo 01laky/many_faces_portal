@@ -35,21 +35,19 @@ import {
   VideoLoungeGrid,
   VideoLoungeCarousel,
 } from '../grid';
+import {
+  advanceCarouselPage,
+  parsePageGridSchema,
+  readComponentBlockAutoplay,
+  type GridComponentType,
+  type PageGridItem,
+  type PageGridSchema,
+} from '../../utils/pageGridSchema';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import './PageGridLayout.scss';
 
-const COMPONENT_SETTINGS_PREFIX = 'component-settings-';
-
-function readBlockAutoplay(componentId: string): boolean {
-  try {
-    const raw = localStorage.getItem(COMPONENT_SETTINGS_PREFIX + componentId);
-    if (!raw) return false;
-    return Boolean(JSON.parse(raw).autoplay);
-  } catch {
-    return false;
-  }
-}
+export type { GridComponentType } from '../../utils/pageGridSchema';
 
 const HAS_FOOTER: Record<GridComponentType, boolean> = {
   album: false,
@@ -78,59 +76,6 @@ const HAS_FOOTER: Record<GridComponentType, boolean> = {
   videoLoungeCarousel: true,
 };
 
-export type GridComponentType =
-  | 'album'
-  | 'albumGrid'
-  | 'albumCarousel'
-  | 'ad'
-  | 'adGrid'
-  | 'adCarousel'
-  | 'blog'
-  | 'blogGrid'
-  | 'blogCarousel'
-  | 'chatRoom'
-  | 'chatRoomGrid'
-  | 'chatRoomCarousel'
-  | 'userProfile'
-  | 'userProfileGrid'
-  | 'userProfileCarousel'
-  | 'reel'
-  | 'reelGrid'
-  | 'reelCarousel'
-  | 'story'
-  | 'storyGrid'
-  | 'storyCarousel'
-  | 'videoLounge'
-  | 'videoLoungeGrid'
-  | 'videoLoungeCarousel';
-
-interface GridItem {
-  i: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  minW?: number;
-  minH?: number;
-  label?: string;
-  componentType?: GridComponentType;
-  /** Title shown in component header (from admin) */
-  title?: string | null;
-  /** Icon key for header (from admin) */
-  icon?: string | null;
-  /** When set, single `chatRoom` tile loads this room; otherwise first room in the face */
-  boundChatRoomId?: number;
-  /** When set, single `videoLounge` tile loads this lounge; otherwise first lounge in the face */
-  boundVideoLoungeId?: number;
-}
-
-interface GridSchema {
-  items: GridItem[];
-  breakpoints: Record<string, number>;
-  cols: Record<string, number>;
-  rowHeight: number;
-}
-
 interface PageGridLayoutProps {
   gridSchemaJson: string;
 }
@@ -138,13 +83,10 @@ interface PageGridLayoutProps {
 export function PageGridLayout({ gridSchemaJson }: PageGridLayoutProps) {
   const { width, containerRef } = useContainerWidth();
 
-  const schema = useMemo<GridSchema | null>(() => {
-    try {
-      return JSON.parse(gridSchemaJson);
-    } catch {
-      return null;
-    }
-  }, [gridSchemaJson]);
+  const schema = useMemo<PageGridSchema | null>(
+    () => parsePageGridSchema(gridSchemaJson),
+    [gridSchemaJson]
+  );
 
   const layouts = useMemo<ResponsiveLayouts>(() => {
     if (!schema) return {};
@@ -211,19 +153,19 @@ export function PageGridLayout({ gridSchemaJson }: PageGridLayoutProps) {
       setPagination((prev) => {
         const cur = prev[id];
         if (!cur || cur.totalPages <= 1) return prev;
-        const nextPage = cur.page >= cur.totalPages - 1 ? 0 : cur.page + 1;
+        const nextPage = advanceCarouselPage(cur.page, cur.totalPages);
         return { ...prev, [id]: { ...cur, page: nextPage } };
       });
     }, 4500);
     return () => clearInterval(interval);
   }, [autoplayingItemId]);
 
-  if (!schema || !schema.items || schema.items.length === 0) {
+  if (!schema) {
     return null;
   }
 
   function renderChild(
-    item: GridItem,
+    item: PageGridItem,
     paginationState: { page: number; totalPages: number } | undefined,
     onPageChange: ((page: number, totalPages: number) => void) | undefined
   ) {
@@ -321,7 +263,7 @@ export function PageGridLayout({ gridSchemaJson }: PageGridLayoutProps) {
                 onPrev={hasFooter ? () => setPage(-1) : undefined}
                 onNext={hasFooter ? () => setPage(1) : undefined}
                 onPlayPause={hasFooter ? playPauseByItemId.get(item.i) : undefined}
-                autoplayFromStorage={hasFooter ? readBlockAutoplay(item.i) : false}
+                autoplayFromStorage={hasFooter ? readComponentBlockAutoplay(item.i) : false}
               >
                 {renderChild(item, paginationState, pageChangeByItemId.get(item.i))}
               </ComponentBlock>

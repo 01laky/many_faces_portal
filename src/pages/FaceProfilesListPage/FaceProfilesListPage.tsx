@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, UserCircle } from 'lucide-react';
+import { UserCircle } from 'lucide-react';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
@@ -10,7 +10,7 @@ import './FaceProfilesListPage.scss';
 
 export function FaceProfilesListPage() {
   const { t } = useTranslation('common');
-  const { selectedFace, getFaceHomePath } = useFaceConfig();
+  const { selectedFace } = useFaceConfig();
   const { token } = useAuth();
   const getLocalizedPath = useLocalizedLink();
   const [items, setItems] = useState<FaceProfileListItem[]>([]);
@@ -55,13 +55,6 @@ export function FaceProfilesListPage() {
 
   return (
     <div className="face-profiles-list-page">
-      <div className="face-profiles-list-page__header">
-        <Link to={getLocalizedPath(getFaceHomePath())} className="face-profiles-list-page__back">
-          <ArrowLeft size={20} />
-          {t('common.back')}
-        </Link>
-        <h1>{t('faceProfiles.listTitle')}</h1>
-      </div>
       {loading && <p className="face-profiles-list-page__muted">{t('faceProfiles.loading')}</p>}
       {error && <p className="face-profiles-list-page__error">{error}</p>}
       {!loading && !error && items.length === 0 && (

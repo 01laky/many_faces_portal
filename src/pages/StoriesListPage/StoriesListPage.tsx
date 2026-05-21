@@ -1,19 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ImageIcon } from 'lucide-react';
+import { ImageIcon } from 'lucide-react';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import { env } from '../../config/env';
 import { fetchStoriesForFace, type StoryListItem } from '../../api/services/storiesApi';
 import './StoriesListPage.scss';
 
 export function StoriesListPage() {
   const { t } = useTranslation('common');
-  const { selectedFace, getFaceHomePath } = useFaceConfig();
+  const { selectedFace } = useFaceConfig();
   const { token } = useAuth();
-  const getLocalizedPath = useLocalizedLink();
   const [items, setItems] = useState<StoryListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,14 +51,6 @@ export function StoriesListPage() {
 
   return (
     <div className="stories-list-page">
-      <div className="stories-list-page__header">
-        <Link to={getLocalizedPath(getFaceHomePath())} className="stories-list-page__back">
-          <ArrowLeft size={20} />
-          {t('common.back')}
-        </Link>
-        <h1>{t('stories.listTitle')}</h1>
-        <p className="stories-list-page__hint">{t('stories.listHint')}</p>
-      </div>
       {loading && <p className="stories-list-page__muted">{t('stories.loading')}</p>}
       {error && <p className="stories-list-page__error">{error}</p>}
       {!loading && !error && items.length === 0 && (

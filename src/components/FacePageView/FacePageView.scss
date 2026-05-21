@@ -1,15 +1,16 @@
 .face-page-view {
+  width: 100%;
   min-height: calc(100vh - 80px);
-  padding: 2rem 1rem;
+  padding: 2rem 0;
 }
 
 .face-page-content {
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;
 }
 
 .face-page-header {
   margin-bottom: 1rem;
+  padding-inline: 1rem;
 }
 
 .face-page-empty {
@@ -18,4 +19,5 @@
   justify-content: center;
   min-height: 200px;
   text-align: center;
+  padding-inline: 1rem;
 }

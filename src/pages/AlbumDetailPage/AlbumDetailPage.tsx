@@ -1,7 +1,7 @@
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Heart, MessageSquare, Loader2, Pencil, Trash2, Send } from 'lucide-react';
+import { Heart, MessageSquare, Loader2, Pencil, Trash2, Send } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
@@ -17,10 +17,8 @@ import {
   type AlbumComment,
 } from '../../api/services/AlbumsService';
 import { AlbumForm } from '../../components/grid/AlbumForm';
-import {
-  canOwnerUseModerationEditorActions,
-  isCreatorModerationDeleteAllowed,
-} from '../../utils/contentModeration';
+import { useContentDetailAutoEdit } from '../../hooks/useContentDetailAutoEdit';
+import { getContentDetailOwnerFlags } from '../../utils/contentDetailPage';
 import './AlbumDetailPage.scss';
 
 const ALBUM_TYPE_LABELS: Record<number, string> = { 1: 'Public', 2: 'Private', 3: 'Paid' };
@@ -33,8 +31,6 @@ const MEDIA_TYPE_LABELS: Record<number, string> = { 1: 'Image', 2: 'Video' };
 export function AlbumDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { token, user } = useAuth();
-  const [searchParams] = useSearchParams();
-  const autoEditApplied = useRef(false);
   const { t } = useTranslation('common');
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
@@ -46,7 +42,6 @@ export function AlbumDetailPage() {
   const [likeLoading, setLikeLoading] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [commentLoading, setCommentLoading] = useState(false);
-  const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const loadAlbum = useCallback(async () => {
@@ -81,24 +76,16 @@ export function AlbumDetailPage() {
     })();
   }, [loadAlbum, loadComments]);
 
-  // Ownership + moderation policy: mirrors backend creator edit/delete rules for header UX only.
-  const isOwner = Boolean(user?.id && album?.creatorId && user.id === album.creatorId);
-  const showEditUi = canOwnerUseModerationEditorActions(isOwner, album?.approvalStatus);
-  const showDeleteUi = isOwner && isCreatorModerationDeleteAllowed(album?.approvalStatus);
-
-  useEffect(() => {
-    // Reset deep-link auto edit when navigating between album ids in-session.
-    autoEditApplied.current = false;
-  }, [id]);
-
-  useEffect(() => {
-    // Honor `?edit=1` from "My submissions" once the entity is loaded and edits are permitted.
-    if (!album || !showEditUi || autoEditApplied.current) return;
-    if (searchParams.get('edit') !== '1') return;
-    autoEditApplied.current = true;
-    const schedule = window.setTimeout(() => setEditing(true), 0);
-    return () => window.clearTimeout(schedule);
-  }, [album, searchParams, showEditUi]);
+  const { showEditUi, showDeleteUi } = getContentDetailOwnerFlags(
+    user?.id,
+    album?.creatorId,
+    album?.approvalStatus
+  );
+  const { editing, setEditing } = useContentDetailAutoEdit({
+    routeId: id,
+    entityLoaded: Boolean(album),
+    showEditUi,
+  });
 
   const handleLike = async () => {
     if (!album || !token) return;
@@ -178,10 +165,6 @@ export function AlbumDetailPage() {
   if (error || !album) {
     return (
       <div className="album-detail-page">
-        <button className="album-detail-back" onClick={() => navigate(-1)}>
-          <ArrowLeft size={18} />
-          <span>{t('back')}</span>
-        </button>
         <div className="album-detail-error">{t('albumDetail.notFound', 'Album not found')}</div>
       </div>
     );
@@ -189,37 +172,35 @@ export function AlbumDetailPage() {
 
   return (
     <div className="album-detail-page">
-      <div className="album-detail-header">
-        <button className="album-detail-back" onClick={() => navigate(-1)}>
-          <ArrowLeft size={18} />
-          <span>{t('back')}</span>
-        </button>
-        <div className="album-detail-header-actions">
-          {showEditUi && (
-            <button
-              className="album-detail-action-btn"
-              onClick={() => setEditing(!editing)}
-              title="Edit"
-            >
-              <Pencil size={16} />
-            </button>
-          )}
-          {showDeleteUi && (
-            <button
-              className="album-detail-action-btn album-detail-action-btn--danger"
-              onClick={handleDelete}
-              disabled={deleting}
-              title="Delete"
-            >
-              {deleting ? (
-                <Loader2 size={16} className="album-detail-spinner" />
-              ) : (
-                <Trash2 size={16} />
-              )}
-            </button>
-          )}
+      {(showEditUi || showDeleteUi) && (
+        <div className="album-detail-header">
+          <div className="album-detail-header-actions">
+            {showEditUi && (
+              <button
+                className="album-detail-action-btn"
+                onClick={() => setEditing(!editing)}
+                title="Edit"
+              >
+                <Pencil size={16} />
+              </button>
+            )}
+            {showDeleteUi && (
+              <button
+                className="album-detail-action-btn album-detail-action-btn--danger"
+                onClick={handleDelete}
+                disabled={deleting}
+                title="Delete"
+              >
+                {deleting ? (
+                  <Loader2 size={16} className="album-detail-spinner" />
+                ) : (
+                  <Trash2 size={16} />
+                )}
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {editing && showEditUi && (
         <div className="album-detail-edit-panel">

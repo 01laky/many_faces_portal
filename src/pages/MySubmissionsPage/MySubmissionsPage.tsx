@@ -27,13 +27,6 @@ export function MySubmissionsPage() {
 
   return (
     <main className="my-submissions-page">
-      <header className="my-submissions-page__header">
-        <div>
-          <h1>My submissions</h1>
-          <p>Track albums, blogs and reels you submitted for approval.</p>
-        </div>
-      </header>
-
       {isLoading && <p>Loading submissions...</p>}
       {error && <p role="alert">Failed to load your submissions.</p>}
       {!isLoading && !error && (data ?? []).length === 0 && (

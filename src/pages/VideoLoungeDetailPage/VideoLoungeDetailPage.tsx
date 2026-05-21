@@ -1,8 +1,7 @@
-import { useNavigate } from 'react-router-dom';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
@@ -40,8 +39,6 @@ export function VideoLoungeDetailPage({ loungeId: loungeIdProp }: { loungeId: nu
   const { token } = useAuth();
   const { selectedFace } = useFaceConfig();
   const { t } = useTranslation('common');
-  const navigate = useNavigate();
-
   const [lounge, setLounge] = useState<FaceVideoLoungeDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -288,14 +285,6 @@ export function VideoLoungeDetailPage({ loungeId: loungeIdProp }: { loungeId: nu
     }
   };
 
-  const handleBack = () => {
-    if (phase === 'live') {
-      void handleLeaveLive();
-      return;
-    }
-    navigate(-1);
-  };
-
   if (!selectedFace) {
     return (
       <div className="vl-detail vl-detail--centered">
@@ -316,10 +305,6 @@ export function VideoLoungeDetailPage({ loungeId: loungeIdProp }: { loungeId: nu
     return (
       <div className="vl-detail vl-detail--centered">
         <p>{t('pages.videoLounge.notFound', 'Video lounge not found.')}</p>
-        <button type="button" className="vl-detail-back" onClick={() => navigate(-1)}>
-          <ArrowLeft size={18} />
-          {t('common.back', 'Back')}
-        </button>
       </div>
     );
   }
@@ -329,22 +314,11 @@ export function VideoLoungeDetailPage({ loungeId: loungeIdProp }: { loungeId: nu
 
   return (
     <div className="vl-detail" data-phase={phase} data-testid="video-lounge-detail">
-      <header className="vl-detail-header">
-        <button type="button" className="vl-detail-back" onClick={handleBack}>
-          <ArrowLeft size={18} />
-          {t('common.back', 'Back')}
-        </button>
-        <div className="vl-detail-title-block">
-          <h1 className="vl-detail-title">{lounge.title}</h1>
-          {lounge.description ? <p className="vl-detail-desc">{lounge.description}</p> : null}
-          <p className="vl-detail-meta">
-            {lounge.memberCount} {t('pages.videoLounge.lobby.members', 'members')}
-            {lounge.isHostViewer
-              ? ` · ${t('pages.videoLounge.lobby.hostViewShort', 'Host view')}`
-              : ''}
-          </p>
-        </div>
-      </header>
+      {lounge.description ? <p className="vl-detail-desc">{lounge.description}</p> : null}
+      <p className="vl-detail-meta">
+        {lounge.memberCount} {t('pages.videoLounge.lobby.members', 'members')}
+        {lounge.isHostViewer ? ` · ${t('pages.videoLounge.lobby.hostViewShort', 'Host view')}` : ''}
+      </p>
 
       {showMembershipActions && (
         <div className="vl-detail-actions">

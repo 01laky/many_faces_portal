@@ -45,12 +45,15 @@ export function useProfile() {
       lastName?: string | null;
       enableAnimatedGradient?: boolean;
     }) => profileApi.updateProfile(token, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: profileQueryKey() }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: profileQueryKey(faceId) }),
   });
 
   const uploadGlobalMutation = useMutation({
     mutationFn: (file: File) => profileApi.uploadGlobalAvatar(token, file),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: profileQueryKey() }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: profileQueryKey() });
+      void queryClient.invalidateQueries({ queryKey: profileQueryKey(faceId) });
+    },
   });
 
   const uploadFaceMutation = useMutation({

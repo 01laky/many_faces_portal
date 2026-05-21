@@ -62,12 +62,19 @@ export function getEffectiveFacePrefix(pathname: string, defaultFacePrefix: stri
   return extractFacePathFromPathname(pathname) ?? defaultFacePrefix;
 }
 
+/**
+ * Account-wide API routes that must stay at `/api/...` (not `/{face}/api/...`).
+ * Profile and "my content" are user-scoped, not face-scoped — rewriting them breaks PUT/GET and
+ * triggers the global axios 401 handler (session cleared while toggling settings).
+ */
 export function isApiPathExemptFromFacePrefix(absPath: string): boolean {
   const p = absPath.split('?')[0].toLowerCase();
   return (
     p.startsWith('/api/oauth2') ||
     p.startsWith('/api/auth') ||
-    p.startsWith('/api/localization')
+    p.startsWith('/api/localization') ||
+    p.startsWith('/api/profile') ||
+    p.startsWith('/api/my/')
   );
 }
 

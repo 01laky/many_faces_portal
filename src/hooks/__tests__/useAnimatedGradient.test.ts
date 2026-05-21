@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildAnimatedGradientStyleVars } from '../useAnimatedGradient';
+import { buildAnimatedGradientStyleVars, parseGradientSettings } from '../useAnimatedGradient';
 
 const animatedFaceJson = JSON.stringify({
   type: 'linear',
@@ -7,6 +7,26 @@ const animatedFaceJson = JSON.stringify({
   angle: 118,
   animation: 'rotate',
   animationSpeed: 16,
+});
+
+describe('parseGradientSettings', () => {
+  it('returns null for empty or invalid JSON', () => {
+    expect(parseGradientSettings(null)).toBeNull();
+    expect(parseGradientSettings('{bad')).toBeNull();
+    expect(parseGradientSettings(JSON.stringify({ colors: ['#fff'] }))).toBeNull();
+  });
+
+  it('normalizes radial type and unknown animation to defaults', () => {
+    const parsed = parseGradientSettings(
+      JSON.stringify({
+        type: 'radial',
+        colors: ['#111', '#222'],
+        animation: 'unknown',
+      })
+    );
+    expect(parsed?.type).toBe('radial');
+    expect(parsed?.animation).toBe('none');
+  });
 });
 
 describe('buildAnimatedGradientStyleVars', () => {

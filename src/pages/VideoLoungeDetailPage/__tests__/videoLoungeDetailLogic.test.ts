@@ -81,6 +81,41 @@ describe('videoLoungeDetailLogic', () => {
     expect(joinLiveErrorI18nKey(409)).toBe('pages.videoLounge.lobby.roomFull');
   });
 
+  it('joinLiveErrorI18nKey maps 403 and ignores other statuses', () => {
+    expect(joinLiveErrorI18nKey(403)).toBe('pages.videoLounge.lobby.cannotConnect');
+    expect(joinLiveErrorI18nKey(500)).toBeNull();
+  });
+
+  it('isConnectEnabled blocks busy, disconnected, and host viewers', () => {
+    expect(
+      isConnectEnabled({
+        joinMode: 'Full',
+        previewReady: true,
+        connectBusy: true,
+        canConnect: true,
+        isHostViewer: false,
+      })
+    ).toBe(false);
+    expect(
+      isConnectEnabled({
+        joinMode: 'Full',
+        previewReady: true,
+        connectBusy: false,
+        canConnect: false,
+        isHostViewer: false,
+      })
+    ).toBe(false);
+  });
+
+  it('formatVideoLoungeLiveBadge clamps negative counts', () => {
+    expect(formatVideoLoungeLiveBadge(-1)).toBe('Live · 0');
+  });
+
+  it('msUntilTokenRefresh returns 0 for invalid expiry', () => {
+    expect(msUntilTokenRefresh('not-a-date')).toBe(0);
+    expect(msUntilTokenRefresh(new Date(Date.now() - 120_000).toISOString())).toBe(0);
+  });
+
   it('VL-FE-20: Viewer hides mic/cam controls', () => {
     expect(liveControlsForMode('Viewer')).toEqual({ showMic: false, showCamera: false });
     expect(liveControlsForMode('Listener')).toEqual({ showMic: true, showCamera: false });

@@ -1,7 +1,7 @@
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Heart, MessageSquare, Loader2, Pencil, Trash2, Send } from 'lucide-react';
+import { Heart, MessageSquare, Loader2, Pencil, Trash2, Send } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
@@ -17,10 +17,8 @@ import {
   type BlogComment,
 } from '../../api/services/BlogsService';
 import { BlogForm } from '../../components/grid/BlogForm';
-import {
-  canOwnerUseModerationEditorActions,
-  isCreatorModerationDeleteAllowed,
-} from '../../utils/contentModeration';
+import { useContentDetailAutoEdit } from '../../hooks/useContentDetailAutoEdit';
+import { getContentDetailOwnerFlags } from '../../utils/contentDetailPage';
 import {
   htmlToPlainTextPreview,
   shouldUsePlainTextModerationPreview,
@@ -35,8 +33,6 @@ import './BlogDetailPage.scss';
 export function BlogDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { token, user } = useAuth();
-  const [searchParams] = useSearchParams();
-  const autoEditApplied = useRef(false);
   const { t } = useTranslation('common');
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
@@ -83,25 +79,17 @@ export function BlogDetailPage() {
     })();
   }, [loadBlog, loadComments]);
 
-  // Ownership + moderation policy: mirrors backend creator edit/delete rules for header UX only.
-  const isOwner = Boolean(user?.id && blog?.creatorId && user.id === blog.creatorId);
-  const showEditUi = canOwnerUseModerationEditorActions(isOwner, blog?.approvalStatus);
-  const showDeleteUi = isOwner && isCreatorModerationDeleteAllowed(blog?.approvalStatus);
+  const { isOwner, showEditUi, showDeleteUi } = getContentDetailOwnerFlags(
+    user?.id,
+    blog?.creatorId,
+    blog?.approvalStatus
+  );
+  const { editing, setEditing } = useContentDetailAutoEdit({
+    routeId: id,
+    entityLoaded: Boolean(blog),
+    showEditUi,
+  });
   const usePlainTextPreview = shouldUsePlainTextModerationPreview(blog?.approvalStatus, isOwner);
-
-  useEffect(() => {
-    // Reset deep-link auto edit when navigating between blog ids in-session.
-    autoEditApplied.current = false;
-  }, [id]);
-
-  useEffect(() => {
-    // Honor `?edit=1` from "My submissions" once the entity is loaded and edits are permitted.
-    if (!blog || !showEditUi || autoEditApplied.current) return;
-    if (searchParams.get('edit') !== '1') return;
-    autoEditApplied.current = true;
-    const schedule = window.setTimeout(() => setEditing(true), 0);
-    return () => window.clearTimeout(schedule);
-  }, [blog, searchParams, showEditUi]);
 
   const handleLike = async () => {
     if (!blog || !token) return;
@@ -181,10 +169,6 @@ export function BlogDetailPage() {
   if (error || !blog) {
     return (
       <div className="blog-detail-page">
-        <button className="blog-detail-back" onClick={() => navigate(-1)}>
-          <ArrowLeft size={18} />
-          <span>{t('back')}</span>
-        </button>
         <div className="blog-detail-error">{t('blogDetail.notFound', 'Blog not found')}</div>
       </div>
     );
@@ -192,37 +176,35 @@ export function BlogDetailPage() {
 
   return (
     <div className="blog-detail-page">
-      <div className="blog-detail-header">
-        <button className="blog-detail-back" onClick={() => navigate(-1)}>
-          <ArrowLeft size={18} />
-          <span>{t('back')}</span>
-        </button>
-        <div className="blog-detail-header-actions">
-          {showEditUi && (
-            <button
-              className="blog-detail-action-btn"
-              onClick={() => setEditing(!editing)}
-              title="Edit"
-            >
-              <Pencil size={16} />
-            </button>
-          )}
-          {showDeleteUi && (
-            <button
-              className="blog-detail-action-btn blog-detail-action-btn--danger"
-              onClick={handleDelete}
-              disabled={deleting}
-              title="Delete"
-            >
-              {deleting ? (
-                <Loader2 size={16} className="blog-detail-spinner" />
-              ) : (
-                <Trash2 size={16} />
-              )}
-            </button>
-          )}
+      {(showEditUi || showDeleteUi) && (
+        <div className="blog-detail-header">
+          <div className="blog-detail-header-actions">
+            {showEditUi && (
+              <button
+                className="blog-detail-action-btn"
+                onClick={() => setEditing(!editing)}
+                title="Edit"
+              >
+                <Pencil size={16} />
+              </button>
+            )}
+            {showDeleteUi && (
+              <button
+                className="blog-detail-action-btn blog-detail-action-btn--danger"
+                onClick={handleDelete}
+                disabled={deleting}
+                title="Delete"
+              >
+                {deleting ? (
+                  <Loader2 size={16} className="blog-detail-spinner" />
+                ) : (
+                  <Trash2 size={16} />
+                )}
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {editing && showEditUi && (
         <div className="blog-detail-edit-panel">

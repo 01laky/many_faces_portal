@@ -129,7 +129,9 @@ export function Header({
                   <Home size={20} />
                 </Link>
                 {selectedFace?.pages
-                  .filter((p) => p.pageType?.index !== 'home')
+                  .filter(
+                    (p) => p.pageType?.index !== 'home' && p.pageType?.index !== 'profileDetail'
+                  )
                   .map((page) => {
                     const pagePath = page.path.startsWith('/') ? page.path.slice(1) : page.path;
                     const linkPath = `/${selectedFace.index}/${pagePath}`;

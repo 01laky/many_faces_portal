@@ -66,6 +66,13 @@ describe('content moderation helpers', () => {
     expect(getSubmissionGroupKey(approvalStatus, aiReviewStatus)).toBe(expected);
   });
 
+  it('groupSubmissionsByStatus returns empty buckets for empty input', () => {
+    const grouped = groupSubmissionsByStatus([]);
+    expect(grouped.pendingApproval).toHaveLength(0);
+    expect(grouped.approved).toHaveLength(0);
+    expect(grouped.removed).toHaveLength(0);
+  });
+
   it('groups my submissions by creator-facing status', () => {
     const grouped = groupSubmissionsByStatus([
       {

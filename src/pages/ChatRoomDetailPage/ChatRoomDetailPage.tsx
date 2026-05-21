@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { HubConnection } from '@microsoft/signalr';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Loader2, Send } from 'lucide-react';
+import { Loader2, Send } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { buildAuthenticatedHubConnection } from '../../api/signalr/buildAuthenticatedHubConnection';
 import { useAuth } from '../../contexts/AuthContext';
@@ -22,7 +22,6 @@ export function ChatRoomDetailPage({ roomId: roomIdProp }: { roomId: number }) {
   const { selectedFace } = useFaceConfig();
   const { t } = useTranslation('common');
   const navigate = useNavigate();
-
   const [room, setRoom] = useState<FaceChatRoomDto | null>(null);
   const [messages, setMessages] = useState<FaceChatRoomMessageDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -176,8 +175,6 @@ export function ChatRoomDetailPage({ roomId: roomIdProp }: { roomId: number }) {
     }
   };
 
-  const handleBack = () => navigate(-1);
-
   if (!selectedFace) {
     return (
       <div className="chatroom-detail chatroom-detail--centered">
@@ -198,10 +195,6 @@ export function ChatRoomDetailPage({ roomId: roomIdProp }: { roomId: number }) {
     return (
       <div className="chatroom-detail chatroom-detail--centered">
         <p>{t('chatRoom.notFound', 'Room not found.')}</p>
-        <button type="button" className="chatroom-detail-back" onClick={handleBack}>
-          <ArrowLeft size={18} />
-          {t('common.back', 'Back')}
-        </button>
       </div>
     );
   }
@@ -211,21 +204,12 @@ export function ChatRoomDetailPage({ roomId: roomIdProp }: { roomId: number }) {
 
   return (
     <div className="chatroom-detail">
-      <header className="chatroom-detail-header">
-        <button type="button" className="chatroom-detail-back" onClick={handleBack}>
-          <ArrowLeft size={18} />
-          {t('common.back', 'Back')}
-        </button>
-        <div className="chatroom-detail-title-block">
-          <h1 className="chatroom-detail-title">{room.title}</h1>
-          {room.description ? <p className="chatroom-detail-desc">{room.description}</p> : null}
-          <p className="chatroom-detail-meta">
-            {room.memberCount} {t('chatRoom.members', 'members')}
-            {room.isSystemManaged ? ` · ${t('chatRoom.system', 'System')}` : ''}
-            {room.isHostViewer ? ` · ${t('chatRoom.hostView', 'Host view — read only')}` : ''}
-          </p>
-        </div>
-      </header>
+      {room.description ? <p className="chatroom-detail-desc">{room.description}</p> : null}
+      <p className="chatroom-detail-meta">
+        {room.memberCount} {t('chatRoom.members', 'members')}
+        {room.isSystemManaged ? ` · ${t('chatRoom.system', 'System')}` : ''}
+        {room.isHostViewer ? ` · ${t('chatRoom.hostView', 'Host view — read only')}` : ''}
+      </p>
 
       {!canReadMessages && room.canParticipate && (
         <div className="chatroom-detail-actions">
