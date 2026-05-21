@@ -1,5 +1,24 @@
 # Many Faces AI (MFAI) - frontend application
 
+**User-facing web experience for Many Faces AI.** This React app renders face-scoped social spaces: dynamic page grids, localized routes, auth flows, content modules, stories, chat rooms, profiles, submissions, and role-aware actions backed by the API.
+
+| Start here          | Link                                                                                               |
+| ------------------- | -------------------------------------------------------------------------------------------------- |
+| Run in full stack   | `../scripts/start-all-dev.sh` from `many_faces_main`                                               |
+| Local app           | `http://localhost:9080` / `https://localhost:9081` via portal proxy                                |
+| Content approval UX | [`../docs/guides/ai-assisted-content-approval.md`](../docs/guides/ai-assisted-content-approval.md) |
+| Static i18n         | [`../docs/guides/static-localization-and-i18n.md`](../docs/guides/static-localization-and-i18n.md) |
+
+```mermaid
+flowchart LR
+    browser["User browser"] --> portal["many_faces_portal<br/>React + Vite"]
+    portal --> face["FaceConfigContext<br/>selected face + pages"]
+    face --> api["many_faces_backend<br/>face-scoped REST"]
+    api --> pg["PostgreSQL<br/>faces · pages · content"]
+    face --> grid["PageGridLayout<br/>admin-managed schema"]
+    grid --> blocks["albums · blogs · reels · stories · chats · profiles"]
+```
+
 ## Overview
 
 The MFAI frontend is the user-facing React application for Many Faces AI. It is responsible for rendering configurable face pages, localized navigation, authenticated social experiences, dynamic page grids, media-rich content blocks, profiles, chats, stories, albums, blogs, reels, wall listings, and role-aware user flows on top of the backend API.
