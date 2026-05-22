@@ -9,6 +9,8 @@ import './ChatPage.scss';
 
 type ConnectionState = 'Connecting' | 'Connected' | 'Disconnected' | 'Reconnecting';
 
+type AiEnabledResponse = { enabled: boolean };
+
 export function ChatPage() {
   const { t } = useTranslation('common');
   const { token } = useAuth();
@@ -16,6 +18,7 @@ export function ChatPage() {
   const [input, setInput] = useState('');
   const [connectionState, setConnectionState] = useState<ConnectionState>('Disconnected');
   const [isSending, setIsSending] = useState(false);
+  const [aiGloballyEnabled, setAiGloballyEnabled] = useState(true);
   const connectionRef = useRef<HubConnection | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -26,6 +29,23 @@ export function ChatPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(absoluteScopedUrl('/api/ai/enabled'));
+        if (!res.ok) return;
+        const body = (await res.json()) as AiEnabledResponse;
+        if (!cancelled) setAiGloballyEnabled(body.enabled !== false);
+      } catch {
+        /* keep default enabled — hub still returns a friendly message when off */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Build and start SignalR connection when token is available
   useEffect(() => {
@@ -69,7 +89,7 @@ export function ChatPage() {
 
   const handleSend = async () => {
     const text = input.trim();
-    if (!text || isSending || connectionState !== 'Connected') return;
+    if (!text || isSending || connectionState !== 'Connected' || !aiGloballyEnabled) return;
 
     const conn = connectionRef.current;
     if (!conn) return;
@@ -91,6 +111,8 @@ export function ChatPage() {
     }
   };
 
+  const inputDisabled = connectionState !== 'Connected' || isSending || !aiGloballyEnabled;
+
   const statusLabel =
     connectionState === 'Connecting'
       ? t('pages.chat.connecting')
@@ -111,8 +133,14 @@ export function ChatPage() {
         </span>
       </div>
 
+      {!aiGloballyEnabled && (
+        <p className="chat-page__ai-disabled" role="status">
+          {t('pages.chat.aiDisabled')}
+        </p>
+      )}
+
       <div className="chat-page__messages">
-        {messages.length === 0 && connectionState === 'Connected' && (
+        {messages.length === 0 && connectionState === 'Connected' && aiGloballyEnabled && (
           <p className="chat-page__empty">{t('pages.chat.placeholder')}</p>
         )}
         {messages.map((msg, i) => (
@@ -136,16 +164,17 @@ export function ChatPage() {
         <input
           type="text"
           className="chat-page__input"
-          placeholder={t('pages.chat.placeholder')}
+          placeholder={aiGloballyEnabled ? t('pages.chat.placeholder') : t('pages.chat.aiDisabled')}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          disabled={connectionState !== 'Connected' || isSending}
+          disabled={inputDisabled}
+          aria-disabled={inputDisabled}
         />
         <Button
           type="button"
           onClick={handleSend}
-          disabled={!input.trim() || connectionState !== 'Connected' || isSending}
+          disabled={!input.trim() || inputDisabled}
           className="chat-page__send"
         >
           {t('pages.chat.send')}
