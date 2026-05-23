@@ -17,30 +17,15 @@ import {
   createOptimisticOutgoingMessage,
   removeOptimisticOutgoingMessages,
 } from '../../utils/messengerMessageMerge';
+import { formatMessageTime } from '../../utils/formatMessageTime';
+import { useAuth } from '../../contexts/AuthContext';
 import './MessengerTab.scss';
 
 type View = 'none' | 'chat' | 'request';
 
-function formatTime(iso: string) {
-  try {
-    const d = new Date(iso);
-    const now = new Date();
-    if (d.toDateString() === now.toDateString()) {
-      return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-    }
-    return d.toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  } catch {
-    return '';
-  }
-}
-
 export function MessengerTab({ token }: { token: string }) {
   const { t } = useTranslation('common');
+  const { user } = useAuth();
   const {
     connectionState,
     sendMessage,
@@ -91,16 +76,7 @@ export function MessengerTab({ token }: { token: string }) {
     })();
   }, [loadData]);
 
-  const currentUserId = (() => {
-    try {
-      const stored = localStorage.getItem('auth_user');
-      if (!stored) return '';
-      const u = JSON.parse(stored) as { id?: string };
-      return u?.id || '';
-    } catch {
-      return '';
-    }
-  })();
+  const currentUserId = user?.id ?? '';
 
   useEffect(() => {
     const unsubChat = onChatMessage((senderId, _senderName, content, sentAt, messageId) => {
@@ -355,7 +331,9 @@ export function MessengerTab({ token }: { token: string }) {
                         {!isMe && <span className="messenger-message-sender">{m.senderName}</span>}
                         <span className="messenger-message-content">{m.content}</span>
                         <div className="messenger-message-meta">
-                          <span className="messenger-message-time">{formatTime(m.sentAt)}</span>
+                          <span className="messenger-message-time">
+                            {formatMessageTime(m.sentAt)}
+                          </span>
                           {isMe && m.readAt && (
                             <span className="messenger-message-read">{t('messenger.read')}</span>
                           )}
@@ -423,7 +401,7 @@ export function MessengerTab({ token }: { token: string }) {
                         <span className="messenger-list-item-name">{r.senderName}</span>
                         <span className="messenger-list-item-preview">{r.lastMessage}</span>
                         <span className="messenger-list-item-time">
-                          {formatTime(r.lastMessageAt)}
+                          {formatMessageTime(r.lastMessageAt)}
                         </span>
                       </div>
                       {r.count > 1 && <span className="messenger-list-item-badge">{r.count}</span>}
@@ -450,7 +428,7 @@ export function MessengerTab({ token }: { token: string }) {
                           {c.lastMessage}
                         </span>
                         <span className="messenger-list-item-time">
-                          {formatTime(c.lastMessageAt)}
+                          {formatMessageTime(c.lastMessageAt)}
                         </span>
                       </div>
                       {c.unreadCount > 0 && (

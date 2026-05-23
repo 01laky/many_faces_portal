@@ -3,6 +3,9 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supportedLanguages, type SupportedLanguage } from '../i18n/constants';
 import { ensureLanguageLoaded } from '../i18n/config';
+import { getAccessTokenFromStorage } from '../utils/authStorage';
+import { writeGuestUiLanguage } from '../utils/guestSessionStorage';
+import * as profileApi from '../api/profile/profileApi';
 
 interface AppContextType {
   currentLanguage: SupportedLanguage;
@@ -21,7 +24,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     async (newLang: SupportedLanguage) => {
       await ensureLanguageLoaded(newLang);
       await i18n.changeLanguage(newLang);
-      localStorage.setItem('i18nextLng', newLang);
+      const token = getAccessTokenFromStorage();
+      if (token) {
+        try {
+          await profileApi.updateProfile(token, { preferredUiLanguage: newLang });
+        } catch {
+          // UI language already changed locally; server sync is best-effort
+        }
+      } else {
+        writeGuestUiLanguage(newLang);
+      }
     },
     [i18n]
   );

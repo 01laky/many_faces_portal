@@ -108,12 +108,16 @@ describe('authSessionActions', () => {
   it('readAuthTokenQueryValue returns null and clears when expired', () => {
     const storage = memoryStorage();
     storage.setItem('auth_token', 'x.y.z');
+    storage.setItem('auth_refresh_token', 'r');
+    storage.setItem('auth_user', '{}');
     const expired = vi.fn().mockReturnValue(true);
 
     const out = readAuthTokenQueryValue(storage, expired, apiConfig.setAuthToken);
 
     expect(out).toBeNull();
     expect(storage.getItem('auth_token')).toBeNull();
+    expect(storage.getItem('auth_refresh_token')).toBeNull();
+    expect(storage.getItem('auth_user')).toBe('{}');
     expect(apiConfig.setAuthToken).toHaveBeenCalledWith(null);
   });
 
@@ -128,7 +132,7 @@ describe('authSessionActions', () => {
     expect(apiConfig.setAuthToken).toHaveBeenCalledWith('valid');
   });
 
-  it('clearLocalAuthSession removes keys', () => {
+  it('clearLocalAuthSession removes token keys only', () => {
     const storage = memoryStorage();
     storage.setItem('auth_token', 't');
     storage.setItem('auth_refresh_token', 'r');
@@ -137,6 +141,8 @@ describe('authSessionActions', () => {
     clearLocalAuthSession(storage, apiConfig.setAuthToken);
 
     expect(storage.getItem('auth_token')).toBeNull();
+    expect(storage.getItem('auth_refresh_token')).toBeNull();
+    expect(storage.getItem('auth_user')).toBe('{}');
     expect(apiConfig.setAuthToken).toHaveBeenCalledWith(null);
   });
 

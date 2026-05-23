@@ -38,6 +38,7 @@ import { useAnimatedGradientStyle } from '../../hooks/useAnimatedGradient';
 import { useGradientAnimationPreference } from '../../contexts/GradientAnimationPreferenceContext';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import { useGridTopPanel } from '../../contexts/GridTopPanelContext';
+import { useGridComponentPreferences } from '../../hooks/useGridComponentPreferences';
 import { COMPONENT_TYPE_ID } from '../../constants/componentTypeIds';
 import { AlbumForm } from '../grid/AlbumForm';
 import { BlogForm } from '../grid/BlogForm';
@@ -77,25 +78,6 @@ const COMPONENT_DEFAULTS: Record<
   videoLoungeGrid: { title: 'Video lounges', icon: LayoutGrid, hasFooter: true },
   videoLoungeCarousel: { title: 'Video lounges', icon: LayoutGrid, hasFooter: true },
 };
-
-const STORAGE_PREFIX = 'component-settings-';
-
-function getStoredSettings(componentId: string): { autoplay?: boolean } {
-  try {
-    const raw = localStorage.getItem(STORAGE_PREFIX + componentId);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
-}
-
-function setStoredSettings(componentId: string, data: { autoplay?: boolean }) {
-  try {
-    localStorage.setItem(STORAGE_PREFIX + componentId, JSON.stringify(data));
-  } catch {
-    // ignore
-  }
-}
 
 const ALBUM_COMPONENT_TYPES: GridComponentType[] = ['album', 'albumGrid', 'albumCarousel'];
 const BLOG_COMPONENT_TYPES: GridComponentType[] = ['blog', 'blogGrid', 'blogCarousel'];
@@ -156,6 +138,11 @@ export function ComponentBlock({
 }: ComponentBlockProps) {
   const { t } = useTranslation('common');
   const { selectedFace } = useFaceConfig();
+  const faceId = selectedFace?.id ?? null;
+  const { settings, setAutoplay, autoplayEnabled } = useGridComponentPreferences(
+    componentId,
+    faceId
+  );
   const { openGridCreate } = useGridTopPanel();
   const navigate = useNavigate();
   const getLocalizedPath = useLocalizedLink();
@@ -234,8 +221,7 @@ export function ComponentBlock({
     }
   }, [editAlbum, editBlog, editReel, isAlbumType, isBlogType, isReelType]);
 
-  const [playing, setPlaying] = useState(autoplayFromStorage);
-  const [settings, setSettings] = useState(() => getStoredSettings(componentId));
+  const [playing, setPlaying] = useState(autoplayFromStorage || autoplayEnabled);
 
   const openLocalPanel = useCallback((mode: LocalPanelMode) => {
     setLocalPanelMode(mode);
@@ -268,13 +254,17 @@ export function ComponentBlock({
 
   const closeLocalPanel = useCallback(() => setLocalPanelOpen(false), []);
 
+  useEffect(() => {
+    if (!autoplayEnabled) return;
+    queueMicrotask(() => setPlaying(true));
+  }, [autoplayEnabled]);
+
   const handlePlayPause = useCallback(() => {
     const next = !playing;
     setPlaying(next);
     onPlayPause?.(next);
-    setStoredSettings(componentId, { ...settings, autoplay: next });
-    setSettings((s) => ({ ...s, autoplay: next }));
-  }, [playing, onPlayPause, componentId, settings]);
+    setAutoplay(next);
+  }, [playing, onPlayPause, setAutoplay]);
 
   const onPlayPauseRef = useRef(onPlayPause);
   useEffect(() => {
@@ -290,12 +280,12 @@ export function ComponentBlock({
 
   const handleSettingsChange = useCallback(
     (key: 'autoplay', value: boolean) => {
-      const next = { ...settings, [key]: value };
-      setSettings(next);
-      setStoredSettings(componentId, next);
-      if (key === 'autoplay') setPlaying(value);
+      if (key === 'autoplay') {
+        setAutoplay(value);
+        setPlaying(value);
+      }
     },
-    [componentId, settings]
+    [setAutoplay]
   );
 
   return (
@@ -493,7 +483,7 @@ export function ComponentBlock({
             <div className="component-block-panel-section">
               <h3 className="component-block-panel-heading">Block settings</h3>
               <p className="component-block-panel-desc">
-                Stored locally per component (ID: {componentId}).
+                Stored per component (ID: {componentId}).
               </p>
               {hasFooter ? (
                 <label className="component-block-panel-label">

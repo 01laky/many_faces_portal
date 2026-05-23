@@ -19,7 +19,9 @@ import {
 import { AlbumForm } from '../../components/grid/AlbumForm';
 import { useContentDetailAutoEdit } from '../../hooks/useContentDetailAutoEdit';
 import { getContentDetailOwnerFlags } from '../../utils/contentDetailPage';
+import { formatContentDate } from '../../utils/contentDetailFormat';
 import './AlbumDetailPage.scss';
+import '../../styles/contentDetailPage.scss';
 
 const ALBUM_TYPE_LABELS: Record<number, string> = { 1: 'Public', 2: 'Private', 3: 'Paid' };
 const MEDIA_TYPE_LABELS: Record<number, string> = { 1: 'Image', 2: 'Video' };
@@ -284,9 +286,7 @@ export function AlbumDetailPage() {
             <div key={c.id} className="album-detail-comment">
               <div className="album-detail-comment-header">
                 <span className="album-detail-comment-author">{c.userName}</span>
-                <span className="album-detail-comment-date">
-                  {new Date(c.createdAt).toLocaleDateString()}
-                </span>
+                <span className="album-detail-comment-date">{formatContentDate(c.createdAt)}</span>
                 <button
                   className="album-detail-comment-delete"
                   onClick={() => handleDeleteComment(c.id)}

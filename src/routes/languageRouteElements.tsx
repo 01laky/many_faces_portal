@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import { Route, Navigate } from 'react-router-dom';
 import { GuestRoute } from '../components/GuestRoute';
 import { ProtectedRoute } from '../components/ProtectedRoute';
+import { protectedRouteElement } from './routeHelpers';
 import { HomePageProtected } from '../pages/HomePageProtected';
 import { LoginPage } from '../pages/LoginPage';
 import { RegisterPage } from '../pages/RegisterPage';
@@ -85,11 +86,9 @@ export function renderFaceDynamicRouteElements(
       <Route
         key={fr.key}
         path={fr.path}
-        element={
-          <ProtectedRoute>
-            <FacePageView page={fr.page} wallRefreshKey={wallRefreshKey} />
-          </ProtectedRoute>
-        }
+        element={protectedRouteElement(
+          <FacePageView page={fr.page} wallRefreshKey={wallRefreshKey} />
+        )}
       />
     );
   });
@@ -140,110 +139,56 @@ export function renderTranslatedAndFeatureRouteElements({
       <Route
         key={`home-${path}`}
         path={path}
-        element={
-          <ProtectedRoute>
-            <HomePageProtected />
-          </ProtectedRoute>
-        }
+        element={protectedRouteElement(<HomePageProtected />)}
       />
     )),
     ...profilePaths.map((path) => (
-      <Route
-        key={`prof-${path}`}
-        path={path}
-        element={
-          <ProtectedRoute>
-            <ProfilePage />
-          </ProtectedRoute>
-        }
-      />
+      <Route key={`prof-${path}`} path={path} element={protectedRouteElement(<ProfilePage />)} />
     )),
     <Route
       key="list"
       path="list/:componentTypeId"
-      element={
-        <ProtectedRoute>
-          <ComponentListPage />
-        </ProtectedRoute>
-      }
+      element={protectedRouteElement(<ComponentListPage />)}
     />,
     <Route
       key="detail"
       path="detail/:componentTypeId/:entityId"
-      element={
-        <ProtectedRoute>
-          <ComponentDetailPage />
-        </ProtectedRoute>
-      }
+      element={protectedRouteElement(<ComponentDetailPage />)}
     />,
-    <Route
-      key="album"
-      path="album/:id"
-      element={
-        <ProtectedRoute>
-          <AlbumDetailPage />
-        </ProtectedRoute>
-      }
-    />,
-    <Route
-      key="blog"
-      path="blog/:id"
-      element={
-        <ProtectedRoute>
-          <BlogDetailPage />
-        </ProtectedRoute>
-      }
-    />,
-    <Route
-      key="reel"
-      path="reel/:id"
-      element={
-        <ProtectedRoute>
-          <ReelDetailPage />
-        </ProtectedRoute>
-      }
-    />,
+    <Route key="album" path="album/:id" element={protectedRouteElement(<AlbumDetailPage />)} />,
+    <Route key="blog" path="blog/:id" element={protectedRouteElement(<BlogDetailPage />)} />,
+    <Route key="reel" path="reel/:id" element={protectedRouteElement(<ReelDetailPage />)} />,
     <Route
       key="my-submissions"
       path="my-submissions"
-      element={
-        <ProtectedRoute>
-          <MySubmissionsPage />
-        </ProtectedRoute>
-      }
+      element={protectedRouteElement(<MySubmissionsPage />)}
     />,
     <Route
       key="profiles"
       path=":faceIndex/profiles"
-      element={
-        <ProtectedRoute>
-          <SyncFaceFromProfileRoutes>
-            <FaceProfilesListPage />
-          </SyncFaceFromProfileRoutes>
-        </ProtectedRoute>
-      }
+      element={protectedRouteElement(
+        <SyncFaceFromProfileRoutes>
+          <FaceProfilesListPage />
+        </SyncFaceFromProfileRoutes>
+      )}
     />,
     <Route
       key="profile-user"
       path=":faceIndex/profile/:userId"
-      element={
-        <ProtectedRoute>
-          <SyncFaceFromProfileRoutes>
-            <FaceProfileDetailPage />
-          </SyncFaceFromProfileRoutes>
-        </ProtectedRoute>
-      }
+      element={protectedRouteElement(
+        <SyncFaceFromProfileRoutes>
+          <FaceProfileDetailPage />
+        </SyncFaceFromProfileRoutes>
+      )}
     />,
     <Route
       key="stories"
       path=":faceIndex/stories"
-      element={
-        <ProtectedRoute>
-          <SyncFaceFromProfileRoutes>
-            <StoriesListPage />
-          </SyncFaceFromProfileRoutes>
-        </ProtectedRoute>
-      }
+      element={protectedRouteElement(
+        <SyncFaceFromProfileRoutes>
+          <StoriesListPage />
+        </SyncFaceFromProfileRoutes>
+      )}
     />,
     ...usersPaths.map((path) => (
       <Route

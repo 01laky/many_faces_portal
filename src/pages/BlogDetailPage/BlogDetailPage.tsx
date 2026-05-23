@@ -19,12 +19,14 @@ import {
 import { BlogForm } from '../../components/grid/BlogForm';
 import { useContentDetailAutoEdit } from '../../hooks/useContentDetailAutoEdit';
 import { getContentDetailOwnerFlags } from '../../utils/contentDetailPage';
+import { formatContentDate } from '../../utils/contentDetailFormat';
 import {
   htmlToPlainTextPreview,
   shouldUsePlainTextModerationPreview,
 } from '../../utils/moderationPreview';
 import { ModerationSafeText } from '../../components/moderation/ModerationSafeText';
 import './BlogDetailPage.scss';
+import '../../styles/contentDetailPage.scss';
 
 /**
  * Public blog detail with social features. Edit/delete header actions are shown only when the viewer owns the blog
@@ -216,7 +218,9 @@ export function BlogDetailPage() {
         <div className="blog-detail-meta">
           <span className="blog-detail-badge">{blog.faceTitle}</span>
           <span className="blog-detail-creator">by {blog.creatorName}</span>
-          <span className="blog-detail-date">{new Date(blog.createdAt).toLocaleDateString()}</span>
+          <span className="blog-detail-date content-detail-date">
+            {formatContentDate(blog.createdAt)}
+          </span>
         </div>
       </div>
 
@@ -294,9 +298,7 @@ export function BlogDetailPage() {
             <div key={c.id} className="blog-detail-comment">
               <div className="blog-detail-comment-header">
                 <span className="blog-detail-comment-author">{c.userName}</span>
-                <span className="blog-detail-comment-date">
-                  {new Date(c.createdAt).toLocaleDateString()}
-                </span>
+                <span className="blog-detail-comment-date">{formatContentDate(c.createdAt)}</span>
                 <button
                   className="blog-detail-comment-delete"
                   onClick={() => handleDeleteComment(c.id)}

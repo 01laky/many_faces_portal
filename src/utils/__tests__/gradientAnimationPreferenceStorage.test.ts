@@ -10,15 +10,15 @@ describe('gradientAnimationPreferenceStorage', () => {
     vi.unstubAllGlobals();
   });
 
-  it('returns false when localStorage is unavailable', () => {
-    vi.stubGlobal('localStorage', undefined);
+  it('returns false when sessionStorage is unavailable', () => {
+    vi.stubGlobal('sessionStorage', undefined);
     expect(readGuestGradientAnimationEnabled()).toBe(false);
     expect(() => writeGuestGradientAnimationEnabled(true)).not.toThrow();
   });
 
-  it('persists guest preference as 1/0', () => {
+  it('persists guest preference as 1/0 in sessionStorage', () => {
     const store = new Map<string, string>();
-    vi.stubGlobal('localStorage', {
+    vi.stubGlobal('sessionStorage', {
       getItem: (key: string) => store.get(key) ?? null,
       setItem: (key: string, value: string) => {
         store.set(key, value);

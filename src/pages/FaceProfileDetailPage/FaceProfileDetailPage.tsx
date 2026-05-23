@@ -66,17 +66,12 @@ export function FaceProfileDetailPage() {
   const gridSchemaJson = templatePage?.gridSchema ?? DEFAULT_PROFILE_DETAIL_GRID_SCHEMA_JSON;
   const parsedGrid = useMemo(() => parseProfileDetailGridSchema(gridSchemaJson), [gridSchemaJson]);
 
-  if (!selectedFace || !uid) return null;
-
   const isSelf = user?.id === uid;
 
-  return (
-    <div className="face-profile-detail-page">
-      {loading && <p>{t('faceProfiles.loading')}</p>}
-
-      {!loading && detail && parsedGrid.ok && (
-        <FaceMemberDetailProvider
-          value={{
+  const memberDetailValue = useMemo(
+    () =>
+      selectedFace && detail
+        ? {
             faceId: selectedFace.id,
             faceIndex: selectedFace.index,
             userId: uid,
@@ -86,8 +81,19 @@ export function FaceProfileDetailPage() {
             token: token ?? undefined,
             isSelf,
             refreshAll: load,
-          }}
-        >
+          }
+        : null,
+    [selectedFace, uid, detail, comments, reviews, token, isSelf, load]
+  );
+
+  if (!selectedFace || !uid) return null;
+
+  return (
+    <div className="face-profile-detail-page">
+      {loading && <p>{t('faceProfiles.loading')}</p>}
+
+      {!loading && detail && parsedGrid.ok && memberDetailValue && (
+        <FaceMemberDetailProvider value={memberDetailValue}>
           <ProfilePageGridLayout schema={parsedGrid.schema} />
         </FaceMemberDetailProvider>
       )}

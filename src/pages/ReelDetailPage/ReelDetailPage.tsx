@@ -20,8 +20,10 @@ import {
 import { ReelForm } from '../../components/grid/ReelForm';
 import { useContentDetailAutoEdit } from '../../hooks/useContentDetailAutoEdit';
 import { getContentDetailOwnerFlags } from '../../utils/contentDetailPage';
+import { formatContentDate } from '../../utils/contentDetailFormat';
 import '../AlbumDetailPage/AlbumDetailPage.scss';
 import './ReelDetailPage.scss';
+import '../../styles/contentDetailPage.scss';
 
 /**
  * Reel detail page (reuses album layout styles). API calls are face-scoped via `FaceConfigContext` so multi-face reels resolve correctly.
@@ -283,9 +285,7 @@ export function ReelDetailPage() {
             <div key={c.id} className="album-detail-comment">
               <div className="album-detail-comment-header">
                 <span className="album-detail-comment-author">{c.userName}</span>
-                <span className="album-detail-comment-date">
-                  {new Date(c.createdAt).toLocaleDateString()}
-                </span>
+                <span className="album-detail-comment-date">{formatContentDate(c.createdAt)}</span>
                 <button
                   type="button"
                   className="album-detail-comment-delete"

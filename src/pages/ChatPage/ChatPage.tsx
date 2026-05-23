@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
+import type { HubConnection } from '@microsoft/signalr';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
+import { buildAuthenticatedHubConnection } from '../../api/signalr/buildAuthenticatedHubConnection';
 import { absoluteScopedUrl } from '../../api/faceApiRouting';
 import { Button } from '../../components/radix/Button';
 import { buildChatAiHistory, type ChatAiMessage } from '../../utils/chatAiHistory';
@@ -51,13 +52,7 @@ export function ChatPage() {
   useEffect(() => {
     if (!token) return;
 
-    const hubUrl = absoluteScopedUrl('/hubs/chat');
-    const connection = new HubConnectionBuilder()
-      .withUrl(hubUrl, {
-        accessTokenFactory: () => token,
-      })
-      .withAutomaticReconnect()
-      .build();
+    const connection = buildAuthenticatedHubConnection('/hubs/chat', token);
 
     connectionRef.current = connection;
 

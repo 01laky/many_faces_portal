@@ -5,16 +5,12 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { supportedLanguages, type SupportedLanguage } from './constants';
 import { fetchLocalizationBundle } from './fetchLocalizationBundle';
+import { readGuestUiLanguage } from '../utils/guestSessionStorage';
 
 export { supportedLanguages, type SupportedLanguage } from './constants';
 
 function readStoredLanguage(): SupportedLanguage | null {
-  if (typeof window === 'undefined' || typeof localStorage === 'undefined') return null;
-  const stored = localStorage.getItem('i18nextLng');
-  if (stored && supportedLanguages.includes(stored as SupportedLanguage)) {
-    return stored as SupportedLanguage;
-  }
-  return null;
+  return readGuestUiLanguage();
 }
 
 function readNavigatorLanguage(): SupportedLanguage | null {

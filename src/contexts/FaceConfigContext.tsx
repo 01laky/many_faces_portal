@@ -12,35 +12,23 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { getFacesConfig } from '../api/config/getFacesConfig';
 import { markFaceVisited } from '../api/services/faceProfilesApi';
+import * as profileApi from '../api/profile/profileApi';
 import type { FaceConfig, FacesConfigResponse } from '../api/types/facesConfig';
 import { logger } from '../utils/logger';
 import { buildFaceHomePath, resolvePostAuthHomePath } from '../utils/faceHomePath';
 import { supportedLanguages } from '../i18n/constants';
 
-const STORAGE_KEY = 'selected_face_id';
-
 interface FaceConfigContextType {
-  /** All faces from backend */
   allFaces: FacesConfigResponse;
-  /** Public faces (visible without auth) */
   publicFaces: FaceConfig[];
-  /** Private faces (visible only when authenticated) */
   privateFaces: FaceConfig[];
-  /** Faces available to current user based on auth state */
   availableFaces: FaceConfig[];
-  /** Currently selected face (null if none) */
   selectedFace: FaceConfig | null;
-  /** Select a face by id */
   selectFace: (faceId: number) => void;
-  /** Whether config is loading */
   isLoading: boolean;
-  /** Config load error */
   error: Error | null;
-  /** Reload config from backend (optional token when auth state has not flushed yet). */
   reload: (authToken?: string | null) => Promise<FacesConfigResponse>;
-  /** Get the home page path for the selected face (e.g., "/basic/home") */
   getFaceHomePath: () => string;
-  /** Home path after sign-in — prefers a private face when the user has one. */
   getPostAuthHomePath: () => string;
 }
 
@@ -50,10 +38,8 @@ export function FaceConfigProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
   const { isAuthenticated, token } = useAuth();
   const [allFaces, setAllFaces] = useState<FacesConfigResponse>([]);
-  const [selectedFaceId, setSelectedFaceId] = useState<number | null>(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? parseInt(stored, 10) : null;
-  });
+  const [selectedFaceId, setSelectedFaceId] = useState<number | null>(null);
+  const [profileLastFaceApplied, setProfileLastFaceApplied] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const loadGenerationRef = useRef(0);
@@ -93,7 +79,6 @@ export function FaceConfigProvider({ children }: { children: ReactNode }) {
     [isAuthenticated, token]
   );
 
-  // Load config on mount
   useEffect(() => {
     void (async () => {
       await Promise.resolve();
@@ -101,11 +86,30 @@ export function FaceConfigProvider({ children }: { children: ReactNode }) {
     })();
   }, [loadConfig]);
 
-  const publicFaces = useMemo(() => allFaces.filter((f) => f.isPublic), [allFaces]);
+  useEffect(() => {
+    if (!isAuthenticated || !token || profileLastFaceApplied) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const profile = await profileApi.getProfile(token);
+        if (cancelled) return;
+        if (profile.lastSelectedFaceId != null) {
+          setSelectedFaceId(profile.lastSelectedFaceId);
+        }
+      } catch {
+        // best-effort — URL / first available face still applies
+      } finally {
+        if (!cancelled) setProfileLastFaceApplied(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, token, profileLastFaceApplied]);
 
+  const publicFaces = useMemo(() => allFaces.filter((f) => f.isPublic), [allFaces]);
   const privateFaces = useMemo(() => allFaces.filter((f) => !f.isPublic), [allFaces]);
 
-  /** Logged-in users see private tenants plus public faces (CMS pages, demos) without logging out. */
   const availableFaces = useMemo(() => {
     if (!isAuthenticated) return publicFaces;
     const seen = new Set<number>();
@@ -118,23 +122,21 @@ export function FaceConfigProvider({ children }: { children: ReactNode }) {
     return out;
   }, [isAuthenticated, publicFaces, privateFaces]);
 
-  // Auto-select first available face when available faces change or stored id is invalid
   const selectedFace = useMemo(() => {
     if (availableFaces.length === 0) return null;
     const found = availableFaces.find((f) => f.id === selectedFaceId);
     if (found) return found;
-    // Fallback to first available
     return availableFaces[0];
   }, [availableFaces, selectedFaceId]);
 
   const selectFace = useCallback(
     (faceId: number) => {
       setSelectedFaceId(faceId);
-      localStorage.setItem(STORAGE_KEY, String(faceId));
       if (!token) return;
       void (async () => {
         try {
           await markFaceVisited(faceId, token);
+          await profileApi.updateProfile(token, { lastSelectedFaceId: faceId });
           const config = await getFacesConfig(token);
           setAllFaces(config);
         } catch {
@@ -145,7 +147,6 @@ export function FaceConfigProvider({ children }: { children: ReactNode }) {
     [token]
   );
 
-  // Keep context in sync when the user lands on `/:lang/:faceIndex/...` (bookmark or deep link).
   useEffect(() => {
     if (isLoading || availableFaces.length === 0) return;
     const parts = location.pathname.split('/').filter(Boolean);
@@ -158,14 +159,10 @@ export function FaceConfigProvider({ children }: { children: ReactNode }) {
     }
   }, [location.pathname, isLoading, availableFaces, selectedFaceId, selectFace]);
 
-  // Sync selected face id to storage when auto-corrected
   useEffect(() => {
     if (selectedFace && selectedFace.id !== selectedFaceId) {
       const id = selectedFace.id;
-      queueMicrotask(() => {
-        setSelectedFaceId(id);
-        localStorage.setItem(STORAGE_KEY, String(id));
-      });
+      queueMicrotask(() => setSelectedFaceId(id));
     }
   }, [selectedFace, selectedFaceId]);
 
@@ -178,25 +175,36 @@ export function FaceConfigProvider({ children }: { children: ReactNode }) {
     return resolvePostAuthHomePath(availableFaces);
   }, [availableFaces]);
 
-  return (
-    <FaceConfigContext.Provider
-      value={{
-        allFaces,
-        publicFaces,
-        privateFaces,
-        availableFaces,
-        selectedFace,
-        selectFace,
-        isLoading,
-        error,
-        reload: loadConfig,
-        getFaceHomePath,
-        getPostAuthHomePath,
-      }}
-    >
-      {children}
-    </FaceConfigContext.Provider>
+  const contextValue = useMemo(
+    (): FaceConfigContextType => ({
+      allFaces,
+      publicFaces,
+      privateFaces,
+      availableFaces,
+      selectedFace,
+      selectFace,
+      isLoading,
+      error,
+      reload: loadConfig,
+      getFaceHomePath,
+      getPostAuthHomePath,
+    }),
+    [
+      allFaces,
+      publicFaces,
+      privateFaces,
+      availableFaces,
+      selectedFace,
+      selectFace,
+      isLoading,
+      error,
+      loadConfig,
+      getFaceHomePath,
+      getPostAuthHomePath,
+    ]
   );
+
+  return <FaceConfigContext.Provider value={contextValue}>{children}</FaceConfigContext.Provider>;
 }
 
 export function useFaceConfig() {

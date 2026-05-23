@@ -1,6 +1,7 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { OpenAPI } from './core/OpenAPI';
 import { env } from '../config/env';
+import { getAccessTokenFromStorage } from '../utils/authStorage';
 import {
   applyFacePrefixToRequestUrl,
   getEffectiveFacePrefix,
@@ -48,7 +49,7 @@ export function configureApiClient() {
       (response) => response,
       (error: AxiosError) => {
         const status = error.response?.status;
-        if (status === 401 && localStorage.getItem('auth_token')) {
+        if (status === 401 && getAccessTokenFromStorage()) {
           window.dispatchEvent(new CustomEvent('auth:unauthorized'));
         }
         return Promise.reject(error);

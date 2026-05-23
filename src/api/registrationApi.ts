@@ -4,6 +4,7 @@
  */
 import { env } from '../config/env';
 import { setAuthToken } from './config';
+import { persistAccessToken, persistRefreshToken } from '../utils/authStorage';
 
 /** OAuth2 token payload returned by `POST …/register/complete` (extends standard token response). */
 export interface RegisterCompleteTokenResponse {
@@ -86,9 +87,8 @@ export async function postRegisterComplete(body: {
 
 /** Persist tokens like login so subsequent API calls use the new session immediately. */
 export function persistTokensFromRegistration(tokens: RegisterCompleteTokenResponse): void {
-  localStorage.setItem('auth_token', tokens.accessToken);
+  persistAccessToken(tokens.accessToken, localStorage, setAuthToken);
   if (tokens.refreshToken) {
-    localStorage.setItem('auth_refresh_token', tokens.refreshToken);
+    persistRefreshToken(tokens.refreshToken, localStorage);
   }
-  setAuthToken(tokens.accessToken);
 }

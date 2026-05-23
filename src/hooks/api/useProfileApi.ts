@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import * as profileApi from '../../api/profile/profileApi';
+import type { SupportedLanguage } from '../../i18n/constants';
 
 /**
  * Stable React Query key for profile reads/writes. Includes `faceId` when the viewer is scoped to a face
@@ -11,6 +12,12 @@ export function profileQueryKey(
   faceId?: number | null
 ): readonly ['profile'] | readonly ['profile', number] {
   return faceId != null ? (['profile', faceId] as const) : (['profile'] as const);
+}
+
+export function faceGridSettingsQueryKey(
+  faceId: number
+): readonly ['profile', 'gridSettings', number] {
+  return ['profile', 'gridSettings', faceId] as const;
 }
 
 /**
@@ -44,6 +51,10 @@ export function useProfile() {
       firstName?: string | null;
       lastName?: string | null;
       enableAnimatedGradient?: boolean;
+      preferredUiLanguage?: SupportedLanguage | null;
+      lastSelectedFaceId?: number | null;
+      clearPreferredUiLanguage?: boolean;
+      clearLastSelectedFaceId?: boolean;
     }) => profileApi.updateProfile(token, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: profileQueryKey(faceId) }),
   });

@@ -5,7 +5,6 @@
  * Storage contract (browser):
  * - `auth_token` — access JWT for API `Authorization` header (also mirrored via `setAuthToken`).
  * - `auth_refresh_token` — refresh token for OAuth2 `grant_type=refresh_token` (optional after login).
- * - `auth_user` — cleared alongside tokens when access token is expired or missing (see `readAuthTokenQueryValue`).
  *
  * All network calls use generated OpenAPI clients (`OAuth2Service`, `AuthService`) and map `ApiError` bodies
  * to `Error` for consistent React Query `onError` handling.
@@ -17,9 +16,18 @@ import { logger } from '../../utils/logger';
 import { isTokenExpired } from '../../utils/jwtUtils';
 import { env } from '../../config/env';
 import { buildPasswordGrantTokenRequest } from './authTokenRequest';
+import {
+  type AuthWebStorage,
+  persistAccessToken,
+  persistRefreshToken,
+  clearAuthStorage,
+  getAccessTokenFromStorage,
+  getRefreshTokenFromStorage,
+  AUTH_STORAGE_KEYS,
+} from '../../utils/authStorage';
 
-/** Narrow storage surface so Vitest can pass a plain `{ getItem, setItem, removeItem }` without full `Storage`. */
-export type AuthWebStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
+export type { AuthWebStorage } from '../../utils/authStorage';
+export { AUTH_STORAGE_KEYS };
 
 /** Normalizes token payloads from `/api/oauth2/token` (codegen may surface `accessToken` or legacy `token`). */
 interface TokenResponse {
@@ -85,10 +93,9 @@ export async function runPasswordGrantLogin(
     throw new Error('No access token received from server');
   }
 
-  setAuthToken(accessToken);
-  storage.setItem('auth_token', accessToken);
+  persistAccessToken(accessToken, storage, setAuthToken);
   if (tokenData.refreshToken) {
-    storage.setItem('auth_refresh_token', tokenData.refreshToken);
+    persistRefreshToken(tokenData.refreshToken, storage);
   }
 
   return {
@@ -101,7 +108,7 @@ export async function runPasswordGrantLogin(
  * React Query `queryFn` for `authKeys.token()`: reads persisted JWT, synchronizes axios default header,
  * and enforces client-side expiry so the SPA cannot keep firing authenticated requests with a dead token.
  *
- * - If missing or expired: clears all three auth keys from `storage`, calls `applyAuthToken(null)`, returns `null`.
+ * - If missing or expired: clears token keys from `storage`, calls `applyAuthToken(null)`, returns `null`.
  * - If valid: calls `applyAuthToken(token)` (keeps header aligned with cache) and returns `{ accessToken }`.
  */
 export function readAuthTokenQueryValue(
@@ -109,13 +116,10 @@ export function readAuthTokenQueryValue(
   tokenExpired: (jwt: string) => boolean = isTokenExpired,
   applyAuthToken: (t: string | null) => void = setAuthToken
 ): { accessToken: string } | null {
-  const token = storage.getItem('auth_token');
+  const token = getAccessTokenFromStorage(storage);
   if (!token || tokenExpired(token)) {
     if (token) {
-      storage.removeItem('auth_token');
-      storage.removeItem('auth_refresh_token');
-      storage.removeItem('auth_user');
-      applyAuthToken(null);
+      clearAuthStorage(storage, applyAuthToken);
     }
     return null;
   }
@@ -123,15 +127,12 @@ export function readAuthTokenQueryValue(
   return { accessToken: token };
 }
 
-/** Logout helper: clears axios bearer and all browser auth keys (idempotent). */
+/** Logout helper: clears axios bearer and OAuth token keys (idempotent). */
 export function clearLocalAuthSession(
   storage: AuthWebStorage = localStorage,
   applyAuthToken: (t: string | null) => void = setAuthToken
 ): void {
-  applyAuthToken(null);
-  storage.removeItem('auth_token');
-  storage.removeItem('auth_refresh_token');
-  storage.removeItem('auth_user');
+  clearAuthStorage(storage, applyAuthToken);
   logger.info('User logged out');
 }
 
@@ -143,7 +144,7 @@ export function clearLocalAuthSession(
 export async function runRefreshGrantLogin(
   storage: AuthWebStorage = localStorage
 ): Promise<{ accessToken: string; refreshToken?: string }> {
-  const refreshToken = storage.getItem('auth_refresh_token');
+  const refreshToken = getRefreshTokenFromStorage(storage);
   if (!refreshToken) {
     throw new Error('No refresh token available');
   }
@@ -168,10 +169,9 @@ export async function runRefreshGrantLogin(
     throw new Error('No access token received from server');
   }
 
-  setAuthToken(accessToken);
-  storage.setItem('auth_token', accessToken);
+  persistAccessToken(accessToken, storage, setAuthToken);
   if (tokenData.refreshToken) {
-    storage.setItem('auth_refresh_token', tokenData.refreshToken);
+    persistRefreshToken(tokenData.refreshToken, storage);
   }
 
   return {

@@ -8,14 +8,25 @@
 import axios from 'axios';
 import { env } from '../../config/env';
 import { getAxiosApiErrorMessage } from '../../utils/apiErrorMessage';
+import type { SupportedLanguage } from '../../i18n/constants';
 
 export interface ProfileMe {
   firstName: string | null;
   lastName: string | null;
   email: string | null;
   enableAnimatedGradient: boolean;
+  preferredUiLanguage: SupportedLanguage | null;
+  lastSelectedFaceId: number | null;
   globalAvatarUrl: string | null;
   faceAvatarUrl: string | null;
+}
+
+export interface GridComponentPreferences {
+  autoplay?: boolean;
+}
+
+export interface FaceGridSettingsResponse {
+  gridComponents: Record<string, GridComponentPreferences>;
 }
 
 /** Isolated client: no face-prefix request interceptor, no global 401 logout interceptor. */
@@ -47,6 +58,8 @@ export async function getProfile(
   return {
     ...res.data,
     enableAnimatedGradient: res.data.enableAnimatedGradient ?? false,
+    preferredUiLanguage: res.data.preferredUiLanguage ?? null,
+    lastSelectedFaceId: res.data.lastSelectedFaceId ?? null,
   };
 }
 
@@ -56,6 +69,10 @@ export async function updateProfile(
     firstName?: string | null;
     lastName?: string | null;
     enableAnimatedGradient?: boolean;
+    preferredUiLanguage?: SupportedLanguage | null;
+    lastSelectedFaceId?: number | null;
+    clearPreferredUiLanguage?: boolean;
+    clearLastSelectedFaceId?: boolean;
   }
 ): Promise<void> {
   if (!token) {
@@ -68,11 +85,48 @@ export async function updateProfile(
         firstName: data.firstName,
         lastName: data.lastName,
         enableAnimatedGradient: data.enableAnimatedGradient,
+        preferredUiLanguage: data.preferredUiLanguage,
+        lastSelectedFaceId: data.lastSelectedFaceId,
+        clearPreferredUiLanguage: data.clearPreferredUiLanguage,
+        clearLastSelectedFaceId: data.clearLastSelectedFaceId,
       },
       { headers: authHeaders(token) }
     );
   } catch (error) {
     const message = getAxiosApiErrorMessage(error, 'Profile update failed');
+    throw new Error(message, { cause: error });
+  }
+}
+
+export async function getFaceGridSettings(
+  token: string | null,
+  faceId: number
+): Promise<FaceGridSettingsResponse> {
+  if (!token) throw new Error('Not authenticated');
+  const base = env.apiUrl.replace(/\/$/, '');
+  const res = await profileHttp.get<FaceGridSettingsResponse>(
+    `${base}/api/profile/me/faces/${faceId}/settings`,
+    { headers: authHeaders(token) }
+  );
+  return { gridComponents: res.data.gridComponents ?? {} };
+}
+
+export async function updateFaceGridSettings(
+  token: string | null,
+  faceId: number,
+  data: FaceGridSettingsResponse
+): Promise<FaceGridSettingsResponse> {
+  if (!token) throw new Error('Not authenticated');
+  const base = env.apiUrl.replace(/\/$/, '');
+  try {
+    const res = await profileHttp.put<FaceGridSettingsResponse>(
+      `${base}/api/profile/me/faces/${faceId}/settings`,
+      data,
+      { headers: authHeaders(token) }
+    );
+    return { gridComponents: res.data.gridComponents ?? {} };
+  } catch (error) {
+    const message = getAxiosApiErrorMessage(error, 'Grid settings update failed');
     throw new Error(message, { cause: error });
   }
 }
