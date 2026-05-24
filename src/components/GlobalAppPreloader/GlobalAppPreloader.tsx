@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { ThreeDot } from 'react-loading-indicators';
 import { MainLogo } from '../MainLogo/MainLogo';
 import {
@@ -14,48 +13,38 @@ export interface GlobalAppPreloaderProps {
   variant?: 'bootstrap' | 'route-fallback';
 }
 
-function usePrefersReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return false;
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  });
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return;
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const onChange = () => setReduced(mq.matches);
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
-
-  return reduced;
-}
-
-/** Full-viewport bootstrap shell — logo + ThreeDot; no route hooks. */
+/** Full-viewport bootstrap shell — logo + ThreeDot; fixed stack prevents layout jump. */
 export function GlobalAppPreloader({
   accessibilityLabel = 'Loading application',
   variant = 'bootstrap',
 }: GlobalAppPreloaderProps = {}) {
-  const reducedMotion = usePrefersReducedMotion();
   const isRouteFallback = variant === 'route-fallback';
   const dotSize = isRouteFallback ? ROUTE_FALLBACK_DOT_FONT_PX : GLOBAL_PRELOADER_DOT_FONT_PX;
+  const modeClass = isRouteFallback
+    ? ' global-app-preloader--route-fallback'
+    : ' global-app-preloader--bootstrap';
 
   return (
     <div
-      className={`global-app-preloader${isRouteFallback ? ' global-app-preloader--route-fallback' : ''}`}
+      className={`global-app-preloader${modeClass}`}
       role="status"
       aria-busy="true"
       aria-label={accessibilityLabel}
       data-testid="global-app-preloader"
     >
-      <div className="global-app-preloader__logo">
-        <MainLogo />
-      </div>
-      {!reducedMotion && (
-        <div className="global-app-preloader__spinner" aria-hidden="true">
-          <ThreeDot style={{ fontSize: `${dotSize}px` }} color={GLOBAL_PRELOADER_DOT_COLOR} />
+      <div className="global-app-preloader__stack">
+        <div className="global-app-preloader__logo">
+          <MainLogo />
         </div>
-      )}
+        <div className="global-app-preloader__spinner" aria-hidden="true">
+          <div className="global-app-preloader__spinner-inner">
+            <ThreeDot
+              style={{ fontSize: `${dotSize}px`, lineHeight: 1, display: 'block' }}
+              color={GLOBAL_PRELOADER_DOT_COLOR}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -12,7 +12,7 @@ export function renderBootstrapLoading(root: HTMLElement): void {
 export function renderBootstrapError(root: HTMLElement, apiUrl: string, onRetry: () => void): void {
   root.innerHTML =
     '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#f8fafc;padding:2rem;font-family:system-ui,sans-serif;text-align:center">' +
-    '<img src="/favicon-32x32.png" width="68" height="68" alt="" style="margin-bottom:1rem">' +
+    '<img src="/favicon-32x32.png" width="136" height="136" alt="" style="margin-bottom:1rem;object-fit:contain">' +
     '<h1 style="margin:0 0 0.5rem;font-size:1.125rem;color:#0f172a">Could not load translations</h1>' +
     '<p style="margin:0 0 0.5rem;color:#64748b;font-size:0.875rem;max-width:28rem">Check that the API is running and reachable at <code style="background:#f1f5f9;padding:0.15rem 0.35rem">' +
     escapeHtml(apiUrl) +

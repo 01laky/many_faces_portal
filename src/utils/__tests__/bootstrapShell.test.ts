@@ -6,6 +6,6 @@ describe('bootstrapShell GPL', () => {
     const html = buildVanillaPreloaderHtml();
     expect(html).toContain('favicon-32x32.png');
     expect(html).toContain('global-app-preloader-vanilla__dot');
-    expect(html).toContain('width="68"');
+    expect(html).toContain('width="136"');
   });
 });
