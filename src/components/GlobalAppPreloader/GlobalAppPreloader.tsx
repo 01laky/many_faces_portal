@@ -1,10 +1,7 @@
 import { ThreeDot } from 'react-loading-indicators';
 import { MainLogo } from '../MainLogo/MainLogo';
-import {
-  GLOBAL_PRELOADER_DOT_COLOR,
-  GLOBAL_PRELOADER_DOT_FONT_PX,
-  ROUTE_FALLBACK_DOT_FONT_PX,
-} from './preloaderTokens';
+import { GLOBAL_PRELOADER_DOT_COLOR, ROUTE_FALLBACK_DOT_FONT_PX } from './preloaderTokens';
+import { PreloaderDots } from './PreloaderDots';
 import './globalAppPreloader.scss';
 
 export interface GlobalAppPreloaderProps {
@@ -13,13 +10,12 @@ export interface GlobalAppPreloaderProps {
   variant?: 'bootstrap' | 'route-fallback';
 }
 
-/** Full-viewport bootstrap shell — logo + ThreeDot; fixed stack prevents layout jump. */
+/** Full-viewport bootstrap shell — logo + CSS dots; fixed stack prevents layout jump. */
 export function GlobalAppPreloader({
   accessibilityLabel = 'Loading application',
   variant = 'bootstrap',
 }: GlobalAppPreloaderProps = {}) {
   const isRouteFallback = variant === 'route-fallback';
-  const dotSize = isRouteFallback ? ROUTE_FALLBACK_DOT_FONT_PX : GLOBAL_PRELOADER_DOT_FONT_PX;
   const modeClass = isRouteFallback
     ? ' global-app-preloader--route-fallback'
     : ' global-app-preloader--bootstrap';
@@ -37,12 +33,20 @@ export function GlobalAppPreloader({
           <MainLogo />
         </div>
         <div className="global-app-preloader__spinner" aria-hidden="true">
-          <div className="global-app-preloader__spinner-inner">
-            <ThreeDot
-              style={{ fontSize: `${dotSize}px`, lineHeight: 1, display: 'block' }}
-              color={GLOBAL_PRELOADER_DOT_COLOR}
-            />
-          </div>
+          {isRouteFallback ? (
+            <div className="global-app-preloader__spinner-inner">
+              <ThreeDot
+                style={{
+                  fontSize: `${ROUTE_FALLBACK_DOT_FONT_PX}px`,
+                  lineHeight: 1,
+                  display: 'block',
+                }}
+                color={GLOBAL_PRELOADER_DOT_COLOR}
+              />
+            </div>
+          ) : (
+            <PreloaderDots />
+          )}
         </div>
       </div>
     </div>
