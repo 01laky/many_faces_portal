@@ -104,16 +104,30 @@ export const env: EnvConfig = {
   debugMode: getBoolEnv('VITE_DEBUG_MODE', false),
 };
 
+/** Demo OAuth secret shipped in `.env.example` — must not be used in production builds (PSH1-E02). */
+export const DEMO_OAUTH2_CLIENT_SECRET = 'be-demo-secret-very-strong-key';
+
+export interface EnvValidationOptions {
+  /** When true, enforce HTTPS API URL and non-demo OAuth secret. */
+  production?: boolean;
+}
+
 /**
  * Pure validator used by `validateEnv` and Vitest. Builds a human-readable string list (never throws).
  * Seq URL rules: invalid URLs are reported **only** when logging is enabled to avoid blocking installs
  * where Seq is intentionally off.
  */
-export function collectEnvValidationErrors(cfg: EnvConfig): string[] {
+export function collectEnvValidationErrors(
+  cfg: EnvConfig,
+  options: EnvValidationOptions = {}
+): string[] {
   const errors: string[] = [];
 
   try {
-    new URL(cfg.apiUrl);
+    const api = new URL(cfg.apiUrl);
+    if (options.production && api.protocol !== 'https:') {
+      errors.push(`Production builds require HTTPS VITE_API_URL (got ${cfg.apiUrl})`);
+    }
   } catch {
     errors.push(`Invalid VITE_API_URL: ${cfg.apiUrl}`);
   }
@@ -134,12 +148,18 @@ export function collectEnvValidationErrors(cfg: EnvConfig): string[] {
     errors.push('VITE_OAUTH2_CLIENT_SECRET is required');
   }
 
+  if (options.production && cfg.oauth2ClientSecret === DEMO_OAUTH2_CLIENT_SECRET) {
+    errors.push(
+      'Production builds must not use the demo VITE_OAUTH2_CLIENT_SECRET — configure a deployment-specific value'
+    );
+  }
+
   return errors;
 }
 
 /** Side effect: console + optional throw in production when `collectEnvValidationErrors` returns messages. */
 export function validateEnv(): void {
-  const errors = collectEnvValidationErrors(env);
+  const errors = collectEnvValidationErrors(env, { production: import.meta.env.PROD });
 
   if (errors.length > 0) {
     console.error('❌ Environment configuration errors:');

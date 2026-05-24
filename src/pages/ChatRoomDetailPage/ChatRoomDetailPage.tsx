@@ -4,7 +4,9 @@ import type { HubConnection } from '@microsoft/signalr';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Send } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { resolveHubAccessToken } from '../../utils/authStorage';
 import { buildAuthenticatedHubConnection } from '../../api/signalr/buildAuthenticatedHubConnection';
+import { shouldConnectChatRoomHub } from '../../api/signalr/hubStartPolicy';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import {
@@ -75,13 +77,25 @@ export function ChatRoomDetailPage({ roomId: roomIdProp }: { roomId: number }) {
   }, [room, loadMessages]);
 
   useEffect(() => {
-    if (!token || !room || room.isHostViewer || !room.isMember) {
+    if (
+      !token ||
+      !room ||
+      !shouldConnectChatRoomHub({
+        token,
+        isMember: room.isMember,
+        isHostViewer: room.isHostViewer,
+      })
+    ) {
       connRef.current?.stop();
       connRef.current = null;
       return;
     }
 
-    const conn = buildAuthenticatedHubConnection('/hubs/chatroom', token);
+    const activeRoom = room;
+    const tokenRef = { current: token };
+    const conn = buildAuthenticatedHubConnection('/hubs/chatroom', () =>
+      resolveHubAccessToken(tokenRef.current)
+    );
 
     conn.on(
       'ReceiveRoomMessage',
@@ -93,7 +107,7 @@ export function ChatRoomDetailPage({ roomId: roomIdProp }: { roomId: number }) {
         sentAt: string,
         messageId: number
       ) => {
-        if (faceChatRoomId !== room.id) return;
+        if (faceChatRoomId !== activeRoom.id) return;
         setMessages((prev) => {
           if (prev.some((m) => m.id === messageId)) return prev;
           return [
@@ -110,14 +124,14 @@ export function ChatRoomDetailPage({ roomId: roomIdProp }: { roomId: number }) {
     );
 
     conn.on('ChatRoomClosed', (closedId: number) => {
-      if (closedId !== room.id) return;
+      if (closedId !== activeRoom.id) return;
       toast.info(t('chatRoom.closed', 'This chat room was closed.'));
       navigate(-1);
     });
 
     conn
       .start()
-      .then(() => conn.invoke('JoinRoom', room.id))
+      .then(() => conn.invoke('JoinRoom', activeRoom.id))
       .catch(() => {
         toast.error(t('chatRoom.hubError', 'Could not connect to live chat.'));
       });
@@ -125,7 +139,7 @@ export function ChatRoomDetailPage({ roomId: roomIdProp }: { roomId: number }) {
     connRef.current = conn;
 
     return () => {
-      void conn.invoke('LeaveRoom', room.id).catch(() => {});
+      void conn.invoke('LeaveRoom', activeRoom.id).catch(() => {});
       void conn.stop();
       connRef.current = null;
     };

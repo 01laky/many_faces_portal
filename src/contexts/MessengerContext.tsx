@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import type { HubConnection } from '@microsoft/signalr';
+import { resolveHubAccessToken } from '../utils/authStorage';
 import { buildAuthenticatedHubConnection } from '../api/signalr/buildAuthenticatedHubConnection';
 
 type ConnectionState = 'Connecting' | 'Connected' | 'Disconnected';
@@ -56,6 +57,11 @@ export function MessengerProvider({
 }) {
   const [connectionState, setConnectionState] = useState<ConnectionState>('Disconnected');
   const connectionRef = useRef<HubConnection | null>(null);
+  const tokenRef = useRef(token);
+
+  useEffect(() => {
+    tokenRef.current = token;
+  }, [token]);
 
   const callbacksRef = useRef({
     chatMessage: new Set<(a: string, b: string, c: string, d: string, e: number) => void>(),
@@ -152,7 +158,9 @@ export function MessengerProvider({
       return;
     }
 
-    const connection = buildAuthenticatedHubConnection('/hubs/messenger', token);
+    const connection = buildAuthenticatedHubConnection('/hubs/messenger', () =>
+      resolveHubAccessToken(tokenRef.current)
+    );
 
     connectionRef.current = connection;
 

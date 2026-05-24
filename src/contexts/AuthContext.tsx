@@ -13,6 +13,7 @@ import { logger } from '../utils/logger';
 import { isTokenExpired } from '../utils/jwtUtils';
 import { jwtUserFromToken, type PortalJwtUser } from '../utils/jwtUserFromToken';
 import { getAccessTokenFromStorage } from '../utils/authStorage';
+import { setupAuthStorageSync } from '../utils/authSessionSync';
 import { resetPortalAuthSession } from '../utils/portalAuthSession';
 import { runLegacyLocalStorageMigration } from '../utils/legacyStorageMigration';
 import * as profileApi from '../api/profile/profileApi';
@@ -166,6 +167,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.addEventListener('auth:unauthorized', handler);
     return () => window.removeEventListener('auth:unauthorized', handler);
   }, [t, clearSession]);
+
+  useEffect(() => {
+    const onRefreshed = (event: Event) => {
+      const detail = (event as CustomEvent<{ accessToken?: string }>).detail;
+      if (!detail?.accessToken) return;
+      setToken(detail.accessToken);
+      setAuthToken(detail.accessToken);
+      setIsAuthenticated(true);
+      setUser(jwtUserFromToken(detail.accessToken));
+    };
+    window.addEventListener('auth:token-refreshed', onRefreshed);
+    return () => window.removeEventListener('auth:token-refreshed', onRefreshed);
+  }, []);
+
+  useEffect(() => {
+    return setupAuthStorageSync(() => {
+      clearSession();
+      toast.info(
+        t('pages.logout.sessionExpired') || 'Your session has expired. Please log in again.'
+      );
+    });
+  }, [clearSession, t]);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   useEffect(() => {

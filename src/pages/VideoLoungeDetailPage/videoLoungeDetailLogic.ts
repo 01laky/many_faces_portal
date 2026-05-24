@@ -58,6 +58,11 @@ export function liveControlsForMode(joinMode: VideoLoungeJoinMode): {
   return { showMic: true, showCamera: true };
 }
 
+/** Whether live session should be torn down when auth ends (PSH1-C7). */
+export function shouldLeaveVideoLoungeOnSessionEnd(phase: VideoLoungeDetailPhase): boolean {
+  return phase === 'live';
+}
+
 /** Maps HTTP status from live/join to lobby copy keys. */
 export function joinLiveErrorI18nKey(status: number): string | null {
   if (status === 409) return 'pages.videoLounge.lobby.roomFull';

@@ -14,6 +14,7 @@ import './styles/appBrandFont.scss';
 import './styles/main.scss';
 import { initI18n } from './i18n/config';
 import { configureApiClient } from './api/config';
+import { setupAxiosInterceptors } from './api/interceptors';
 import { resetLangLevelStaticRouteSegmentsCache } from './api/faceApiRouting';
 import { validateEnv, logEnvConfig, env } from './config/env';
 import { logger } from './utils/logger';
@@ -36,6 +37,7 @@ async function bootstrap(): Promise<void> {
     await initI18n();
     resetLangLevelStaticRouteSegmentsCache();
     configureApiClient();
+    setupAxiosInterceptors();
 
     logger.info('Frontend application started', {
       AppName: env.appName,

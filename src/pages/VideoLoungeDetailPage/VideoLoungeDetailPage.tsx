@@ -135,9 +135,11 @@ export function VideoLoungeDetailPage({ loungeId: loungeIdProp }: { loungeId: nu
     const onLeave = () => leaveLiveBestEffort();
     window.addEventListener('beforeunload', onLeave);
     window.addEventListener('pagehide', onLeave);
+    window.addEventListener('auth:unauthorized', onLeave);
     return () => {
       window.removeEventListener('beforeunload', onLeave);
       window.removeEventListener('pagehide', onLeave);
+      window.removeEventListener('auth:unauthorized', onLeave);
     };
   }, [leaveLiveBestEffort]);
 

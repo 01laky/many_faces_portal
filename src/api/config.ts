@@ -1,18 +1,17 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { OpenAPI } from './core/OpenAPI';
 import { env } from '../config/env';
-import { getAccessTokenFromStorage } from '../utils/authStorage';
 import {
   applyFacePrefixToRequestUrl,
   getEffectiveFacePrefix,
 } from './faceApiRouting';
 
-// Track if interceptors have been set up
 let interceptorsSetup = false;
 
 /** Avoid re-parsing `pathname` on every axios request when the URL has not changed. */
 let cachedFacePathname = '';
 let cachedFacePrefix = '';
+
 function getMemoizedEffectiveFacePrefix(): string {
   if (typeof window === 'undefined') {
     return '';
@@ -25,38 +24,44 @@ function getMemoizedEffectiveFacePrefix(): string {
   return cachedFacePrefix;
 }
 
+/** Clear face-prefix memo when user switches face (PSH1-B11). */
+export function invalidateMemoizedFacePrefixCache(): void {
+  cachedFacePathname = '';
+  cachedFacePrefix = '';
+}
+
+/** PSH1-E03 — block HTTPS page calling HTTP API (mixed content). */
+export function assertNoMixedContentApi(
+  apiUrl: string,
+  pageProtocol: string = typeof window !== 'undefined' ? window.location.protocol : 'https:'
+): void {
+  if (pageProtocol === 'https:' && apiUrl.startsWith('http://')) {
+    throw new Error(
+      'Mixed content blocked: HTTPS portal page cannot call HTTP API URL. Set VITE_API_URL to https://…'
+    );
+  }
+}
+
 /**
- * Configure API client with base URL from environment variables
- * Sets up global axios interceptors for face path routing.
- * This should be called once when the app starts
+ * Configure API client with base URL from environment variables.
+ * Sets up global axios request interceptor for face path routing (once).
+ * Response interceptors (401 refresh) are registered via `setupAxiosInterceptors`.
  */
 export function configureApiClient() {
-  // Configure OpenAPI client
+  if (typeof window !== 'undefined') {
+    assertNoMixedContentApi(env.apiUrl);
+  }
+
   OpenAPI.BASE = env.apiUrl;
   OpenAPI.WITH_CREDENTIALS = true;
   OpenAPI.CREDENTIALS = 'include';
-  
-  // You can set default headers here if needed
+
   OpenAPI.HEADERS = {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
+    Accept: 'application/json',
   };
-  
-  // Set up global axios interceptors for face path routing (only once)
-  if (!interceptorsSetup && typeof window !== 'undefined') {
-    // Response interceptor: auto-logout on 401 (expired/invalid token)
-    axios.interceptors.response.use(
-      (response) => response,
-      (error: AxiosError) => {
-        const status = error.response?.status;
-        if (status === 401 && getAccessTokenFromStorage()) {
-          window.dispatchEvent(new CustomEvent('auth:unauthorized'));
-        }
-        return Promise.reject(error);
-      }
-    );
 
-    // Request interceptor: prepend /{face}/ before /api/... (backend RoutingMiddleware)
+  if (!interceptorsSetup && typeof window !== 'undefined') {
     axios.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
         if (!config.url) return config as InternalAxiosRequestConfig;
@@ -84,41 +89,32 @@ export function configureApiClient() {
 
         return config as InternalAxiosRequestConfig;
       },
-      (error: AxiosError) => {
-        return Promise.reject(error);
-      }
+      (error: AxiosError) => Promise.reject(error)
     );
 
     interceptorsSetup = true;
   }
-  
+
   if (env.debugMode) {
     console.log(`API client configured with base URL: ${env.apiUrl}`);
   }
 }
 
-/**
- * Set authentication token for API requests
- */
 export function setAuthToken(token: string | null) {
   if (token) {
-    OpenAPI.TOKEN = token
-    // Add Authorization header
-    const currentHeaders = typeof OpenAPI.HEADERS === 'function' 
-      ? {} 
-      : (OpenAPI.HEADERS || {})
+    OpenAPI.TOKEN = token;
+    const currentHeaders =
+      typeof OpenAPI.HEADERS === 'function' ? {} : OpenAPI.HEADERS || {};
     OpenAPI.HEADERS = {
       ...currentHeaders,
-      'Authorization': `Bearer ${token}`,
-    }
+      Authorization: `Bearer ${token}`,
+    };
   } else {
-    OpenAPI.TOKEN = undefined
-    // Remove Authorization header
-    const currentHeaders = typeof OpenAPI.HEADERS === 'function' 
-      ? {} 
-      : (OpenAPI.HEADERS || {})
+    OpenAPI.TOKEN = undefined;
+    const currentHeaders =
+      typeof OpenAPI.HEADERS === 'function' ? {} : OpenAPI.HEADERS || {};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { Authorization, ...headers } = currentHeaders
-    OpenAPI.HEADERS = Object.keys(headers).length > 0 ? headers : undefined
+    const { Authorization, ...headers } = currentHeaders;
+    OpenAPI.HEADERS = Object.keys(headers).length > 0 ? headers : undefined;
   }
 }

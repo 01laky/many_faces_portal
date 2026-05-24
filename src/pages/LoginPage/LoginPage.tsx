@@ -9,6 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { pickPreferredPrivateFace, resolvePostAuthHomePath } from '../../utils/faceHomePath';
 import { logger } from '../../utils/logger';
+import { resolveSafeInternalRedirectPath } from '../../utils/safeRedirect';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import { FormField } from '../../components/radix/FormField';
 import { Input } from '../../components/radix/Input';
@@ -54,11 +55,12 @@ export function LoginPage() {
   });
 
   // Redirect if already authenticated
-  const from = (location.state as { from?: string })?.from;
+  const rawFrom = (location.state as { from?: string })?.from;
   const defaultAfterAuth = getLocalizedPath(getPostAuthHomePath());
+  const safeFrom = resolveSafeInternalRedirectPath(rawFrom, defaultAfterAuth);
 
   if (isAuthenticated) {
-    navigate(from ?? defaultAfterAuth, { replace: true });
+    navigate(safeFrom, { replace: true });
     return null;
   }
 
@@ -72,7 +74,10 @@ export function LoginPage() {
       if (preferredPrivate) {
         selectFace(preferredPrivate.id);
       }
-      const faceHomePath = from ?? getLocalizedPath(resolvePostAuthHomePath(config));
+      const faceHomePath = resolveSafeInternalRedirectPath(
+        rawFrom,
+        getLocalizedPath(resolvePostAuthHomePath(config))
+      );
       navigate(faceHomePath, { replace: true });
     } catch (error) {
       logger.error('Login failed', error);

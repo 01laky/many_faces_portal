@@ -16,6 +16,23 @@ export interface RegisterCompleteTokenResponse {
   email: string;
 }
 
+const REGISTRATION_RATE_LIMIT_MESSAGE =
+  'Too many registration attempts. Please wait a moment and try again.';
+
+/** Safe user-facing errors — no stack traces or raw HTTP bodies (PSH1-A14). */
+export function mapRegistrationHttpError(status: number, context: 'prefill' | 'complete' | 'request'): Error {
+  if (status === 429) {
+    return new Error(REGISTRATION_RATE_LIMIT_MESSAGE);
+  }
+  if (context === 'prefill') {
+    return new Error('Invalid registration link');
+  }
+  if (context === 'complete') {
+    return new Error('Registration complete failed');
+  }
+  return new Error('Registration request failed');
+}
+
 function oauthBase(): string {
   const base = env.apiUrl.replace(/\/$/, '');
   return `${base}/api/oauth2/register`;
@@ -37,7 +54,7 @@ export async function postRegisterRequest(body: {
     body: JSON.stringify(body),
   });
   if (!res.ok) {
-    throw new Error('Registration request failed');
+    throw mapRegistrationHttpError(res.status, 'request');
   }
 }
 
@@ -54,7 +71,7 @@ export async function getRegisterPrefill(hash: string): Promise<{
     headers: { Accept: 'application/json' },
   });
   if (!res.ok) {
-    throw new Error('Invalid registration link');
+    throw mapRegistrationHttpError(res.status, 'prefill');
   }
   return res.json();
 }
@@ -80,7 +97,7 @@ export async function postRegisterComplete(body: {
     }),
   });
   if (!res.ok) {
-    throw new Error('Registration complete failed');
+    throw mapRegistrationHttpError(res.status, 'complete');
   }
   return res.json();
 }

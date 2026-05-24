@@ -10,6 +10,8 @@ import {
   type CreateBlogDto,
 } from '../../../api/services/BlogsService';
 import { getSubmittedForApprovalCopy } from '../../../utils/contentModeration';
+import { sanitizeBlogHtml } from '../../../utils/blogHtmlSecurity';
+import { sanitizeMediaUrl } from '../../../utils/safeUrl';
 import './BlogForm.scss';
 
 interface BlogFormProps {
@@ -77,7 +79,7 @@ export function BlogForm({ editBlog, onSaved, onCancel }: BlogFormProps) {
   }, [editBlog, selectedFace]);
 
   const addImage = () => {
-    const url = newImageUrl.trim();
+    const url = sanitizeMediaUrl(newImageUrl.trim());
     if (!url || imageUrls.length >= MAX_IMAGES) return;
     setImageUrls((prev) => [...prev, url]);
     setNewImageUrl('');
@@ -98,9 +100,12 @@ export function BlogForm({ editBlog, onSaved, onCancel }: BlogFormProps) {
     try {
       const dto: CreateBlogDto = {
         title: title.trim(),
-        content: content.trim(),
+        content: sanitizeBlogHtml(content.trim()),
         faceId,
-        imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
+        imageUrls:
+          imageUrls.length > 0
+            ? imageUrls.map((u) => sanitizeMediaUrl(u)).filter(Boolean)
+            : undefined,
       };
 
       let result: BlogItem;

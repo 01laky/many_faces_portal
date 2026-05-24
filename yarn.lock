@@ -2802,6 +2802,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/dompurify@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "@types/dompurify@npm:3.2.0"
+  dependencies:
+    dompurify: "npm:*"
+  checksum: 10/0194dd9024e76e856f3373e8b080c7a5ac9910543ac1ee85db45277efbbea820b2f27fe22c8a6f02bb51833e0a8540d732be0d11d156efd16cb0b97f88e41ebf
+  languageName: node
+  linkType: hard
+
 "@types/emscripten@npm:^1.39.6":
   version: 1.41.5
   resolution: "@types/emscripten@npm:1.41.5"
@@ -2976,6 +2985,13 @@ __metadata:
   version: 1.0.3
   resolution: "@types/treeify@npm:1.0.3"
   checksum: 10/777e579b30a916a781e7cbad2b7a76bc5473ff7bfe7167dd6de47f80f4386df5bf3d0dc34170afb75d52e75f6ed61cc109abf2324e093c1f9ecd4e79fec58d0c
+  languageName: node
+  linkType: hard
+
+"@types/trusted-types@npm:^2.0.7":
+  version: 2.0.7
+  resolution: "@types/trusted-types@npm:2.0.7"
+  checksum: 10/8e4202766a65877efcf5d5a41b7dd458480b36195e580a3b1085ad21e948bc417d55d6f8af1fd2a7ad008015d4117d5fdfe432731157da3c68678487174e4ba3
   languageName: node
   linkType: hard
 
@@ -4354,6 +4370,18 @@ __metadata:
     "@babel/runtime": "npm:^7.8.7"
     csstype: "npm:^3.0.2"
   checksum: 10/bed2341adf8864bf932b3289c24f35fdd99930af77df46688abf2d753ff291df49a15850c874d686d9be6ec4e1c6835673906e64dbd8b2839d227f117a11fd41
+  languageName: node
+  linkType: hard
+
+"dompurify@npm:*, dompurify@npm:^3.4.5":
+  version: 3.4.5
+  resolution: "dompurify@npm:3.4.5"
+  dependencies:
+    "@types/trusted-types": "npm:^2.0.7"
+  dependenciesMeta:
+    "@types/trusted-types":
+      optional: true
+  checksum: 10/b39c9bbd5c87dd29d1fda6446ddd7319a86c85a4c12af5cfef17697cfefbd13b8baf698d5a3cb4ee0b941f8b6e49af6a63c844246e6aee83ddb417e03470613a
   languageName: node
   linkType: hard
 
@@ -6279,6 +6307,7 @@ __metadata:
     "@testing-library/jest-dom": "npm:^6.9.1"
     "@testing-library/react": "npm:^16.3.2"
     "@testing-library/user-event": "npm:^14.6.1"
+    "@types/dompurify": "npm:^3.2.0"
     "@types/jsdom": "npm:^28"
     "@types/node": "npm:^25.9.1"
     "@types/react": "npm:^19.2.15"
@@ -6290,6 +6319,7 @@ __metadata:
     axios: "npm:^1.16.1"
     bootstrap: "npm:^5.3.8"
     cypress: "npm:^15.15.0"
+    dompurify: "npm:^3.4.5"
     eslint: "npm:^10.4.0"
     eslint-config-prettier: "npm:^10.1.8"
     eslint-plugin-react-hooks: "npm:7.1.1"

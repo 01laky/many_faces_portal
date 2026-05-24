@@ -25,6 +25,8 @@ import {
   shouldUsePlainTextModerationPreview,
 } from '../../utils/moderationPreview';
 import { ModerationSafeText } from '../../components/moderation/ModerationSafeText';
+import { sanitizeBlogHtml } from '../../utils/blogHtmlSecurity';
+import { sanitizeMediaUrl } from '../../utils/safeUrl';
 import './BlogDetailPage.scss';
 import '../../styles/contentDetailPage.scss';
 
@@ -227,15 +229,13 @@ export function BlogDetailPage() {
       {/* Blog images */}
       {blog.images.length > 0 && (
         <div className="blog-detail-images">
-          {blog.images.map((img) => (
-            <img
-              key={img.id}
-              src={img.imageUrl}
-              alt=""
-              className="blog-detail-image"
-              loading="lazy"
-            />
-          ))}
+          {blog.images.map((img) => {
+            const src = sanitizeMediaUrl(img.imageUrl);
+            if (!src) return null;
+            return (
+              <img key={img.id} src={src} alt="" className="blog-detail-image" loading="lazy" />
+            );
+          })}
         </div>
       )}
 
@@ -246,7 +246,10 @@ export function BlogDetailPage() {
           text={htmlToPlainTextPreview(blog.content)}
         />
       ) : (
-        <div className="blog-detail-content" dangerouslySetInnerHTML={{ __html: blog.content }} />
+        <div
+          className="blog-detail-content"
+          dangerouslySetInnerHTML={{ __html: sanitizeBlogHtml(blog.content) }}
+        />
       )}
 
       {/* Like + stats bar */}

@@ -15,6 +15,7 @@ import { markFaceVisited } from '../api/services/faceProfilesApi';
 import * as profileApi from '../api/profile/profileApi';
 import type { FaceConfig, FacesConfigResponse } from '../api/types/facesConfig';
 import { logger } from '../utils/logger';
+import { invalidateMemoizedFacePrefixCache } from '../api/config';
 import { buildFaceHomePath, resolvePostAuthHomePath } from '../utils/faceHomePath';
 import { supportedLanguages } from '../i18n/constants';
 
@@ -132,6 +133,7 @@ export function FaceConfigProvider({ children }: { children: ReactNode }) {
   const selectFace = useCallback(
     (faceId: number) => {
       setSelectedFaceId(faceId);
+      invalidateMemoizedFacePrefixCache();
       if (!token) return;
       void (async () => {
         try {

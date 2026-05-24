@@ -2,7 +2,9 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import type { HubConnection } from '@microsoft/signalr';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
+import { resolveHubAccessToken } from '../../utils/authStorage';
 import { buildAuthenticatedHubConnection } from '../../api/signalr/buildAuthenticatedHubConnection';
+import { shouldConnectAiChatHub } from '../../api/signalr/hubStartPolicy';
 import { absoluteScopedUrl } from '../../api/faceApiRouting';
 import { Button } from '../../components/radix/Button';
 import { buildChatAiHistory, type ChatAiMessage } from '../../utils/chatAiHistory';
@@ -48,11 +50,14 @@ export function ChatPage() {
     };
   }, []);
 
-  // Build and start SignalR connection when token is available
+  // Build and start SignalR connection when token is available and AI is enabled
   useEffect(() => {
-    if (!token) return;
+    if (!shouldConnectAiChatHub({ token, aiGloballyEnabled })) return;
 
-    const connection = buildAuthenticatedHubConnection('/hubs/chat', token);
+    const tokenRef = { current: token };
+    const connection = buildAuthenticatedHubConnection('/hubs/chat', () =>
+      resolveHubAccessToken(tokenRef.current)
+    );
 
     connectionRef.current = connection;
 
@@ -80,7 +85,7 @@ export function ChatPage() {
       connectionRef.current = null;
       setConnectionState('Disconnected');
     };
-  }, [token]);
+  }, [token, aiGloballyEnabled]);
 
   const handleSend = async () => {
     const text = input.trim();
