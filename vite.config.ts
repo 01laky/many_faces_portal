@@ -72,6 +72,9 @@ export default defineConfig({
   resolve: {
     extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json'],
   },
+  optimizeDeps: {
+    include: ['dompurify'],
+  },
   define: {
     __APP_NAME__: JSON.stringify(process.env.VITE_APP_NAME || 'Be Demo Frontend'),
     __APP_VERSION__: JSON.stringify(process.env.VITE_APP_VERSION || '1.0.0'),

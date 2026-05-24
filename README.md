@@ -4,12 +4,21 @@
 
 | Start here          | Link                                                                                               |
 | ------------------- | -------------------------------------------------------------------------------------------------- |
+| **Security (PSH1)** | [`docs/SECURITY.md`](./docs/SECURITY.md) — tokens, env validation, XSS/URL, SignalR, CI gate       |
 | Run in full stack   | `../scripts/start-all-dev.sh` from `many_faces_main`                                               |
 | Local app           | `http://localhost:9080` / `https://localhost:9081` via portal proxy                                |
 | Global ADMIN vs SUPER_ADMIN | Portal for **`ADMIN`**; admin app requires **`SUPER_ADMIN`** — [`../docs/guides/admin-superadmin-only-access.md`](../docs/guides/admin-superadmin-only-access.md) |
 | Performance / Query | [`docs/performance-and-query-appendix.md`](./docs/performance-and-query-appendix.md)               |
 | Content approval UX | [`../docs/guides/ai-assisted-content-approval.md`](../docs/guides/ai-assisted-content-approval.md) |
 | Static i18n         | [`../docs/guides/static-localization-and-i18n.md`](../docs/guides/static-localization-and-i18n.md) |
+
+### Security at a glance (PSH1)
+
+- OAuth tokens in `localStorage`; single-flight refresh on 401; logout clears auth + capabilities cache.
+- Production builds: **`validateEnv()`** requires HTTPS `VITE_API_URL` and rejects demo OAuth secret (PSH1-E02).
+- Face-scoped API routing; safe redirect and blog HTML sanitization; SignalR JWT via `accessTokenFactory`.
+- Security Vitest: **`yarn test:security`**; monorepo CI: **`node scripts/verify-portal-security-tests.mjs`**.
+- Cypress on production bundle: set non-demo **`VITE_OAUTH2_CLIENT_SECRET`** at build (CI does this automatically).
 
 ```mermaid
 flowchart LR
@@ -154,7 +163,7 @@ flowchart LR
   - URL transformation: `/api/users` → `/api/acme-corp/users`
   - Language prefix handling: correctly identifies `/en/login` vs `/acme-corp/en/login`
   - Axios interceptors for automatic face path injection
-  - Comprehensive test coverage (26 tests)
+  - Comprehensive test coverage (23 tests)
 
 ## Technologies
 
@@ -405,7 +414,7 @@ configureApiClient(); // Sets up face path routing automatically
 
 ### Testing
 
-Face path routing has comprehensive test coverage (26 tests) in `src/api/__tests__/facePathRouting.test.ts`:
+Face path routing has comprehensive test coverage (23 tests) in `src/api/__tests__/facePathRouting.test.ts`:
 
 - Face path extraction from various URL formats
 - URL transformation logic
@@ -440,6 +449,13 @@ yarn test
 
 ```bash
 yarn test
+yarn test:security   # PSH1 Vitest *.security.test.ts subset
+```
+
+From monorepo root:
+
+```bash
+node scripts/verify-portal-security-tests.mjs
 ```
 
 ### Run Tests in Watch Mode
@@ -457,6 +473,8 @@ yarn test:coverage
 ### Cypress (E2E)
 
 After a production build, `vite preview` serves **HTTP** on port **4173** (see `vite.config.ts` `preview`) so Cypress does not need dev certificates.
+
+**Important:** The preview bundle runs with **`import.meta.env.PROD`**, so **`validateEnv()`** rejects the demo `VITE_OAUTH2_CLIENT_SECRET`. For local Cypress after `yarn build`, export a non-demo secret, e.g. `VITE_OAUTH2_CLIENT_SECRET=local-cypress-smoke-secret yarn build`. GitHub Actions sets `github-actions-ci-smoke-secret` on the build step.
 
 ```bash
 yarn build
@@ -494,7 +512,7 @@ yarn type-check
 
 ### eslint-plugin-react-hooks (ESLint 10 peers)
 
-Stable `eslint-plugin-react-hooks@latest` did not yet list ESLint **10** in `peerDependencies`, which caused Yarn **`YN0060`** / **`YN0086`** with ESLint 10 in this workspace. The project therefore pins an **exact** canary version whose peers include **`^10.0.0`** (see [facebook/react#35758](https://github.com/facebook/react/issues/35758)). **Removal trigger:** when `npm view eslint-plugin-react-hooks@latest peerDependencies` includes `^10.0.0` for `eslint`, switch `package.json` to that stable release and re-run `yarn install --immutable` plus `yarn validate` / `yarn test` / `yarn build`. **Automation:** bumps are **manual** here (no Dependabot ignore list ships in-repo). Full notes: [docs/eslint-plugin-react-hooks-peer.md](./docs/eslint-plugin-react-hooks-peer.md).
+Stable `eslint-plugin-react-hooks@latest` did not yet list ESLint **10** in `peerDependencies`, which caused Yarn **`YN0060`** / **`YN0086`** with ESLint 10 in this workspace. The project therefore pins an **exact** canary version whose peers include **`^10.0.0`** (see [facebook/react#35758](https://github.com/facebook/react/issues/35758)). **Removal trigger:** when `npm view eslint-plugin-react-hooks@latest peerDependencies` includes `^10.0.0` for `eslint`, switch `package.json` to that stable release and re-run `yarn install --immutable` plus `yarn validate` / `yarn test` / `yarn build`. **Automation:** bumps are **manual** here (no Dependabot ignore list ships in-repo).
 
 ## Build
 

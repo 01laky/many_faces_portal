@@ -18,4 +18,7 @@ RUN corepack enable && corepack prepare yarn@4.12.0 --activate
 
 EXPOSE 8081
 
-CMD ["sh", "-c", "CYPRESS_INSTALL_BINARY=0 yarn install && yarn dev --host 0.0.0.0 --port 8081"]
+COPY scripts/docker-dev-entrypoint.sh /usr/local/bin/docker-dev-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-dev-entrypoint.sh
+
+CMD ["docker-dev-entrypoint.sh"]
