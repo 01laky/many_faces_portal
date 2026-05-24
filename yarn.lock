@@ -6312,6 +6312,7 @@ __metadata:
     react-grid-layout: "npm:^2.2.3"
     react-hook-form: "npm:^7.76.0"
     react-i18next: "npm:^17.0.8"
+    react-loading-indicators: "npm:^1.0.1"
     react-quill-new: "npm:^3.8.3"
     react-router-dom: "npm:^7.15.1"
     react-toastify: "npm:^11.1.0"
@@ -7256,6 +7257,16 @@ __metadata:
   version: 3.0.4
   resolution: "react-lifecycles-compat@npm:3.0.4"
   checksum: 10/c66b9c98c15cd6b0d0a4402df5f665e8cc7562fb7033c34508865bea51fd7b623f7139b5b7e708515d3cd665f264a6a9403e1fa7e6d61a05759066f5e9f07783
+  languageName: node
+  linkType: hard
+
+"react-loading-indicators@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "react-loading-indicators@npm:1.0.1"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: 10/e6afe0b2f7cb0eb16f19a1f692f26b8bb3220045a019d941a7cd181093aad376164c259a615374e1b72912a657e6c0e8ba798a220c73ba350a96bfddda3365b8
   languageName: node
   linkType: hard
 

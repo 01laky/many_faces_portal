@@ -43,6 +43,8 @@ type User = PortalJwtUser;
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
+  /** True after the one-shot cold-start session read completes; stays true during login/logout. */
+  isSessionHydrated: boolean;
   user: User | null;
   token: string | null;
   login: (
@@ -74,6 +76,7 @@ function clearAuthReactState(
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSessionHydrated, setIsSessionHydrated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const { t, i18n } = useTranslation('common');
@@ -108,6 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         logger.error('Failed to load auth state', error);
       } finally {
+        setIsSessionHydrated(true);
         setIsLoading(false);
       }
     })();
@@ -280,13 +284,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     (): AuthContextType => ({
       isAuthenticated,
       isLoading,
+      isSessionHydrated,
       user,
       token,
       login,
       logout,
       refreshAuth,
     }),
-    [isAuthenticated, isLoading, user, token, login, logout, refreshAuth]
+    [isAuthenticated, isLoading, isSessionHydrated, user, token, login, logout, refreshAuth]
   );
 
   return (

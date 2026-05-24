@@ -25,7 +25,6 @@ import { SettingsSidePanel } from '../features/settings';
 import type { SettingsTabId } from '../features/settings';
 import { RouteLoadingFallback } from './routeLoadingFallback';
 import { buildLanguageNestedRoutes } from './buildLanguageNestedRoutes';
-import { FaceConfigErrorView, FaceConfigLoadingView } from './FaceConfigStatusViews';
 import { useFaceRouteEntries } from './useFaceRouteEntries';
 import { useTranslatedRoutePaths } from './useTranslatedRoutePaths';
 import '../styles/toast.scss';
@@ -37,7 +36,7 @@ export function AppRoutes() {
   const { i18n } = useTranslation('common');
   const { isAuthenticated, token } = useAuth();
   const getLocalizedPath = useLocalizedLink();
-  const { selectedFace, isLoading, error } = useFaceConfig();
+  const { selectedFace } = useFaceConfig();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState<SettingsTabId>('settings');
   const [gridTopPanel, setGridTopPanel] = useState<GridTopPanelState>(null);
@@ -76,7 +75,6 @@ export function AppRoutes() {
   }, [settingsOpen]);
 
   useEffect(() => {
-    if (isLoading) return;
     if (!isAuthenticated || !token) return;
     if (!selectedFace || selectedFace.isPublic) return;
     if (!isFirstVisitToFace(selectedFace)) return;
@@ -86,7 +84,7 @@ export function AppRoutes() {
       setSettingsTab('faceRole');
     }, 0);
     return () => clearTimeout(id);
-  }, [selectedFace, isLoading, isAuthenticated, token]);
+  }, [selectedFace, isAuthenticated, token]);
 
   const closeGridPanel = useCallback(() => setGridTopPanel(null), []);
 
@@ -122,14 +120,6 @@ export function AppRoutes() {
       selectedFaceIndex: selectedFace?.index,
     });
   }, [isAuthenticated, selectedFace?.id, selectedFace?.index]);
-
-  if (isLoading) {
-    return <FaceConfigLoadingView />;
-  }
-
-  if (error) {
-    return <FaceConfigErrorView message={error.message} />;
-  }
 
   return (
     <GridTopPanelProvider value={gridTopPanelApi}>

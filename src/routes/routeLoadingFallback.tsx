@@ -1,16 +1,5 @@
+import { GlobalAppPreloader } from '../components/GlobalAppPreloader';
+
 export function RouteLoadingFallback() {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '40vh',
-        fontSize: '15px',
-        color: '#666',
-      }}
-    >
-      Loading…
-    </div>
-  );
+  return <GlobalAppPreloader variant="route-fallback" accessibilityLabel="Loading page" />;
 }

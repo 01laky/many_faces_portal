@@ -1,0 +1,36 @@
+/** Values mirror preloaderTokens.ts — see fe-global-preloader-tokens.md */
+
+.global-app-preloader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #f8fafc;
+  flex: 1;
+
+  &__logo .main-logo {
+    width: 68px;
+    height: 68px;
+  }
+
+  &__spinner {
+    margin-top: 18px;
+  }
+
+  &--route-fallback {
+    min-height: 40vh;
+    background: transparent;
+
+    .global-app-preloader__logo .main-logo {
+      width: 32px;
+      height: 32px;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .global-app-preloader__spinner {
+    display: none;
+  }
+}

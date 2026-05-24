@@ -9,6 +9,7 @@ import { ApiContextProvider } from './contexts/ApiContext';
 import { MessengerProvider } from './contexts/MessengerContext';
 import { FaceConfigProvider } from './contexts/FaceConfigContext';
 import { GradientAnimationPreferenceProvider } from './contexts/GradientAnimationPreferenceContext';
+import { AppBootstrapGate } from './components/AppBootstrapGate';
 import { AppRoutes } from './routes';
 
 function MessengerProviderWithToken({ children }: { children: ReactNode }) {
@@ -30,7 +31,9 @@ function App() {
             <MessengerProviderWithToken>
               <FaceConfigProvider>
                 <GradientAnimationPreferenceProvider>
-                  <AppRoutes />
+                  <AppBootstrapGate>
+                    <AppRoutes />
+                  </AppBootstrapGate>
                 </GradientAnimationPreferenceProvider>
               </FaceConfigProvider>
             </MessengerProviderWithToken>

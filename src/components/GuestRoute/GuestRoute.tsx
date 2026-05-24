@@ -12,16 +12,10 @@ interface GuestRouteProps {
  * Used for routes that should only be accessible to unauthenticated users (login, register, home)
  */
 export function GuestRoute({ children }: GuestRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { getPostAuthHomePath } = useFaceConfig();
   const getLocalizedPath = useLocalizedLink();
 
-  // Show nothing while checking authentication
-  if (isLoading) {
-    return null;
-  }
-
-  // If user is authenticated, redirect to face home page
   if (isAuthenticated) {
     return <Navigate to={getLocalizedPath(getPostAuthHomePath())} replace />;
   }
