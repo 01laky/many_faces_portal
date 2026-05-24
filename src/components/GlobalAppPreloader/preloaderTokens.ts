@@ -10,6 +10,10 @@ export const GLOBAL_PRELOADER_SPINNER_SLOT_PX = 144;
 export const GLOBAL_PRELOADER_VANILLA_DOT_PX = 36;
 export const GLOBAL_PRELOADER_VANILLA_DOT_GAP_PX = 24;
 
+export const GLOBAL_PRELOADER_TITLE_FONT_PX = 56;
+export const GLOBAL_PRELOADER_TITLE_GAP_PX = 12;
+export const GLOBAL_PRELOADER_SPINNER_GAP_PX = 36;
+
 /** Bootstrap preloader on viewports at or below this width (portal + admin). */
 export const GLOBAL_PRELOADER_MOBILE_MAX_WIDTH_PX = 767;
 /** 25% smaller than desktop bootstrap tokens. */
@@ -31,6 +35,15 @@ export const GLOBAL_PRELOADER_MOBILE_VANILLA_DOT_PX = preloaderMobilePx(
 );
 export const GLOBAL_PRELOADER_MOBILE_VANILLA_DOT_GAP_PX = preloaderMobilePx(
   GLOBAL_PRELOADER_VANILLA_DOT_GAP_PX
+);
+export const GLOBAL_PRELOADER_MOBILE_TITLE_FONT_PX = preloaderMobilePx(
+  GLOBAL_PRELOADER_TITLE_FONT_PX
+);
+export const GLOBAL_PRELOADER_MOBILE_TITLE_GAP_PX = preloaderMobilePx(
+  GLOBAL_PRELOADER_TITLE_GAP_PX
+);
+export const GLOBAL_PRELOADER_MOBILE_SPINNER_GAP_PX = preloaderMobilePx(
+  GLOBAL_PRELOADER_SPINNER_GAP_PX
 );
 
 export const ROUTE_FALLBACK_LOGO_SIZE_PX = 64;

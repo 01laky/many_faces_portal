@@ -2,6 +2,7 @@ import { ThreeDot } from 'react-loading-indicators';
 import { MainLogo } from '../MainLogo/MainLogo';
 import { GLOBAL_PRELOADER_DOT_COLOR, ROUTE_FALLBACK_DOT_FONT_PX } from './preloaderTokens';
 import { PreloaderDots } from './PreloaderDots';
+import { PreloaderBrandTitle } from './PreloaderBrandTitle';
 import './globalAppPreloader.scss';
 
 export interface GlobalAppPreloaderProps {
@@ -32,6 +33,7 @@ export function GlobalAppPreloader({
         <div className="global-app-preloader__logo">
           <MainLogo />
         </div>
+        {!isRouteFallback ? <PreloaderBrandTitle /> : null}
         <div className="global-app-preloader__spinner" aria-hidden="true">
           {isRouteFallback ? (
             <div className="global-app-preloader__spinner-inner">

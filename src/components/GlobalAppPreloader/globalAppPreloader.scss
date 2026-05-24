@@ -6,6 +6,9 @@
   --gpl-spinner-slot: 144px;
   --gpl-dot: 36px;
   --gpl-dot-gap: 24px;
+  --gpl-title-font: 56px;
+  --gpl-title-gap: 12px;
+  --gpl-spinner-gap: 36px;
 
   display: flex;
   flex-direction: column;
@@ -32,6 +35,9 @@
       --gpl-spinner-slot: 108px;
       --gpl-dot: 27px;
       --gpl-dot-gap: 18px;
+      --gpl-title-font: 42px;
+      --gpl-title-gap: 9px;
+      --gpl-spinner-gap: 27px;
     }
   }
 
@@ -57,7 +63,7 @@
   }
 
   &__spinner {
-    margin-top: var(--gpl-gap);
+    margin-top: var(--gpl-spinner-gap);
     min-height: var(--gpl-spinner-slot);
     height: var(--gpl-spinner-slot);
     display: flex;
@@ -104,6 +110,10 @@
     --gpl-spinner-slot: 32px;
     --gpl-dot: 12px;
     --gpl-dot-gap: 8px;
+
+    .global-app-preloader__spinner {
+      margin-top: var(--gpl-gap);
+    }
   }
 }
 

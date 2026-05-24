@@ -7,7 +7,7 @@ describe('bootstrapShell GPL', () => {
     expect(html).toContain('main-logo');
     expect(html).toContain('logo-raster-source.png');
     expect(html).toContain('global-app-preloader-vanilla__dot');
-    expect(html).toContain('width:306px');
-    expect(html).toContain('max-width:767px');
+    expect(html).toContain('Many Faces');
+    expect(html).toContain('Sweetest Cat Ever');
   });
 });

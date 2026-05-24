@@ -6,6 +6,7 @@ import { useProfile } from '../../hooks/api/useProfileApi';
 import { useAnimatedGradientStyle } from '../../hooks/useAnimatedGradient';
 import { useGradientAnimationPreference } from '../../contexts/GradientAnimationPreferenceContext';
 import { MainLogo } from '../MainLogo';
+import { AppBrandTitle } from '../AppBrandTitle/AppBrandTitle';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import {
   Home,
@@ -92,7 +93,7 @@ export function Header({
           <Link to={getLocalizedPath('')} className="header-brand">
             <MainLogo />
             <div className="header-brand-text">
-              <span className="header-brand-title">The Many Faces</span>
+              <AppBrandTitle className="header-brand-title">The Many Faces</AppBrandTitle>
               <span className="header-brand-subtitle">Demo</span>
             </div>
           </Link>

@@ -8,10 +8,11 @@ vi.mock('react-loading-indicators', () => ({
 }));
 
 describe('GlobalAppPreloader GPL', () => {
-  it('GPL-4: renders MainLogo and CSS dots in bootstrap mode', () => {
+  it('GPL-4: renders MainLogo, brand title, and CSS dots in bootstrap mode', () => {
     render(<GlobalAppPreloader />);
     expect(screen.getByTestId('global-app-preloader')).toBeTruthy();
     expect(document.querySelector('.main-logo img')).toBeTruthy();
+    expect(screen.getByText('Many Faces')).toBeTruthy();
     expect(document.querySelectorAll('.global-app-preloader__dot')).toHaveLength(3);
   });
 

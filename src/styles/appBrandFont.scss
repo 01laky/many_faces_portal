@@ -1,0 +1,14 @@
+/** Sweetest Cat Ever — Misti's Fonts (free for personal use). Source: dafont.com/sweetest-cat-ever */
+@font-face {
+  font-family: 'Sweetest Cat Ever';
+  src: url('/fonts/sweetest-cat-ever.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.app-brand-font {
+  font-family: 'Sweetest Cat Ever', 'Segoe Script', 'Brush Script MT', cursive;
+  font-weight: 400;
+  font-style: normal;
+}
