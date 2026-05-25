@@ -1,5 +1,15 @@
 # Many Faces AI (MFAI) - frontend application
 
+<!-- readme-badges:start -->
+[![version](https://img.shields.io/badge/version-0.9.2-blue)](./VERSION)
+![React](https://img.shields.io/badge/React-19-61DAFB)
+![Vite](https://img.shields.io/badge/Vite-8-646CFF)
+![Node](https://img.shields.io/badge/Node-22+-339933)
+[![CI](https://github.com/01laky/many_faces_main/actions/workflows/ci.yml/badge.svg)](https://github.com/01laky/many_faces_main/actions/workflows/ci.yml)
+![tests](https://img.shields.io/badge/tests-CI%20gated-brightgreen)
+![platform](https://img.shields.io/badge/platform-web-lightgrey)
+<!-- readme-badges:end -->
+
 **Version:** [`0.9.0`](./VERSION) · [Changelog](./CHANGELOG.md)
 
 **Author:** Ladislav Kostolny · [01laky@gmail.com](mailto:01laky@gmail.com)
