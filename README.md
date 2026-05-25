@@ -2,6 +2,8 @@
 
 **Version:** [`0.9.0`](./VERSION) · [Changelog](./CHANGELOG.md)
 
+**Author:** Ladislav Kostolny · [01laky@gmail.com](mailto:01laky@gmail.com)
+
 **User-facing web experience for Many Faces AI.** This React app renders face-scoped social spaces: dynamic page grids, localized routes, auth flows, content modules, stories, chat rooms, profiles, submissions, and role-aware actions backed by the API. Layout and modules come from admin-managed **`gridSchema`** JSON per face — not hard-coded routes. Users never talk to workers or AI directly.
 
 ### Three pillars
