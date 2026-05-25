@@ -3,13 +3,9 @@ import { ResponsiveGridLayout, useContainerWidth, verticalCompactor } from 'reac
 import type { LayoutItem, ResponsiveLayouts } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
-import { renderProfileDetailSection } from '../registry/profileDetailSectionRegistry';
-import type { ProfileDetailGridSchema } from '../schema/profileDetailGridTypes';
+import { renderProfileDetailSection } from '../../registry/profileDetailSectionRegistry';
 import './ProfilePageGridLayout.scss';
-
-interface ProfilePageGridLayoutProps {
-	schema: ProfileDetailGridSchema;
-}
+import type { ProfilePageGridLayoutProps } from './types';
 
 export function ProfilePageGridLayout({ schema }: ProfilePageGridLayoutProps) {
 	const { width, containerRef } = useContainerWidth();

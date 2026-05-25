@@ -5,10 +5,7 @@ import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { fetchWallTickets, type WallTicketListItem } from '../../api/services/wallTicketsApi';
 import { WallTicketDetailPanel } from '../WallTicketDetailPanel';
 import './WallTicketsSection.scss';
-
-interface WallTicketsSectionProps {
-	refreshKey?: number;
-}
+import type { WallTicketsSectionProps } from './types';
 
 export function WallTicketsSection({ refreshKey = 0 }: WallTicketsSectionProps) {
 	const { t } = useTranslation('common');

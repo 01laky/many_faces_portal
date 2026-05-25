@@ -22,9 +22,7 @@ import { getContentDetailOwnerFlags } from '../../utils/contentDetailPage';
 import { formatContentDate } from '../../utils/contentDetailFormat';
 import './AlbumDetailPage.scss';
 import '../../styles/contentDetailPage.scss';
-
-const ALBUM_TYPE_LABELS: Record<number, string> = { 1: 'Public', 2: 'Private', 3: 'Paid' };
-const MEDIA_TYPE_LABELS: Record<number, string> = { 1: 'Image', 2: 'Video' };
+import { ALBUM_TYPE_LABELS, MEDIA_TYPE_LABELS } from './constants';
 
 /**
  * Album detail with likes/comments. Edit/delete are limited to the owning creator while moderation still allows it;

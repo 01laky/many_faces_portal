@@ -5,14 +5,7 @@ import { toast } from 'react-toastify';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { createWallTicket } from '../../api/services/wallTicketsApi';
 import './WallTicketCreateTopPanel.scss';
-
-interface WallTicketCreateTopPanelProps {
-	open: boolean;
-	onClose: () => void;
-	token: string;
-	faceId: number;
-	onCreated?: () => void;
-}
+import type { WallTicketCreateTopPanelProps } from './types';
 
 export function WallTicketCreateTopPanel({
 	open,

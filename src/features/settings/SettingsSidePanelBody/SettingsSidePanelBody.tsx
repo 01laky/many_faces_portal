@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
-import type { GridTopPanelState } from '../../../contexts/GridTopPanelContext';
 import { LanguageSwitcher } from '../../../components/LanguageSwitcher';
 import { AnimatedGradientToggle } from '../AnimatedGradientToggle';
 import { FriendRequestsTab } from '../../../components/FriendRequestsTab';
@@ -17,15 +16,7 @@ import { GridTopPanelContent } from '../../../components/GridTopPanelContent';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
 import { parseGradientSettings } from '../../../hooks/useAnimatedGradient';
 import { PagesNav } from '../PagesNav';
-import type { SettingsTabId } from '../types';
-
-export interface SettingsSidePanelBodyProps {
-	gridTopPanel: GridTopPanelState;
-	settingsTab: SettingsTabId;
-	closeGridPanel: () => void;
-	onGridCreateSavedClose: () => void;
-	onSettingsNavigate: () => void;
-}
+import type { SettingsSidePanelBodyProps } from './types';
 
 export function SettingsSidePanelBody({
 	gridTopPanel,

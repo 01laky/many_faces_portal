@@ -18,10 +18,7 @@ import {
 } from '../../../api/services/VideoLoungesService';
 import { VideoLoungeCard } from '../VideoLoungeCard';
 import './VideoLounge.scss';
-
-export interface VideoLoungeProps {
-	boundVideoLoungeId?: number;
-}
+import type { VideoLoungeProps } from './types';
 
 export function VideoLounge({ boundVideoLoungeId }: VideoLoungeProps) {
 	const { t } = useTranslation('common');

@@ -22,12 +22,7 @@ import {
 } from '../../../hooks/usePaginationParentSync';
 import { useFillGridPagination } from '../../../hooks/useFillGridPagination';
 import './VideoLoungeGrid.scss';
-
-export interface VideoLoungeGridProps {
-	page?: number;
-	totalPages?: number;
-	onPageChange?: (page: number, totalPages: number) => void;
-}
+import type { VideoLoungeGridProps } from './types';
 
 export function VideoLoungeGrid({ page: controlledPage, onPageChange }: VideoLoungeGridProps = {}) {
 	const { t } = useTranslation('common');

@@ -12,35 +12,15 @@ import { BlogForm } from '../grid/BlogForm';
 import { ReelForm } from '../grid/ReelForm';
 import type { GridComponentType } from '../PageGridLayout';
 import { GRID_TOP_PANEL_CREATE_LABEL } from '../gridTopPanelCreateMeta';
-
-const ALBUM_TYPES: GridComponentType[] = ['album', 'albumGrid', 'albumCarousel'];
-const BLOG_TYPES: GridComponentType[] = ['blog', 'blogGrid', 'blogCarousel'];
-const REEL_TYPES: GridComponentType[] = ['reel', 'reelGrid', 'reelCarousel'];
-const CHAT_TYPES: GridComponentType[] = ['chatRoom', 'chatRoomGrid', 'chatRoomCarousel'];
-const VIDEO_LOUNGE_TYPES: GridComponentType[] = [
-	'videoLounge',
-	'videoLoungeGrid',
-	'videoLoungeCarousel',
-];
-const UNSUPPORTED_CREATE_COPY_KEY: Partial<Record<GridComponentType, string>> = {
-	ad: 'gridBlocks.createUnsupported.ad',
-	adGrid: 'gridBlocks.createUnsupported.ad',
-	adCarousel: 'gridBlocks.createUnsupported.ad',
-	story: 'gridBlocks.createUnsupported.story',
-	storyGrid: 'gridBlocks.createUnsupported.story',
-	storyCarousel: 'gridBlocks.createUnsupported.story',
-	userProfile: 'gridBlocks.createUnsupported.userProfile',
-	userProfileGrid: 'gridBlocks.createUnsupported.userProfile',
-	userProfileCarousel: 'gridBlocks.createUnsupported.userProfile',
-};
-
-type GridTopPanelContentProps = {
-	state: { mode: 'create'; componentType: GridComponentType };
-	/** After successful create — close whole top panel */
-	onSavedClose: () => void;
-	/** Cancel / back — clear grid view, keep panel open on settings tabs */
-	onCancel: () => void;
-};
+import {
+	ALBUM_TYPES,
+	BLOG_TYPES,
+	REEL_TYPES,
+	CHAT_TYPES,
+	VIDEO_LOUNGE_TYPES,
+	UNSUPPORTED_CREATE_COPY_KEY,
+} from './constants';
+import type { GridTopPanelContentProps } from './types';
 
 function GridTopPanelCreateBody({
 	componentType,

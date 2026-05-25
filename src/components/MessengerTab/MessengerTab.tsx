@@ -20,8 +20,7 @@ import {
 import { formatMessageTime } from '../../utils/formatMessageTime';
 import { useAuth } from '../../contexts/AuthContext';
 import './MessengerTab.scss';
-
-type View = 'none' | 'chat' | 'request';
+import type { View } from './types';
 
 export function MessengerTab({ token }: { token: string }) {
 	const { t } = useTranslation('common');

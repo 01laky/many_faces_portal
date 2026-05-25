@@ -17,20 +17,13 @@ import {
 } from '../../../hooks/usePaginationParentSync';
 import { blogCoverPlaceholderUrl } from '../gridDisplayHelpers';
 import './BlogCarousel.scss';
-
-const CARD_WIDTH = 200;
-const CARD_GAP = 8;
+import { CARD_WIDTH, CARD_GAP } from './constants';
+import type { BlogCarouselProps } from './types';
 
 function blogCover(blog: BlogItem): string {
 	const first = blog.images?.[0]?.imageUrl;
 	if (first) return first;
 	return blogCoverPlaceholderUrl();
-}
-
-export interface BlogCarouselProps {
-	page?: number;
-	totalPages?: number;
-	onPageChange?: (page: number, totalPages: number) => void;
 }
 
 export function BlogCarousel({

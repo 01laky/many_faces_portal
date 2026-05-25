@@ -4,11 +4,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { createChatRoom } from '../../../api/services/ChatRoomsService';
 import { Button } from '../../radix/Button';
 import './ChatRoomForm.scss';
-
-export interface ChatRoomFormProps {
-	onSaved: (roomId: number) => void;
-	onCancel: () => void;
-}
+import type { ChatRoomFormProps } from './types';
 
 export function ChatRoomForm({ onSaved, onCancel }: ChatRoomFormProps) {
 	const { selectedFace } = useFaceConfig();

@@ -25,17 +25,7 @@ import { getPageIcon } from '../../utils/pageIcons';
 import { pathnameMatchesWallPage } from '../../utils/faceWallPage';
 import type { FaceConfig } from '../../api/types/facesConfig';
 import './Header.scss';
-
-interface HeaderProps {
-	onSettingsToggle?: () => void;
-	onMenuToggle?: () => void;
-	/** When provided, clicking the profile area opens the slide-out panel with Edit profile tab selected */
-	onProfileClick?: () => void;
-	/** Open top panel to create a new story */
-	onStoriesCreate?: () => void;
-	/** Open top panel to create a wall ticket (face wall page) */
-	onWallTicketCreate?: () => void;
-}
+import type { HeaderProps } from './types';
 
 /** Resolve current face page name from pathname and face config */
 function getCurrentPageName(pathname: string, selectedFace: FaceConfig | null): string | null {

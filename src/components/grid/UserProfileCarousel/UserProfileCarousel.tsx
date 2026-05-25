@@ -20,15 +20,8 @@ import {
 	useSyncedPaginationReport,
 } from '../../../hooks/usePaginationParentSync';
 import './UserProfileCarousel.scss';
-
-const CARD_WIDTH = 140;
-const CARD_GAP = 8;
-
-export interface UserProfileCarouselProps {
-	page?: number;
-	totalPages?: number;
-	onPageChange?: (page: number, totalPages: number) => void;
-}
+import type { UserProfileCarouselProps } from './types';
+import { CARD_WIDTH, CARD_GAP } from './constants';
 
 export function UserProfileCarousel({
 	page: controlledPage,

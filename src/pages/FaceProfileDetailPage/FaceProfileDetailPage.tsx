@@ -17,8 +17,7 @@ import { ProfilePageGridLayout } from '../../features/profileDetail/layout/Profi
 import { DEFAULT_PROFILE_DETAIL_GRID_SCHEMA_JSON } from '../../features/profileDetail/schema/defaultProfileDetailSchema';
 import { parseProfileDetailGridSchema } from '../../features/profileDetail/schema/parseProfileDetailGridSchema';
 import './FaceProfileDetailPage.scss';
-
-const PROFILE_DETAIL_PAGE_TYPE = 'profileDetail';
+import { PROFILE_DETAIL_PAGE_TYPE } from './constants';
 
 export function FaceProfileDetailPage() {
 	const { userId } = useParams<{ userId: string }>();

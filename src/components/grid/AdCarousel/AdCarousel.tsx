@@ -18,15 +18,8 @@ import {
 	useSyncedPaginationReport,
 } from '../../../hooks/usePaginationParentSync';
 import './AdCarousel.scss';
-
-const CARD_WIDTH = 160;
-const CARD_GAP = 8;
-
-export interface AdCarouselProps {
-	page?: number;
-	totalPages?: number;
-	onPageChange?: (page: number, totalPages: number) => void;
-}
+import type { AdCarouselProps } from './types';
+import { CARD_WIDTH, CARD_GAP } from './constants';
 
 export function AdCarousel({
 	page: controlledPage,

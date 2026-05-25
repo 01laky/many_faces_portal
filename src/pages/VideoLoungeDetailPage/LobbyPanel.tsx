@@ -1,11 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Mic, MicOff, Video, VideoOff, Users } from 'lucide-react';
-import type {
-	FaceVideoLoungeDto,
-	VideoLoungeJoinMode,
-	VideoLoungeLiveParticipantDto,
-	VideoLoungeLiveSnapshotDto,
-} from '../../api/services/VideoLoungesService';
+import type { VideoLoungeLiveParticipantDto } from '../../api/services/VideoLoungesService';
 import { profileAvatarUrl } from '../../components/grid/gridDisplayHelpers';
 import {
 	JOIN_MODE_I18N_KEY,
@@ -14,21 +9,7 @@ import {
 	shouldShowDevicePreview,
 } from './videoLoungeDetailLogic';
 
-export interface LobbyPanelProps {
-	lounge: FaceVideoLoungeDto;
-	live: VideoLoungeLiveSnapshotDto | null;
-	joinMode: VideoLoungeJoinMode | null;
-	onJoinModeChange: (mode: VideoLoungeJoinMode) => void;
-	previewStream: MediaStream | null;
-	previewError: string | null;
-	previewReady: boolean;
-	onStartPreview: () => void;
-	connectBusy: boolean;
-	startBusy: boolean;
-	connectError: string | null;
-	onStartSession: () => void;
-	onConnect: () => void;
-}
+import type { LobbyPanelProps } from './types';
 
 function RosterRow({ p }: { p: VideoLoungeLiveParticipantDto }) {
 	const avatar = profileAvatarUrl(p.userId, p.avatarUrl);

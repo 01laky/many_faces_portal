@@ -12,15 +12,7 @@ import {
 	type WallTicketDetail,
 } from '../../api/services/wallTicketsApi';
 import './WallTicketDetailPanel.scss';
-
-interface WallTicketDetailPanelProps {
-	open: boolean;
-	onClose: () => void;
-	token: string;
-	faceId: number;
-	ticketId: number | null;
-	onChanged?: () => void;
-}
+import type { WallTicketDetailPanelProps } from './types';
 
 export function WallTicketDetailPanel({
 	open,

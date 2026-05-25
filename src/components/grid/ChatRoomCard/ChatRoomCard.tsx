@@ -1,16 +1,6 @@
-import type { FaceChatRoomDto } from '../../../api/services/ChatRoomsService';
 import { profileAvatarUrl } from '../gridDisplayHelpers';
 import './ChatRoomCard.scss';
-
-interface ChatRoomCardProps {
-	room: Pick<
-		FaceChatRoomDto,
-		'id' | 'title' | 'memberCount' | 'lastMessageAt' | 'isPublic' | 'isSystemManaged'
-	>;
-	onOpen?: () => void;
-	/** When false, card is not keyboard-focusable / no pointer cursor */
-	interactive?: boolean;
-}
+import type { ChatRoomCardProps } from './types';
 
 function formatActivity(iso: string | null): string {
 	if (!iso) return '';

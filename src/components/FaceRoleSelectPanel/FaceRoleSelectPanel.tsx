@@ -9,15 +9,7 @@ import { getFaceRoles, setMyFaceRole } from '../../api/services/FaceRolesService
 import type { FaceRoleOption } from '../../api/types/facesConfig';
 import type { FaceConfig } from '../../api/types/facesConfig';
 import './FaceRoleSelectPanel.scss';
-
-interface FaceRoleSelectPanelProps {
-	/** Current private face */
-	face: FaceConfig;
-	token: string;
-	onRoleSet: () => void;
-	/** When true, rendered inside slide-out panel (lighter styling) */
-	inPanel?: boolean;
-}
+import type { FaceRoleSelectPanelProps } from './types';
 
 export function FaceRoleSelectPanel({ face, token, onRoleSet, inPanel }: FaceRoleSelectPanelProps) {
 	const { t } = useTranslation('common');

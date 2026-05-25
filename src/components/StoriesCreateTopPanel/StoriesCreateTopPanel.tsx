@@ -5,12 +5,7 @@ import { toast } from 'react-toastify';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { createStoryDraft, publishStory, uploadStoryImage } from '../../api/services/storiesApi';
 import './StoriesCreateTopPanel.scss';
-
-interface StoriesCreateTopPanelProps {
-	open: boolean;
-	onClose: () => void;
-	token: string;
-}
+import type { StoriesCreateTopPanelProps } from './types';
 
 export function StoriesCreateTopPanel({ open, onClose, token }: StoriesCreateTopPanelProps) {
 	const { t } = useTranslation('common');

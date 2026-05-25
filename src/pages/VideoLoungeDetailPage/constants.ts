@@ -1,0 +1,3 @@
+export const LIVE_ROSTER_POLL_MS = 12_000;
+
+export const HEARTBEAT_INTERVAL_MS = 30_000;

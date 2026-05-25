@@ -1,13 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { UserCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { likeFaceProfile, unlikeFaceProfile } from '../../../api/services/faceProfilesApi';
-import { useFaceMemberDetail } from '../context/useFaceMemberDetail';
-
-interface ProfileHeroSectionProps {
-	includeMeta?: boolean;
-	includeLike?: boolean;
-}
+import { likeFaceProfile, unlikeFaceProfile } from '../../../../api/services/faceProfilesApi';
+import { useFaceMemberDetail } from '../../context/useFaceMemberDetail';
+import type { ProfileHeroSectionProps } from './types';
 
 export function ProfileHeroSection({
 	includeMeta = true,

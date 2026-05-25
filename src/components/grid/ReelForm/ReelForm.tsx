@@ -12,12 +12,7 @@ import {
 } from '../../../api/services/ReelsService';
 import { getSubmittedForApprovalCopy } from '../../../utils/contentModeration';
 import '../AlbumForm/AlbumForm.scss';
-
-interface ReelFormProps {
-	editReel?: ReelItem | null;
-	onSaved?: (reel: ReelItem) => void;
-	onCancel?: () => void;
-}
+import type { ReelFormProps } from './types';
 
 export function ReelForm({ editReel, onSaved, onCancel }: ReelFormProps) {
 	const { t } = useTranslation('common');

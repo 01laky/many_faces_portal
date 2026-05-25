@@ -19,6 +19,7 @@ import {
 import { useFillGridPagination } from '../../../hooks/useFillGridPagination';
 import { blogCoverPlaceholderUrl } from '../gridDisplayHelpers';
 import './BlogGrid.scss';
+import type { BlogGridProps } from './types';
 
 function blogCover(blog: BlogItem): string {
 	const first = blog.images?.[0]?.imageUrl;
@@ -29,12 +30,6 @@ function blogCover(blog: BlogItem): string {
 function excerpt(text: string, max = 100): string {
 	const t = text.replace(/\s+/g, ' ').trim();
 	return t.length <= max ? t : `${t.slice(0, max)}…`;
-}
-
-export interface BlogGridProps {
-	page?: number;
-	totalPages?: number;
-	onPageChange?: (page: number, totalPages: number) => void;
 }
 
 export function BlogGrid({ page: controlledPage, onPageChange }: BlogGridProps = {}) {

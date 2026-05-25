@@ -19,12 +19,7 @@ import {
 } from '../../../hooks/usePaginationParentSync';
 import { useFillGridPagination } from '../../../hooks/useFillGridPagination';
 import './ChatRoomGrid.scss';
-
-export interface ChatRoomGridProps {
-	page?: number;
-	totalPages?: number;
-	onPageChange?: (page: number, totalPages: number) => void;
-}
+import type { ChatRoomGridProps } from './types';
 
 export function ChatRoomGrid({ page: controlledPage, onPageChange }: ChatRoomGridProps = {}) {
 	const { t } = useTranslation('common');

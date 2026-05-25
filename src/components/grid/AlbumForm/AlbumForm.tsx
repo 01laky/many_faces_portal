@@ -12,23 +12,8 @@ import {
 } from '../../../api/services/AlbumsService';
 import { getSubmittedForApprovalCopy } from '../../../utils/contentModeration';
 import './AlbumForm.scss';
-
-interface AlbumFormProps {
-	editAlbum?: AlbumItem | null;
-	onSaved?: (album: AlbumItem) => void;
-	onCancel?: () => void;
-}
-
-const ALBUM_TYPES = [
-	{ value: 1, label: 'Public' },
-	{ value: 2, label: 'Private' },
-	{ value: 3, label: 'Paid' },
-];
-
-const MEDIA_TYPES = [
-	{ value: 1, label: 'Image' },
-	{ value: 2, label: 'Video' },
-];
+import type { AlbumFormProps } from './types';
+import { ALBUM_TYPES, MEDIA_TYPES } from './constants';
 
 export function AlbumForm({ editAlbum, onSaved, onCancel }: AlbumFormProps) {
 	const { t } = useTranslation('common');

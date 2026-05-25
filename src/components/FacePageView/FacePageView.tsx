@@ -9,14 +9,8 @@
 import { useTranslation } from 'react-i18next';
 import { PageGridLayout } from '../PageGridLayout';
 import { WallTicketsSection } from '../WallTicketsSection';
-import type { PageConfig } from '../../api/types/facesConfig';
 import './FacePageView.scss';
-
-interface FacePageViewProps {
-	page: PageConfig;
-	/** Bumps when a new ticket is created so the wall list refetches */
-	wallRefreshKey?: number;
-}
+import type { FacePageViewProps } from './types';
 
 export function FacePageView({ page, wallRefreshKey = 0 }: FacePageViewProps) {
 	const { t } = useTranslation('common');

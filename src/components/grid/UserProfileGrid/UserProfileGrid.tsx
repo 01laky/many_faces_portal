@@ -21,12 +21,7 @@ import {
 } from '../../../hooks/usePaginationParentSync';
 import { useFillGridPagination } from '../../../hooks/useFillGridPagination';
 import './UserProfileGrid.scss';
-
-export interface UserProfileGridProps {
-	page?: number;
-	totalPages?: number;
-	onPageChange?: (page: number, totalPages: number) => void;
-}
+import type { UserProfileGridProps } from './types';
 
 export function UserProfileGrid({ page: controlledPage, onPageChange }: UserProfileGridProps = {}) {
 	const { t } = useTranslation('common');

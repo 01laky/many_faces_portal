@@ -1,13 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
-import { upsertFaceProfileReview } from '../../../api/services/faceProfilesApi';
-import { useFaceMemberDetail } from '../context/useFaceMemberDetail';
-
-interface ProfileReviewsSectionProps {
-	showRecensionsDisabledMessage?: boolean;
-	hideWhenRecensionsDisabled?: boolean;
-}
+import { upsertFaceProfileReview } from '../../../../api/services/faceProfilesApi';
+import { useFaceMemberDetail } from '../../context/useFaceMemberDetail';
+import type { ProfileReviewsSectionProps } from './types';
 
 export function ProfileReviewsSection({
 	showRecensionsDisabledMessage = true,

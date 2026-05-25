@@ -15,12 +15,7 @@ import { FormField } from '../../components/radix/FormField';
 import { Input } from '../../components/radix/Input';
 import { Button } from '../../components/radix/Button';
 import './LoginPage.scss';
-
-interface LoginFormData {
-	email: string;
-	password: string;
-	rememberMe: boolean;
-}
+import type { LoginFormData } from './types';
 
 export function LoginPage() {
 	const { t } = useTranslation('common');

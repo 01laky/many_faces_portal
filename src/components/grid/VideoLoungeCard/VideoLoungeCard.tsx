@@ -1,23 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import type { FaceVideoLoungeDto } from '../../../api/services/VideoLoungesService';
 import { profileAvatarUrl } from '../gridDisplayHelpers';
 import { formatVideoLoungeLiveBadge } from '../../../pages/VideoLoungeDetailPage/videoLoungeDetailLogic';
 import './VideoLoungeCard.scss';
-
-interface VideoLoungeCardProps {
-	lounge: Pick<
-		FaceVideoLoungeDto,
-		| 'id'
-		| 'title'
-		| 'memberCount'
-		| 'isPublic'
-		| 'isSystemManaged'
-		| 'hasLiveSession'
-		| 'liveParticipantCount'
-	>;
-	onOpen?: () => void;
-	interactive?: boolean;
-}
+import type { VideoLoungeCardProps } from './types';
 
 export function VideoLoungeCard({ lounge, onOpen, interactive = true }: VideoLoungeCardProps) {
 	const { t } = useTranslation('common');

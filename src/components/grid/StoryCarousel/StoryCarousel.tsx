@@ -17,10 +17,8 @@ import {
 } from '../../../hooks/usePaginationParentSync';
 import { useStoryRingSlideshow } from '../../../hooks/useStoryRingSlideshow';
 import './StoryCarousel.scss';
-
-/** Thumb width; tile is 1:2 portrait; gap matches story grid */
-const CARD_WIDTH = 72;
-const CARD_GAP = 8;
+import { CARD_WIDTH, CARD_GAP } from './constants';
+import type { StoryCarouselProps } from './types';
 
 function StoryCarouselCard({
 	story,
@@ -47,12 +45,6 @@ function StoryCarouselCard({
 			<span className="story-carousel-card-name">{story.creatorName || 'Story'}</span>
 		</Link>
 	);
-}
-
-export interface StoryCarouselProps {
-	page?: number;
-	totalPages?: number;
-	onPageChange?: (page: number, totalPages: number) => void;
 }
 
 export function StoryCarousel({

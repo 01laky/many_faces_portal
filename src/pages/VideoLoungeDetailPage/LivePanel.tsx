@@ -1,25 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { Mic, MicOff, Video, VideoOff, Volume2 } from 'lucide-react';
-import type {
-	VideoLoungeJoinMode,
-	VideoLoungeLiveParticipantDto,
-} from '../../api/services/VideoLoungesService';
 import { profileAvatarUrl } from '../../components/grid/gridDisplayHelpers';
 import { JOIN_MODE_I18N_KEY, liveControlsForMode } from './videoLoungeDetailLogic';
-import type { StubLiveKitRoom } from './videoLoungeLiveKitStub';
-
-export interface LivePanelProps {
-	joinMode: VideoLoungeJoinMode;
-	participants: VideoLoungeLiveParticipantDto[];
-	stubRoom: StubLiveKitRoom | null;
-	isStub: boolean;
-	micEnabled: boolean;
-	camEnabled: boolean;
-	onMicToggle: () => void;
-	onCamToggle: () => void;
-	onLeave: () => void;
-	leaveBusy: boolean;
-}
+import type { LivePanelProps } from './types';
 
 /**
  * In-call UI: participant tiles, speaking indicator (stub), mode-specific controls, Leave.

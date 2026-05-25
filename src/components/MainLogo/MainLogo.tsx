@@ -1,10 +1,6 @@
 import { MAIN_LOGO_RASTER_URL } from './logoRaster';
 import './MainLogo.scss';
-
-export interface MainLogoProps {
-	/** Square render size — inline so size is stable before SCSS loads. */
-	sizePx?: number;
-}
+import type { MainLogoProps } from './types';
 
 /** Raster from `public/logo-raster-source.png` (matches mobile; regenerate via `yarn icons:export`). */
 export function MainLogo({ sizePx }: MainLogoProps = {}) {

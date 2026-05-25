@@ -1,14 +1,6 @@
 import * as Label from '@radix-ui/react-label';
-import type { ReactNode } from 'react';
 import './FormField.scss';
-
-interface FormFieldProps {
-	label: string;
-	htmlFor: string;
-	error?: string;
-	required?: boolean;
-	children: ReactNode;
-}
+import type { FormFieldProps } from './types';
 
 /**
  * Form field wrapper with label and error message

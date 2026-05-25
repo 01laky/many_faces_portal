@@ -12,12 +12,9 @@ import {
 } from '../../api/services/FriendRequestsService';
 import { getUsers, type UserListItem } from '../../api/services/UsersListService';
 import './FriendRequestsTab.scss';
+import { ITEM_HEIGHT_PX, PAGINATION_HEIGHT_PX, SAFETY_MARGIN_PX, MIN_PAGE_SIZE } from './constants';
 
 // Conservative estimates: item (padding+border+content) + gap, pagination row, safety margin
-const ITEM_HEIGHT_PX = 70;
-const PAGINATION_HEIGHT_PX = 56;
-const SAFETY_MARGIN_PX = 16;
-const MIN_PAGE_SIZE = 1;
 
 function formatUserName(u: {
 	firstName?: string | null;

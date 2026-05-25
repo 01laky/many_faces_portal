@@ -1,9 +1,6 @@
 import { forwardRef } from 'react';
 import './Input.scss';
-
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-	error?: boolean;
-}
+import type { InputProps } from './types';
 
 /**
  * Input component styled for forms

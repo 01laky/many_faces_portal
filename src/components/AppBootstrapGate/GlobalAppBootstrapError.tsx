@@ -1,12 +1,7 @@
 import { MainLogo } from '../MainLogo/MainLogo';
 import './globalAppBootstrapError.scss';
 
-export interface GlobalAppBootstrapErrorProps {
-	title: string;
-	message: string;
-	onRetry?: () => void;
-	retryLabel?: string;
-}
+import type { GlobalAppBootstrapErrorProps } from './types';
 
 /** Branded bootstrap failure — logo + message; no animated spinner. */
 export function GlobalAppBootstrapError({

@@ -20,12 +20,7 @@ import {
 } from '../../api/registrationApi';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import '../RegisterPage/RegisterPage.scss';
-
-interface CompleteFormData {
-	code: string;
-	password: string;
-	confirmPassword: string;
-}
+import type { CompleteFormData } from './types';
 
 export function RegisterCompletePage() {
 	const { t } = useTranslation('common');

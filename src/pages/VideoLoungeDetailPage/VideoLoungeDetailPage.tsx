@@ -31,9 +31,7 @@ import {
 } from './videoLoungeDetailLogic';
 import { connectStubLiveKitRoom, type StubLiveKitRoom } from './videoLoungeLiveKitStub';
 import './VideoLoungeDetailPage.scss';
-
-const LIVE_ROSTER_POLL_MS = 12_000;
-const HEARTBEAT_INTERVAL_MS = 30_000;
+import { LIVE_ROSTER_POLL_MS, HEARTBEAT_INTERVAL_MS } from './constants';
 
 export function VideoLoungeDetailPage({ loungeId: loungeIdProp }: { loungeId: number }) {
 	const { token } = useAuth();

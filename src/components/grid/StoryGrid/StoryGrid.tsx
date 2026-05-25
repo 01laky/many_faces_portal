@@ -30,22 +30,13 @@ import {
 	type StoryGridLayout,
 } from '../../../utils/computeStoryGridLayout';
 import './StoryGrid.scss';
-
-const STORY_GRID_GAP = 8;
-const STORY_LABEL_PX = 22;
-const DEFAULT_ITEMS_PER_PAGE = 8;
-
-/** Floor for thumb width; thumb image height = 2× (1:2). 75px → 150px tall vs former 44→88 (~+70% height). */
-const STORY_MIN_THUMB_WIDTH_PX = 75;
-
-const STORY_GRID_LAYOUT_OPTS = {
-	gap: STORY_GRID_GAP,
-	minThumbWidthPx: STORY_MIN_THUMB_WIDTH_PX,
-	labelPx: STORY_LABEL_PX,
-	maxCols: 12,
-	maxRows: 10,
-	maxItemsPerPage: 60,
-} as const;
+import {
+	STORY_GRID_GAP,
+	STORY_LABEL_PX,
+	DEFAULT_ITEMS_PER_PAGE,
+	STORY_GRID_LAYOUT_OPTS,
+} from './constants';
+import type { StoryGridProps } from './types';
 
 function StoryGridCard({
 	story,
@@ -99,12 +90,6 @@ function StoryGridCardFallback({
 			<span className="story-grid-card-name">{story.creatorName || 'Story'}</span>
 		</Link>
 	);
-}
-
-export interface StoryGridProps {
-	page?: number;
-	totalPages?: number;
-	onPageChange?: (page: number, totalPages: number) => void;
 }
 
 export function StoryGrid({ page: controlledPage, onPageChange }: StoryGridProps = {}) {

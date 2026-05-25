@@ -26,12 +26,7 @@ import {
 } from '../../../hooks/usePaginationParentSync';
 import { useFillGridPagination } from '../../../hooks/useFillGridPagination';
 import './ReelGrid.scss';
-
-export interface ReelGridProps {
-	page?: number;
-	totalPages?: number;
-	onPageChange?: (page: number, totalPages: number) => void;
-}
+import type { ReelGridProps } from './types';
 
 export function ReelGrid({ page: controlledPage, onPageChange }: ReelGridProps = {}) {
 	const { t } = useTranslation('common');

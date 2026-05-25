@@ -18,10 +18,7 @@ import {
 } from '../../../api/services/ChatRoomsService';
 import { ChatRoomCard } from '../ChatRoomCard';
 import './ChatRoom.scss';
-
-export interface ChatRoomProps {
-	boundChatRoomId?: number;
-}
+import type { ChatRoomProps } from './types';
 
 export function ChatRoom({ boundChatRoomId }: ChatRoomProps) {
 	const { t } = useTranslation('common');

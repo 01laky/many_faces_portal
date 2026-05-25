@@ -9,10 +9,7 @@ import { absoluteScopedUrl } from '../../api/faceApiRouting';
 import { Button } from '../../components/radix/Button';
 import { buildChatAiHistory, type ChatAiMessage } from '../../utils/chatAiHistory';
 import './ChatPage.scss';
-
-type ConnectionState = 'Connecting' | 'Connected' | 'Disconnected' | 'Reconnecting';
-
-type AiEnabledResponse = { enabled: boolean };
+import type { ConnectionState, AiEnabledResponse } from './types';
 
 export function ChatPage() {
 	const { t } = useTranslation('common');

@@ -4,10 +4,7 @@ import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { useAnimatedGradientStyle } from '../../hooks/useAnimatedGradient';
 import { useGradientAnimationPreference } from '../../contexts/GradientAnimationPreferenceContext';
 import './Footer.scss';
-
-interface FooterProps {
-	onMessagesClick?: () => void;
-}
+import type { FooterProps } from './types';
 
 export function Footer({ onMessagesClick }: FooterProps) {
 	const { t } = useTranslation('common');

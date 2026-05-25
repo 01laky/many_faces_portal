@@ -15,12 +15,7 @@ import { Button } from '../../components/radix/Button';
 import { postRegisterRequest } from '../../api/registrationApi';
 import { supportedLanguages } from '../../i18n/config';
 import './RegisterPage.scss';
-
-interface RegisterRequestFormData {
-	email: string;
-	firstName: string;
-	lastName: string;
-}
+import type { RegisterRequestFormData } from './types';
 
 export function RegisterPage() {
 	const { t, i18n } = useTranslation('common');

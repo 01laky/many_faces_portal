@@ -16,16 +16,8 @@ import {
 	useSyncedPaginationReport,
 } from '../../../hooks/usePaginationParentSync';
 import './ReelCarousel.scss';
-
-/** ~25% wider than previous 120px; spacing between cards */
-const CARD_WIDTH = 150;
-const CARD_GAP = 10;
-
-export interface ReelCarouselProps {
-	page?: number;
-	totalPages?: number;
-	onPageChange?: (page: number, totalPages: number) => void;
-}
+import { CARD_WIDTH, CARD_GAP } from './constants';
+import type { ReelCarouselProps } from './types';
 
 export function ReelCarousel({
 	page: controlledPage,

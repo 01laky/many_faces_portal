@@ -21,16 +21,6 @@ import {
 	Square,
 	ChevronRight,
 	X,
-	Album,
-	LayoutGrid,
-	FileText,
-	Megaphone,
-	MessageCircle,
-	User,
-	Film,
-	BookOpen,
-	Video,
-	type LucideIcon,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
@@ -46,77 +36,18 @@ import { ReelForm } from '../grid/ReelForm';
 import type { AlbumItem } from '../../api/services/AlbumsService';
 import type { BlogItem } from '../../api/services/BlogsService';
 import type { ReelItem } from '../../api/services/ReelsService';
-import type { GridComponentType } from '../PageGridLayout';
 import './ComponentBlock.scss';
+import {
+	ALBUM_COMPONENT_TYPES,
+	BLOG_COMPONENT_TYPES,
+	CHAT_ROOM_COMPONENT_TYPES,
+	COMPONENT_DEFAULTS,
+	REEL_COMPONENT_TYPES,
+	VIDEO_LOUNGE_COMPONENT_TYPES,
+} from './constants';
+import type { ComponentBlockProps } from './types';
 
-const COMPONENT_DEFAULTS: Record<
-	GridComponentType,
-	{ title: string; icon: LucideIcon; hasFooter: boolean }
-> = {
-	album: { title: 'Album', icon: Album, hasFooter: false },
-	albumGrid: { title: 'Albums', icon: LayoutGrid, hasFooter: true },
-	albumCarousel: { title: 'Albums', icon: LayoutGrid, hasFooter: true },
-	ad: { title: 'Ad', icon: Megaphone, hasFooter: false },
-	adGrid: { title: 'Ads', icon: LayoutGrid, hasFooter: true },
-	adCarousel: { title: 'Ads', icon: LayoutGrid, hasFooter: true },
-	blog: { title: 'Blog', icon: FileText, hasFooter: false },
-	blogGrid: { title: 'Blog', icon: LayoutGrid, hasFooter: true },
-	blogCarousel: { title: 'Blog', icon: LayoutGrid, hasFooter: true },
-	chatRoom: { title: 'Chat', icon: MessageCircle, hasFooter: false },
-	chatRoomGrid: { title: 'Chats', icon: LayoutGrid, hasFooter: true },
-	chatRoomCarousel: { title: 'Chats', icon: LayoutGrid, hasFooter: true },
-	userProfile: { title: 'Profile', icon: User, hasFooter: false },
-	userProfileGrid: { title: 'Profiles', icon: LayoutGrid, hasFooter: true },
-	userProfileCarousel: { title: 'Profiles', icon: LayoutGrid, hasFooter: true },
-	reel: { title: 'Reel', icon: Film, hasFooter: false },
-	reelGrid: { title: 'Reels', icon: LayoutGrid, hasFooter: true },
-	reelCarousel: { title: 'Reels', icon: LayoutGrid, hasFooter: true },
-	story: { title: 'Story', icon: BookOpen, hasFooter: false },
-	storyGrid: { title: 'Stories', icon: LayoutGrid, hasFooter: true },
-	storyCarousel: { title: 'Stories', icon: LayoutGrid, hasFooter: true },
-	videoLounge: { title: 'Video lounge', icon: Video, hasFooter: false },
-	videoLoungeGrid: { title: 'Video lounges', icon: LayoutGrid, hasFooter: true },
-	videoLoungeCarousel: { title: 'Video lounges', icon: LayoutGrid, hasFooter: true },
-};
-
-const ALBUM_COMPONENT_TYPES: GridComponentType[] = ['album', 'albumGrid', 'albumCarousel'];
-const BLOG_COMPONENT_TYPES: GridComponentType[] = ['blog', 'blogGrid', 'blogCarousel'];
-const REEL_COMPONENT_TYPES: GridComponentType[] = ['reel', 'reelGrid', 'reelCarousel'];
-const CHAT_ROOM_COMPONENT_TYPES: GridComponentType[] = [
-	'chatRoom',
-	'chatRoomGrid',
-	'chatRoomCarousel',
-];
-const VIDEO_LOUNGE_COMPONENT_TYPES: GridComponentType[] = [
-	'videoLounge',
-	'videoLoungeGrid',
-	'videoLoungeCarousel',
-];
-
-export interface ComponentBlockProps {
-	componentId: string;
-	componentType: GridComponentType;
-	title?: string | null;
-	icon?: string | null;
-	children: React.ReactNode;
-	/** For grid/carousel: current page index (0-based) */
-	page?: number;
-	totalPages?: number;
-	onPrev?: () => void;
-	onNext?: () => void;
-	onPlayPause?: (playing: boolean) => void;
-	/** Initial playing from localStorage */
-	autoplayFromStorage?: boolean;
-	/** Album to edit (opens local panel) */
-	editAlbum?: AlbumItem | null;
-	onAlbumSaved?: (album: AlbumItem) => void;
-	/** Blog to edit (opens local panel) */
-	editBlog?: BlogItem | null;
-	onBlogSaved?: (blog: BlogItem) => void;
-	/** Reel to edit (opens local panel) */
-	editReel?: ReelItem | null;
-	onReelSaved?: (reel: ReelItem) => void;
-}
+export type { ComponentBlockProps } from './types';
 
 export function ComponentBlock({
 	componentId,

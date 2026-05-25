@@ -39,46 +39,16 @@ import {
 	advanceCarouselPage,
 	parsePageGridSchema,
 	readComponentBlockAutoplay,
-	type GridComponentType,
 	type PageGridItem,
 	type PageGridSchema,
 } from '../../utils/pageGridSchema';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import './PageGridLayout.scss';
+import { HAS_FOOTER } from './constants';
+import type { PageGridLayoutProps } from './types';
 
 export type { GridComponentType } from '../../utils/pageGridSchema';
-
-const HAS_FOOTER: Record<GridComponentType, boolean> = {
-	album: false,
-	albumGrid: true,
-	albumCarousel: true,
-	ad: false,
-	adGrid: true,
-	adCarousel: true,
-	blog: false,
-	blogGrid: true,
-	blogCarousel: true,
-	chatRoom: false,
-	chatRoomGrid: true,
-	chatRoomCarousel: true,
-	userProfile: false,
-	userProfileGrid: true,
-	userProfileCarousel: true,
-	reel: false,
-	reelGrid: true,
-	reelCarousel: true,
-	story: false,
-	storyGrid: true,
-	storyCarousel: true,
-	videoLounge: false,
-	videoLoungeGrid: true,
-	videoLoungeCarousel: true,
-};
-
-interface PageGridLayoutProps {
-	gridSchemaJson: string;
-}
 
 export function PageGridLayout({ gridSchemaJson }: PageGridLayoutProps) {
 	const { width, containerRef } = useContainerWidth();

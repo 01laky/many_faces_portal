@@ -4,12 +4,7 @@ import { GLOBAL_PRELOADER_DOT_COLOR, ROUTE_FALLBACK_DOT_FONT_PX } from './preloa
 import { PreloaderDots } from './PreloaderDots';
 import { PreloaderBrandTitle } from './PreloaderBrandTitle';
 import './globalAppPreloader.scss';
-
-export interface GlobalAppPreloaderProps {
-	accessibilityLabel?: string;
-	/** Smaller variant for lazy route Suspense fallback (Phase C). */
-	variant?: 'bootstrap' | 'route-fallback';
-}
+import type { GlobalAppPreloaderProps } from './types';
 
 /** Full-viewport bootstrap shell — logo + CSS dots; fixed stack prevents layout jump. */
 export function GlobalAppPreloader({

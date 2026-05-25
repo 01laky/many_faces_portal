@@ -1,9 +1,4 @@
-import type { ReactNode } from 'react';
-
-export interface AppBrandTitleProps {
-	children?: ReactNode;
-	className?: string;
-}
+import type { AppBrandTitleProps } from './types';
 
 /** App name in Sweetest Cat Ever (see `styles/appBrandFont.scss`). */
 export function AppBrandTitle({ children, className }: AppBrandTitleProps) {

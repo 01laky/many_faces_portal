@@ -13,37 +13,8 @@ import { getSubmittedForApprovalCopy } from '../../../utils/contentModeration';
 import { sanitizeBlogHtml } from '../../../utils/blogHtmlSecurity';
 import { sanitizeMediaUrl } from '../../../utils/safeUrl';
 import './BlogForm.scss';
-
-interface BlogFormProps {
-	editBlog?: BlogItem | null;
-	onSaved?: (blog: BlogItem) => void;
-	onCancel?: () => void;
-}
-
-const QUILL_MODULES = {
-	toolbar: [
-		[{ header: [1, 2, 3, false] }],
-		['bold', 'italic', 'underline', 'strike'],
-		[{ list: 'ordered' }, { list: 'bullet' }],
-		['blockquote', 'code-block'],
-		['link'],
-		['clean'],
-	],
-};
-
-const QUILL_FORMATS = [
-	'header',
-	'bold',
-	'italic',
-	'underline',
-	'strike',
-	'list',
-	'blockquote',
-	'code-block',
-	'link',
-];
-
-const MAX_IMAGES = 3;
+import type { BlogFormProps } from './types';
+import { MAX_IMAGES, QUILL_FORMATS, QUILL_MODULES } from './constants';
 
 export function BlogForm({ editBlog, onSaved, onCancel }: BlogFormProps) {
 	const { token } = useAuth();

@@ -2,18 +2,9 @@ import {
 	getCreatorSafeReason,
 	getCreatorStatusLabel,
 	shouldShowCreatorStatusBadge,
-	type AiReviewStatus,
-	type ContentApprovalStatus,
 } from '../../../utils/contentModeration';
 import './CreatorModerationBadge.scss';
-
-/** Props mirror the subset of blog/album/reel DTO fields that are safe to show next to creator-owned content. */
-interface CreatorModerationBadgeProps {
-	approvalStatus?: ContentApprovalStatus | string | null;
-	aiReviewStatus?: AiReviewStatus | string | null;
-	aiReviewUserMessage?: string | null;
-	humanDecisionReason?: string | null;
-}
+import type { CreatorModerationBadgeProps } from './types';
 
 /**
  * Inline badge for grids/cards where the viewer owns non-approved content.

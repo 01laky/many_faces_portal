@@ -1,0 +1,28 @@
+import type { GridComponentType } from '../../utils/pageGridSchema';
+
+export const HAS_FOOTER: Record<GridComponentType, boolean> = {
+	album: false,
+	albumGrid: true,
+	albumCarousel: true,
+	ad: false,
+	adGrid: true,
+	adCarousel: true,
+	blog: false,
+	blogGrid: true,
+	blogCarousel: true,
+	chatRoom: false,
+	chatRoomGrid: true,
+	chatRoomCarousel: true,
+	userProfile: false,
+	userProfileGrid: true,
+	userProfileCarousel: true,
+	reel: false,
+	reelGrid: true,
+	reelCarousel: true,
+	story: false,
+	storyGrid: true,
+	storyCarousel: true,
+	videoLounge: false,
+	videoLoungeGrid: true,
+	videoLoungeCarousel: true,
+};

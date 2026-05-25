@@ -1,9 +1,6 @@
 import { forwardRef } from 'react';
 import './Button.scss';
-
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-	variant?: 'primary' | 'secondary' | 'danger' | 'outline';
-}
+import type { ButtonProps } from './types';
 
 /**
  * Button component with variants

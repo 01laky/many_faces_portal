@@ -19,12 +19,7 @@ import {
 } from '../../../hooks/usePaginationParentSync';
 import { useFillGridPagination } from '../../../hooks/useFillGridPagination';
 import './AdGrid.scss';
-
-export interface AdGridProps {
-	page?: number;
-	totalPages?: number;
-	onPageChange?: (page: number, totalPages: number) => void;
-}
+import type { AdGridProps } from './types';
 
 export function AdGrid({ page: controlledPage, onPageChange }: AdGridProps = {}) {
 	const { t } = useTranslation('common');

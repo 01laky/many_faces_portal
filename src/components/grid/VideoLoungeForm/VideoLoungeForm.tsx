@@ -4,11 +4,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { createVideoLounge } from '../../../api/services/VideoLoungesService';
 import { Button } from '../../radix/Button';
 import './VideoLoungeForm.scss';
-
-export interface VideoLoungeFormProps {
-	onSaved: (loungeId: number) => void;
-	onCancel: () => void;
-}
+import type { VideoLoungeFormProps } from './types';
 
 export function VideoLoungeForm({ onSaved, onCancel }: VideoLoungeFormProps) {
 	const { selectedFace } = useFaceConfig();
