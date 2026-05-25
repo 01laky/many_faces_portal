@@ -9,28 +9,28 @@ import { ensureLanguageLoaded } from '../../i18n/config';
  * Ensures URL always has language prefix and syncs with i18n
  */
 export function LanguageRouter() {
-  const { lang } = useParams<{ lang: string }>();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { i18n } = useTranslation();
+	const { lang } = useParams<{ lang: string }>();
+	const navigate = useNavigate();
+	const location = useLocation();
+	const { i18n } = useTranslation();
 
-  useEffect(() => {
-    void (async () => {
-      const validLang = supportedLanguages.includes(lang as SupportedLanguage)
-        ? (lang as SupportedLanguage)
-        : 'en';
+	useEffect(() => {
+		void (async () => {
+			const validLang = supportedLanguages.includes(lang as SupportedLanguage)
+				? (lang as SupportedLanguage)
+				: 'en';
 
-      if (i18n.language !== validLang) {
-        await ensureLanguageLoaded(validLang);
-        await i18n.changeLanguage(validLang);
-      }
+			if (i18n.language !== validLang) {
+				await ensureLanguageLoaded(validLang);
+				await i18n.changeLanguage(validLang);
+			}
 
-      if (!supportedLanguages.includes(lang as SupportedLanguage)) {
-        const pathWithoutLang = location.pathname.replace(/^\/[^/]+/, '') || '/';
-        navigate(`/${validLang}${pathWithoutLang}`, { replace: true });
-      }
-    })();
-  }, [lang, i18n, navigate, location.pathname]);
+			if (!supportedLanguages.includes(lang as SupportedLanguage)) {
+				const pathWithoutLang = location.pathname.replace(/^\/[^/]+/, '') || '/';
+				navigate(`/${validLang}${pathWithoutLang}`, { replace: true });
+			}
+		})();
+	}, [lang, i18n, navigate, location.pathname]);
 
-  return <Outlet />;
+	return <Outlet />;
 }

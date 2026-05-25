@@ -3,8 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export type LoginModel = {
-    email?: string | null;
-    password?: string | null;
-    rememberMe?: boolean;
+	email?: string | null;
+	password?: string | null;
+	rememberMe?: boolean;
 };
-

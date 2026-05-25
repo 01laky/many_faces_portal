@@ -8,54 +8,54 @@ import { writeGuestUiLanguage } from '../utils/guestSessionStorage';
 import * as profileApi from '../api/profile/profileApi';
 
 interface AppContextType {
-  currentLanguage: SupportedLanguage;
-  changeLanguage: (lang: SupportedLanguage) => Promise<void>;
-  t: (key: string, options?: Record<string, unknown>) => string;
+	currentLanguage: SupportedLanguage;
+	changeLanguage: (lang: SupportedLanguage) => Promise<void>;
+	t: (key: string, options?: Record<string, unknown>) => string;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const { i18n, t } = useTranslation('common');
+	const { i18n, t } = useTranslation('common');
 
-  const currentLanguage = (i18n.language as SupportedLanguage) || 'en';
+	const currentLanguage = (i18n.language as SupportedLanguage) || 'en';
 
-  const changeLanguage = useCallback(
-    async (newLang: SupportedLanguage) => {
-      await ensureLanguageLoaded(newLang);
-      await i18n.changeLanguage(newLang);
-      const token = getAccessTokenFromStorage();
-      if (token) {
-        try {
-          await profileApi.updateProfile(token, { preferredUiLanguage: newLang });
-        } catch {
-          // UI language already changed locally; server sync is best-effort
-        }
-      } else {
-        writeGuestUiLanguage(newLang);
-      }
-    },
-    [i18n]
-  );
+	const changeLanguage = useCallback(
+		async (newLang: SupportedLanguage) => {
+			await ensureLanguageLoaded(newLang);
+			await i18n.changeLanguage(newLang);
+			const token = getAccessTokenFromStorage();
+			if (token) {
+				try {
+					await profileApi.updateProfile(token, { preferredUiLanguage: newLang });
+				} catch {
+					// UI language already changed locally; server sync is best-effort
+				}
+			} else {
+				writeGuestUiLanguage(newLang);
+			}
+		},
+		[i18n]
+	);
 
-  const value = useMemo(
-    () => ({
-      currentLanguage,
-      changeLanguage,
-      t,
-    }),
-    [currentLanguage, changeLanguage, t]
-  );
+	const value = useMemo(
+		() => ({
+			currentLanguage,
+			changeLanguage,
+			t,
+		}),
+		[currentLanguage, changeLanguage, t]
+	);
 
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+	return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
 
 export function useApp() {
-  const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error('useApp must be used within an AppProvider');
-  }
-  return context;
+	const context = useContext(AppContext);
+	if (context === undefined) {
+		throw new Error('useApp must be used within an AppProvider');
+	}
+	return context;
 }
 
 export { supportedLanguages };

@@ -1,10 +1,10 @@
 import type { WallTicketListResponse } from '../api/services/wallTicketsApi';
 
 export type FetchWallTicketsPage = (
-  token: string,
-  faceId: number,
-  page: number,
-  pageSize: number
+	token: string,
+	faceId: number,
+	page: number,
+	pageSize: number
 ) => Promise<WallTicketListResponse>;
 
 /**
@@ -12,16 +12,16 @@ export type FetchWallTicketsPage = (
  * Returns `null` on transport errors so the hook can distinguish **unknown** from **true/false** host state.
  */
 export async function loadWallHostViewerFlag(
-  fetchPage: FetchWallTicketsPage,
-  token: string,
-  faceId: number
+	fetchPage: FetchWallTicketsPage,
+	token: string,
+	faceId: number
 ): Promise<boolean | null> {
-  try {
-    const res = await fetchPage(token, faceId, 1, 1);
-    return res.isHostViewer;
-  } catch {
-    return null;
-  }
+	try {
+		const res = await fetchPage(token, faceId, 1, 1);
+		return res.isHostViewer;
+	} catch {
+		return null;
+	}
 }
 
 /**
@@ -29,10 +29,10 @@ export async function loadWallHostViewerFlag(
  * `isHost === null` means still loading or disabled — treat as false to avoid flashing create UI to hosts.
  */
 export function computeCanShowWallCreate(
-  enabled: boolean,
-  token: string | null | undefined,
-  faceId: number | undefined,
-  isHost: boolean | null
+	enabled: boolean,
+	token: string | null | undefined,
+	faceId: number | undefined,
+	isHost: boolean | null
 ): boolean {
-  return enabled && !!token && faceId != null && isHost === false;
+	return enabled && !!token && faceId != null && isHost === false;
 }

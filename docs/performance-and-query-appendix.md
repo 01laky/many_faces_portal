@@ -6,21 +6,21 @@
 
 Defined in `src/providers/QueryProvider.tsx`:
 
-| Option | Value | Rationale |
-| ------ | ----- | --------- |
-| `refetchOnWindowFocus` | `false` | Social feeds are not trading dashboards |
-| `retry` | `1` | Surface errors; user can retry action |
-| `staleTime` | **5 min** | Default for list/read-mostly queries |
-| `gcTime` | **20 min** | Slightly longer than admin — users switch faces more often |
+| Option                 | Value      | Rationale                                                  |
+| ---------------------- | ---------- | ---------------------------------------------------------- |
+| `refetchOnWindowFocus` | `false`    | Social feeds are not trading dashboards                    |
+| `retry`                | `1`        | Surface errors; user can retry action                      |
+| `staleTime`            | **5 min**  | Default for list/read-mostly queries                       |
+| `gcTime`               | **20 min** | Slightly longer than admin — users switch faces more often |
 
 ## Per-hook matrix (not only globals)
 
-| Hook / area | `staleTime` | Notes |
-| ----------- | ----------- | ----- |
-| `useAuthToken` | **60s** | Must track expiry + cross-tab sooner than lists |
-| `useMeCapabilities` | **60s** | ACL rarely changes; bounded `gcTime` |
-| `useProfile` | per hook | Avatar + profile; invalidate on face switch |
-| Mutations | defaults | Explicit `invalidateQueries` after writes |
+| Hook / area         | `staleTime` | Notes                                           |
+| ------------------- | ----------- | ----------------------------------------------- |
+| `useAuthToken`      | **60s**     | Must track expiry + cross-tab sooner than lists |
+| `useMeCapabilities` | **60s**     | ACL rarely changes; bounded `gcTime`            |
+| `useProfile`        | per hook    | Avatar + profile; invalidate on face switch     |
+| Mutations           | defaults    | Explicit `invalidateQueries` after writes       |
 
 ## Diagram: face-scoped fetch
 

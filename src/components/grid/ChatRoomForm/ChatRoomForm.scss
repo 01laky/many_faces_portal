@@ -1,44 +1,44 @@
 .chatroom-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 4px 0;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 4px 0;
 }
 
 .chatroom-form-label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: #333;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	font-size: 0.85rem;
+	font-weight: 500;
+	color: #333;
 }
 
 .chatroom-form-input,
 .chatroom-form-textarea {
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 8px 10px;
-  font-size: 0.9rem;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	padding: 8px 10px;
+	font-size: 0.9rem;
 }
 
 .chatroom-form-check {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
-  cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 0.85rem;
+	cursor: pointer;
 }
 
 .chatroom-form-error {
-  color: #c62828;
-  font-size: 0.8rem;
-  margin: 0;
+	color: #c62828;
+	font-size: 0.8rem;
+	margin: 0;
 }
 
 .chatroom-form-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-  margin-top: 8px;
+	display: flex;
+	gap: 8px;
+	justify-content: flex-end;
+	margin-top: 8px;
 }

@@ -8,11 +8,11 @@ import type { SupportedLanguage } from '../i18n/constants';
  * those concerns stay in link builders / `react-router` configuration to avoid double-processing.
  */
 export function buildLocalizedNavigateTarget(
-  path: string,
-  lang: string | undefined,
-  currentLanguage: SupportedLanguage
+	path: string,
+	lang: string | undefined,
+	currentLanguage: SupportedLanguage
 ): string {
-  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-  const targetLang = (lang as SupportedLanguage) || currentLanguage;
-  return `/${targetLang}/${cleanPath}`;
+	const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+	const targetLang = (lang as SupportedLanguage) || currentLanguage;
+	return `/${targetLang}/${cleanPath}`;
 }

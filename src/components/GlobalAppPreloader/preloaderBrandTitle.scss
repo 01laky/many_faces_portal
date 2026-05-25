@@ -1,16 +1,16 @@
 .global-app-preloader__title,
 .global-app-preloader-vanilla__title {
-  margin: var(--gpl-title-gap, 12px) 0 0;
-  padding: 0;
-  font-size: var(--gpl-title-font, 56px);
-  line-height: 1.05;
-  color: #1e293b;
-  text-align: center;
-  flex-shrink: 0;
-  white-space: nowrap;
-  letter-spacing: 0.02em;
+	margin: var(--gpl-title-gap, 12px) 0 0;
+	padding: 0;
+	font-size: var(--gpl-title-font, 56px);
+	line-height: 1.05;
+	color: #1e293b;
+	text-align: center;
+	flex-shrink: 0;
+	white-space: nowrap;
+	letter-spacing: 0.02em;
 }
 
 .global-app-preloader--route-fallback .global-app-preloader__title {
-  display: none;
+	display: none;
 }

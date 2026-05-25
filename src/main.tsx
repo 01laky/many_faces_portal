@@ -26,38 +26,38 @@ validateEnv();
 logEnvConfig();
 
 async function bootstrap(): Promise<void> {
-  const rootEl = document.getElementById('root');
-  if (!rootEl) {
-    throw new Error('Missing #root element');
-  }
+	const rootEl = document.getElementById('root');
+	if (!rootEl) {
+		throw new Error('Missing #root element');
+	}
 
-  renderBootstrapLoading(rootEl);
+	renderBootstrapLoading(rootEl);
 
-  try {
-    await initI18n();
-    resetLangLevelStaticRouteSegmentsCache();
-    configureApiClient();
-    setupAxiosInterceptors();
+	try {
+		await initI18n();
+		resetLangLevelStaticRouteSegmentsCache();
+		configureApiClient();
+		setupAxiosInterceptors();
 
-    logger.info('Frontend application started', {
-      AppName: env.appName,
-      AppVersion: env.appVersion,
-      Environment: env.environment,
-    });
+		logger.info('Frontend application started', {
+			AppName: env.appName,
+			AppVersion: env.appVersion,
+			Environment: env.environment,
+		});
 
-    createRoot(rootEl).render(
-      <StrictMode>
-        <QueryProvider>
-          <App />
-        </QueryProvider>
-      </StrictMode>
-    );
-  } catch (err) {
-    logger.error('Failed to bootstrap application', err);
-    renderBootstrapError(rootEl, env.apiUrl, () => {
-      void bootstrap();
-    });
-  }
+		createRoot(rootEl).render(
+			<StrictMode>
+				<QueryProvider>
+					<App />
+				</QueryProvider>
+			</StrictMode>
+		);
+	} catch (err) {
+		logger.error('Failed to bootstrap application', err);
+		renderBootstrapError(rootEl, env.apiUrl, () => {
+			void bootstrap();
+		});
+	}
 }
 
 void bootstrap();

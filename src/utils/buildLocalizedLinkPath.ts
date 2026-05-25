@@ -16,21 +16,21 @@ export type LocalizedLinkTranslate = (key: string) => string;
  * Kept free of React so `useLocalizedLink` and Vitest can share one implementation.
  */
 export function buildLocalizedLinkPath(params: {
-  path: string;
-  targetLang: SupportedLanguage;
-  isAuthenticated: boolean;
-  selectedFace: { index: string | number } | null | undefined;
-  translate: LocalizedLinkTranslate;
+	path: string;
+	targetLang: SupportedLanguage;
+	isAuthenticated: boolean;
+	selectedFace: { index: string | number } | null | undefined;
+	translate: LocalizedLinkTranslate;
 }): string {
-  const { path, targetLang, isAuthenticated, selectedFace, translate } = params;
+	const { path, targetLang, isAuthenticated, selectedFace, translate } = params;
 
-  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-  const translatedPath = getTranslatedRoute(cleanPath, targetLang, translate);
-  const pathSegment = translatedPath || cleanPath;
+	const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+	const translatedPath = getTranslatedRoute(cleanPath, targetLang, translate);
+	const pathSegment = translatedPath || cleanPath;
 
-  if (!isAuthenticated && selectedFace && pathSegment) {
-    // Face-scoped guest URL: /{lang}/{faceIndex}/{page}
-    return `/${targetLang}/${selectedFace.index}/${pathSegment}`;
-  }
-  return `/${targetLang}${pathSegment ? `/${pathSegment}` : ''}`;
+	if (!isAuthenticated && selectedFace && pathSegment) {
+		// Face-scoped guest URL: /{lang}/{faceIndex}/{page}
+		return `/${targetLang}/${selectedFace.index}/${pathSegment}`;
+	}
+	return `/${targetLang}${pathSegment ? `/${pathSegment}` : ''}`;
 }

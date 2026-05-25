@@ -6,37 +6,37 @@ import { useGradientAnimationPreference } from '../../contexts/GradientAnimation
 import './Footer.scss';
 
 interface FooterProps {
-  onMessagesClick?: () => void;
+	onMessagesClick?: () => void;
 }
 
 export function Footer({ onMessagesClick }: FooterProps) {
-  const { t } = useTranslation('common');
-  const { selectedFace } = useFaceConfig();
-  const { animationEnabled } = useGradientAnimationPreference();
-  const gradientVars = useAnimatedGradientStyle(selectedFace?.gradientSettings, animationEnabled);
+	const { t } = useTranslation('common');
+	const { selectedFace } = useFaceConfig();
+	const { animationEnabled } = useGradientAnimationPreference();
+	const gradientVars = useAnimatedGradientStyle(selectedFace?.gradientSettings, animationEnabled);
 
-  return (
-    <footer className="app-footer" style={gradientVars}>
-      <div className="footer-border-top" />
-      <div className="footer-main">
-        <div className="footer-panel">
-          {onMessagesClick && (
-            <button
-              type="button"
-              className="footer-messages-btn"
-              onClick={onMessagesClick}
-              aria-label={t('messenger.title')}
-            >
-              <MessageCircle size={20} />
-              <span className="footer-messages-label">{t('messenger.title')}</span>
-            </button>
-          )}
-          <span className="footer-text">
-            © {new Date().getFullYear()} {selectedFace?.title || 'Be Demo'}. {t('footer.rights')}
-          </span>
-        </div>
-      </div>
-      <div className="footer-border-bottom" />
-    </footer>
-  );
+	return (
+		<footer className="app-footer" style={gradientVars}>
+			<div className="footer-border-top" />
+			<div className="footer-main">
+				<div className="footer-panel">
+					{onMessagesClick && (
+						<button
+							type="button"
+							className="footer-messages-btn"
+							onClick={onMessagesClick}
+							aria-label={t('messenger.title')}
+						>
+							<MessageCircle size={20} />
+							<span className="footer-messages-label">{t('messenger.title')}</span>
+						</button>
+					)}
+					<span className="footer-text">
+						© {new Date().getFullYear()} {selectedFace?.title || 'Be Demo'}. {t('footer.rights')}
+					</span>
+				</div>
+			</div>
+			<div className="footer-border-bottom" />
+		</footer>
+	);
 }

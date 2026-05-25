@@ -5,5 +5,5 @@ import type { FaceRouteEntry } from './types';
 
 /** React hook wrapper around {@link buildFaceRouteEntries} for the active face config. */
 export function useFaceRouteEntries(selectedFace: FaceConfig | null): FaceRouteEntry[] {
-  return useMemo(() => buildFaceRouteEntries(selectedFace), [selectedFace]);
+	return useMemo(() => buildFaceRouteEntries(selectedFace), [selectedFace]);
 }

@@ -5,12 +5,12 @@ import { toast } from 'react-toastify';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-  fetchFaceProfile,
-  fetchFaceProfileComments,
-  fetchFaceProfileReviews,
-  type FaceProfileDetail,
-  type FaceProfileCommentRow,
-  type FaceProfileReviewRow,
+	fetchFaceProfile,
+	fetchFaceProfileComments,
+	fetchFaceProfileReviews,
+	type FaceProfileDetail,
+	type FaceProfileCommentRow,
+	type FaceProfileReviewRow,
 } from '../../api/services/faceProfilesApi';
 import { FaceMemberDetailProvider } from '../../features/profileDetail/context/FaceMemberDetailProvider';
 import { ProfilePageGridLayout } from '../../features/profileDetail/layout/ProfilePageGridLayout';
@@ -21,88 +21,88 @@ import './FaceProfileDetailPage.scss';
 const PROFILE_DETAIL_PAGE_TYPE = 'profileDetail';
 
 export function FaceProfileDetailPage() {
-  const { userId } = useParams<{ userId: string }>();
-  const { t } = useTranslation('common');
-  const { selectedFace } = useFaceConfig();
-  const { token, user } = useAuth();
-  const [detail, setDetail] = useState<FaceProfileDetail | null>(null);
-  const [comments, setComments] = useState<FaceProfileCommentRow[]>([]);
-  const [reviews, setReviews] = useState<FaceProfileReviewRow[]>([]);
-  const [loading, setLoading] = useState(true);
+	const { userId } = useParams<{ userId: string }>();
+	const { t } = useTranslation('common');
+	const { selectedFace } = useFaceConfig();
+	const { token, user } = useAuth();
+	const [detail, setDetail] = useState<FaceProfileDetail | null>(null);
+	const [comments, setComments] = useState<FaceProfileCommentRow[]>([]);
+	const [reviews, setReviews] = useState<FaceProfileReviewRow[]>([]);
+	const [loading, setLoading] = useState(true);
 
-  const uid = userId ? decodeURIComponent(userId) : '';
+	const uid = userId ? decodeURIComponent(userId) : '';
 
-  const load = useCallback(async () => {
-    await Promise.resolve();
-    if (!selectedFace || !uid) return;
-    setLoading(true);
-    try {
-      const d = await fetchFaceProfile(selectedFace.id, uid, token ?? undefined);
-      setDetail(d);
-      const c = await fetchFaceProfileComments(selectedFace.id, uid, token ?? undefined);
-      setComments(c);
-      const r = await fetchFaceProfileReviews(selectedFace.id, uid, token ?? undefined);
-      setReviews(r);
-    } catch {
-      toast.error(t('faceProfiles.loadError'));
-      setDetail(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedFace, uid, token, t]);
+	const load = useCallback(async () => {
+		await Promise.resolve();
+		if (!selectedFace || !uid) return;
+		setLoading(true);
+		try {
+			const d = await fetchFaceProfile(selectedFace.id, uid, token ?? undefined);
+			setDetail(d);
+			const c = await fetchFaceProfileComments(selectedFace.id, uid, token ?? undefined);
+			setComments(c);
+			const r = await fetchFaceProfileReviews(selectedFace.id, uid, token ?? undefined);
+			setReviews(r);
+		} catch {
+			toast.error(t('faceProfiles.loadError'));
+			setDetail(null);
+		} finally {
+			setLoading(false);
+		}
+	}, [selectedFace, uid, token, t]);
 
-  useEffect(() => {
-    void (async () => {
-      await Promise.resolve();
-      await load();
-    })();
-  }, [load]);
+	useEffect(() => {
+		void (async () => {
+			await Promise.resolve();
+			await load();
+		})();
+	}, [load]);
 
-  const templatePage = useMemo(
-    () => selectedFace?.pages.find((p) => p.pageType?.index === PROFILE_DETAIL_PAGE_TYPE),
-    [selectedFace]
-  );
+	const templatePage = useMemo(
+		() => selectedFace?.pages.find((p) => p.pageType?.index === PROFILE_DETAIL_PAGE_TYPE),
+		[selectedFace]
+	);
 
-  const gridSchemaJson = templatePage?.gridSchema ?? DEFAULT_PROFILE_DETAIL_GRID_SCHEMA_JSON;
-  const parsedGrid = useMemo(() => parseProfileDetailGridSchema(gridSchemaJson), [gridSchemaJson]);
+	const gridSchemaJson = templatePage?.gridSchema ?? DEFAULT_PROFILE_DETAIL_GRID_SCHEMA_JSON;
+	const parsedGrid = useMemo(() => parseProfileDetailGridSchema(gridSchemaJson), [gridSchemaJson]);
 
-  const isSelf = user?.id === uid;
+	const isSelf = user?.id === uid;
 
-  const memberDetailValue = useMemo(
-    () =>
-      selectedFace && detail
-        ? {
-            faceId: selectedFace.id,
-            faceIndex: selectedFace.index,
-            userId: uid,
-            detail,
-            comments,
-            reviews,
-            token: token ?? undefined,
-            isSelf,
-            refreshAll: load,
-          }
-        : null,
-    [selectedFace, uid, detail, comments, reviews, token, isSelf, load]
-  );
+	const memberDetailValue = useMemo(
+		() =>
+			selectedFace && detail
+				? {
+						faceId: selectedFace.id,
+						faceIndex: selectedFace.index,
+						userId: uid,
+						detail,
+						comments,
+						reviews,
+						token: token ?? undefined,
+						isSelf,
+						refreshAll: load,
+					}
+				: null,
+		[selectedFace, uid, detail, comments, reviews, token, isSelf, load]
+	);
 
-  if (!selectedFace || !uid) return null;
+	if (!selectedFace || !uid) return null;
 
-  return (
-    <div className="face-profile-detail-page">
-      {loading && <p>{t('faceProfiles.loading')}</p>}
+	return (
+		<div className="face-profile-detail-page">
+			{loading && <p>{t('faceProfiles.loading')}</p>}
 
-      {!loading && detail && parsedGrid.ok && memberDetailValue && (
-        <FaceMemberDetailProvider value={memberDetailValue}>
-          <ProfilePageGridLayout schema={parsedGrid.schema} />
-        </FaceMemberDetailProvider>
-      )}
+			{!loading && detail && parsedGrid.ok && memberDetailValue && (
+				<FaceMemberDetailProvider value={memberDetailValue}>
+					<ProfilePageGridLayout schema={parsedGrid.schema} />
+				</FaceMemberDetailProvider>
+			)}
 
-      {!loading && detail && !parsedGrid.ok && (
-        <p className="face-profile-detail-page__muted" role="alert">
-          {t('profileDetail.sectionError')}
-        </p>
-      )}
-    </div>
-  );
+			{!loading && detail && !parsedGrid.ok && (
+				<p className="face-profile-detail-page__muted" role="alert">
+					{t('profileDetail.sectionError')}
+				</p>
+			)}
+		</div>
+	);
 }

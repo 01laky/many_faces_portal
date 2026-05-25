@@ -1,239 +1,239 @@
 .vl-detail {
-  width: 100%;
-  padding: 16px 20px 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-height: 50vh;
+	width: 100%;
+	padding: 16px 20px 32px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	min-height: 50vh;
 }
 
 .vl-detail--centered {
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
 }
 
 .vl-detail-spinner {
-  animation: vl-spin 0.8s linear infinite;
+	animation: vl-spin 0.8s linear infinite;
 }
 
 @keyframes vl-spin {
-  to {
-    transform: rotate(360deg);
-  }
+	to {
+		transform: rotate(360deg);
+	}
 }
 
 .vl-detail-header {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
 }
 
 .vl-detail-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: none;
-  border: none;
-  padding: 4px 0;
-  cursor: pointer;
-  color: #444;
-  font-size: 0.9rem;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	background: none;
+	border: none;
+	padding: 4px 0;
+	cursor: pointer;
+	color: #444;
+	font-size: 0.9rem;
 
-  &:hover {
-    color: #111;
-  }
+	&:hover {
+		color: #111;
+	}
 }
 
 .vl-detail-title {
-  margin: 0;
-  font-size: 1.35rem;
+	margin: 0;
+	font-size: 1.35rem;
 }
 
 .vl-detail-desc {
-  margin: 4px 0 0;
-  color: #555;
-  font-size: 0.9rem;
+	margin: 4px 0 0;
+	color: #555;
+	font-size: 0.9rem;
 }
 
 .vl-detail-meta {
-  margin: 6px 0 0;
-  font-size: 0.8rem;
-  color: #777;
+	margin: 6px 0 0;
+	font-size: 0.8rem;
+	color: #777;
 }
 
 .vl-detail-primary {
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: none;
-  background: #3d5afe;
-  color: #fff;
-  cursor: pointer;
-  font-size: 0.9rem;
+	padding: 8px 16px;
+	border-radius: 6px;
+	border: none;
+	background: #3d5afe;
+	color: #fff;
+	cursor: pointer;
+	font-size: 0.9rem;
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+	&:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
 }
 
 .vl-lobby-presence {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.9rem;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	font-size: 0.9rem;
 }
 
 .vl-lobby-presence-sub {
-  color: #666;
-  font-size: 0.8rem;
+	color: #666;
+	font-size: 0.8rem;
 }
 
 .vl-lobby-roster-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
 }
 
 .vl-lobby-roster-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px;
-  border: 1px solid #eee;
-  border-radius: 6px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px;
+	border: 1px solid #eee;
+	border-radius: 6px;
 }
 
 .vl-lobby-roster-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	object-fit: cover;
 }
 
 .vl-lobby-roster-name {
-  flex: 1;
-  font-weight: 600;
-  font-size: 0.85rem;
+	flex: 1;
+	font-weight: 600;
+	font-size: 0.85rem;
 }
 
 .vl-lobby-roster-mode {
-  font-size: 0.75rem;
-  color: #666;
+	font-size: 0.75rem;
+	color: #666;
 }
 
 .vl-lobby-roster-icons {
-  display: flex;
-  gap: 4px;
-  color: #888;
+	display: flex;
+	gap: 4px;
+	color: #888;
 }
 
 .vl-lobby-modes {
-  border: none;
-  padding: 0;
-  margin: 12px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+	border: none;
+	padding: 0;
+	margin: 12px 0;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
 }
 
 .vl-lobby-mode {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.9rem;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 0.9rem;
 }
 
 .vl-lobby-preview-video {
-  width: 100%;
-  max-width: 320px;
-  border-radius: 8px;
-  background: #111;
-  aspect-ratio: 16 / 9;
+	width: 100%;
+	max-width: 320px;
+	border-radius: 8px;
+	background: #111;
+	aspect-ratio: 16 / 9;
 }
 
 .vl-lobby-primary,
 .vl-lobby-secondary {
-  margin-top: 8px;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.88rem;
+	margin-top: 8px;
+	padding: 8px 14px;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 0.88rem;
 }
 
 .vl-lobby-primary {
-  border: none;
-  background: #3d5afe;
-  color: #fff;
+	border: none;
+	background: #3d5afe;
+	color: #fff;
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+	&:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
 }
 
 .vl-lobby-secondary {
-  border: 1px solid #ccc;
-  background: #fff;
+	border: 1px solid #ccc;
+	background: #fff;
 }
 
 .vl-lobby-error,
 .vl-lobby-preview-error {
-  color: #b00020;
-  font-size: 0.85rem;
+	color: #b00020;
+	font-size: 0.85rem;
 }
 
 .vl-live-tiles {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 10px;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+	gap: 10px;
 }
 
 .vl-live-tile {
-  border: 1px solid #eee;
-  border-radius: 8px;
-  padding: 10px;
-  text-align: center;
+	border: 1px solid #eee;
+	border-radius: 8px;
+	padding: 10px;
+	text-align: center;
 }
 
 .vl-live-tile--speaking {
-  border-color: #3d5afe;
+	border-color: #3d5afe;
 }
 
 .vl-live-tile-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  object-fit: cover;
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	object-fit: cover;
 }
 
 .vl-live-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 16px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-top: 16px;
 }
 
 .vl-live-control,
 .vl-live-leave {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 8px 12px;
+	border-radius: 6px;
+	cursor: pointer;
 }
 
 .vl-live-leave {
-  border: none;
-  background: #c62828;
-  color: #fff;
-  margin-left: auto;
+	border: none;
+	background: #c62828;
+	color: #fff;
+	margin-left: auto;
 }

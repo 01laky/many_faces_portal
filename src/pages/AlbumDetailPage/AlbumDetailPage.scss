@@ -1,328 +1,328 @@
 .album-detail-page {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  width: 100%;
-  padding: 1.5rem 1rem;
-  min-height: 100vh;
-  color: #fff;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	width: 100%;
+	padding: 1.5rem 1rem;
+	min-height: 100vh;
+	color: #fff;
 }
 
 .album-detail-loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 200px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 200px;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+	to {
+		transform: rotate(360deg);
+	}
 }
 
 .album-detail-spinner {
-  animation: spin 0.8s linear infinite;
-  color: rgba(255, 255, 255, 0.7);
+	animation: spin 0.8s linear infinite;
+	color: rgba(255, 255, 255, 0.7);
 }
 
 .album-detail-error {
-  text-align: center;
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.6);
-  padding: 2rem;
+	text-align: center;
+	font-size: 1rem;
+	color: rgba(255, 255, 255, 0.6);
+	padding: 2rem;
 }
 
 .album-detail-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 }
 
 .album-detail-back {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.7rem;
-  border: none;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.4rem 0.7rem;
+	border: none;
+	border-radius: 8px;
+	background: rgba(255, 255, 255, 0.1);
+	color: rgba(255, 255, 255, 0.9);
+	font-size: 0.875rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.15s;
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.2);
-  }
+	&:hover {
+		background: rgba(255, 255, 255, 0.2);
+	}
 }
 
 .album-detail-header-actions {
-  display: flex;
-  gap: 0.35rem;
+	display: flex;
+	gap: 0.35rem;
 }
 
 .album-detail-action-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.85);
-  cursor: pointer;
-  padding: 0;
-  transition: background 0.15s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border: none;
+	border-radius: 6px;
+	background: rgba(255, 255, 255, 0.1);
+	color: rgba(255, 255, 255, 0.85);
+	cursor: pointer;
+	padding: 0;
+	transition: background 0.15s;
 
-  &:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.2);
-  }
+	&:hover:not(:disabled) {
+		background: rgba(255, 255, 255, 0.2);
+	}
 
-  &--danger:hover:not(:disabled) {
-    background: rgba(220, 53, 69, 0.4);
-    color: #ff8a8a;
-  }
+	&--danger:hover:not(:disabled) {
+		background: rgba(220, 53, 69, 0.4);
+		color: #ff8a8a;
+	}
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+	&:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
 }
 
 .album-detail-edit-panel {
-  padding: 1rem;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+	padding: 1rem;
+	border-radius: 10px;
+	background: rgba(0, 0, 0, 0.2);
+	backdrop-filter: blur(8px);
+	border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .album-detail-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
 }
 
 .album-detail-title {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
+	margin: 0;
+	font-size: 1.5rem;
+	font-weight: 700;
 }
 
 .album-detail-description {
-  margin: 0;
-  font-size: 0.9375rem;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.5;
+	margin: 0;
+	font-size: 0.9375rem;
+	color: rgba(255, 255, 255, 0.8);
+	line-height: 1.5;
 }
 
 .album-detail-meta {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
 }
 
 .album-detail-badge {
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.12);
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+	padding: 0.2rem 0.5rem;
+	border-radius: 4px;
+	background: rgba(255, 255, 255, 0.12);
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: rgba(255, 255, 255, 0.9);
 }
 
 .album-detail-creator {
-  font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.6);
+	font-size: 0.8125rem;
+	color: rgba(255, 255, 255, 0.6);
 }
 
 .album-detail-faces {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.3rem;
 }
 
 .album-detail-face-tag {
-  padding: 0.15rem 0.45rem;
-  border-radius: 4px;
-  background: rgba(13, 110, 253, 0.3);
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.9);
+	padding: 0.15rem 0.45rem;
+	border-radius: 4px;
+	background: rgba(13, 110, 253, 0.3);
+	font-size: 0.75rem;
+	color: rgba(255, 255, 255, 0.9);
 }
 
 // ── Like + Stats ──
 
 .album-detail-stats {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.5rem 0;
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	padding: 0.5rem 0;
 }
 
 .album-detail-like-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.4rem 0.7rem;
-  border: none;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    color 0.15s;
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.4rem 0.7rem;
+	border: none;
+	border-radius: 8px;
+	background: rgba(255, 255, 255, 0.1);
+	color: rgba(255, 255, 255, 0.85);
+	font-size: 0.875rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition:
+		background 0.15s,
+		color 0.15s;
 
-  &:hover:not(:disabled) {
-    background: rgba(220, 53, 69, 0.25);
-    color: #ff6b8a;
-  }
+	&:hover:not(:disabled) {
+		background: rgba(220, 53, 69, 0.25);
+		color: #ff6b8a;
+	}
 
-  &--liked {
-    color: #ff6b8a;
-    background: rgba(220, 53, 69, 0.2);
-  }
+	&--liked {
+		color: #ff6b8a;
+		background: rgba(220, 53, 69, 0.2);
+	}
 
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
+	&:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
 }
 
 .album-detail-stat {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.7);
+	display: flex;
+	align-items: center;
+	gap: 0.3rem;
+	font-size: 0.875rem;
+	color: rgba(255, 255, 255, 0.7);
 }
 
 // ── Comments ──
 
 .album-detail-comments {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
 }
 
 .album-detail-comments-title {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 700;
 }
 
 .album-detail-comment-form {
-  display: flex;
-  gap: 0.5rem;
+	display: flex;
+	gap: 0.5rem;
 }
 
 .album-detail-comment-input {
-  flex: 1;
-  padding: 0.4rem 0.6rem;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  font-size: 0.875rem;
+	flex: 1;
+	padding: 0.4rem 0.6rem;
+	border-radius: 6px;
+	border: 1px solid rgba(255, 255, 255, 0.25);
+	background: rgba(255, 255, 255, 0.1);
+	color: #fff;
+	font-size: 0.875rem;
 
-  &::placeholder {
-    color: rgba(255, 255, 255, 0.5);
-  }
+	&::placeholder {
+		color: rgba(255, 255, 255, 0.5);
+	}
 
-  &:focus {
-    outline: none;
-    border-color: rgba(255, 255, 255, 0.45);
-  }
+	&:focus {
+		outline: none;
+		border-color: rgba(255, 255, 255, 0.45);
+	}
 }
 
 .album-detail-comment-submit {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: 6px;
-  background: rgba(13, 110, 253, 0.5);
-  color: #fff;
-  cursor: pointer;
-  padding: 0;
-  transition: background 0.15s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border: none;
+	border-radius: 6px;
+	background: rgba(13, 110, 253, 0.5);
+	color: #fff;
+	cursor: pointer;
+	padding: 0;
+	transition: background 0.15s;
 
-  &:hover:not(:disabled) {
-    background: rgba(13, 110, 253, 0.7);
-  }
+	&:hover:not(:disabled) {
+		background: rgba(13, 110, 253, 0.7);
+	}
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+	&:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
 }
 
 .album-detail-comments-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
 }
 
 .album-detail-comment {
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+	padding: 0.5rem 0.75rem;
+	border-radius: 8px;
+	background: rgba(255, 255, 255, 0.06);
+	border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .album-detail-comment-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.25rem;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-bottom: 0.25rem;
 }
 
 .album-detail-comment-author {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+	font-size: 0.8125rem;
+	font-weight: 600;
+	color: rgba(255, 255, 255, 0.9);
 }
 
 .album-detail-comment-date {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.5);
+	font-size: 0.75rem;
+	color: rgba(255, 255, 255, 0.5);
 }
 
 .album-detail-comment-delete {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  padding: 2px;
-  border: none;
-  border-radius: 4px;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.4);
-  cursor: pointer;
+	margin-left: auto;
+	display: flex;
+	align-items: center;
+	padding: 2px;
+	border: none;
+	border-radius: 4px;
+	background: transparent;
+	color: rgba(255, 255, 255, 0.4);
+	cursor: pointer;
 
-  &:hover {
-    color: #ff6b8a;
-    background: rgba(220, 53, 69, 0.15);
-  }
+	&:hover {
+		color: #ff6b8a;
+		background: rgba(220, 53, 69, 0.15);
+	}
 }
 
 .album-detail-comment-text {
-  margin: 0;
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.85);
-  line-height: 1.4;
+	margin: 0;
+	font-size: 0.875rem;
+	color: rgba(255, 255, 255, 0.85);
+	line-height: 1.4;
 }
 
 .album-detail-no-comments {
-  font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.5);
-  font-style: italic;
-  margin: 0;
+	font-size: 0.8125rem;
+	color: rgba(255, 255, 255, 0.5);
+	font-style: italic;
+	margin: 0;
 }

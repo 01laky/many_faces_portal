@@ -20,14 +20,14 @@ import { env } from '../config/env';
  * API context model
  */
 export interface TApiContextModel {
-  api: ApiClient;
+	api: ApiClient;
 }
 
 /**
  * Default API context model (used for initialization)
  */
 const defaultApiContextModel: TApiContextModel = {
-  api: new ApiClient(null, {}, env.apiUrl),
+	api: new ApiClient(null, {}, env.apiUrl),
 };
 
 /**
@@ -39,8 +39,8 @@ export const ApiContext = React.createContext<TApiContextModel>(defaultApiContex
  * API context provider props
  */
 export interface TApiContextProviderProps {
-  children: ReactNode;
-  accessToken?: string | null;
+	children: ReactNode;
+	accessToken?: string | null;
 }
 
 /**
@@ -53,32 +53,32 @@ export interface TApiContextProviderProps {
  * @param accessToken - JWT token for authentication (optional, can be provided via props or useTokenContext)
  */
 export function ApiContextProvider({
-  children,
-  accessToken: propAccessToken,
+	children,
+	accessToken: propAccessToken,
 }: TApiContextProviderProps): React.ReactElement {
-  // Try to get token from prop or from context/hooks if needed
-  // For now, we'll use prop token or null
-  // In a more sophisticated setup, you might want to integrate with AuthContext
-  const accessToken = propAccessToken ?? null;
+	// Try to get token from prop or from context/hooks if needed
+	// For now, we'll use prop token or null
+	// In a more sophisticated setup, you might want to integrate with AuthContext
+	const accessToken = propAccessToken ?? null;
 
-  // Create ApiClient instance with current token
-  // Using useMemo to recreate only when token changes
-  const api = React.useMemo(() => {
-    const publicIP = env.apiUrl;
+	// Create ApiClient instance with current token
+	// Using useMemo to recreate only when token changes
+	const api = React.useMemo(() => {
+		const publicIP = env.apiUrl;
 
-    // Create new ApiClient instance with current token
-    // This ensures Authorization header is set correctly
-    return new ApiClient(accessToken, {}, publicIP);
-  }, [accessToken]);
+		// Create new ApiClient instance with current token
+		// This ensures Authorization header is set correctly
+		return new ApiClient(accessToken, {}, publicIP);
+	}, [accessToken]);
 
-  const apiContextModel = React.useMemo(
-    (): TApiContextModel => ({
-      api,
-    }),
-    [api]
-  );
+	const apiContextModel = React.useMemo(
+		(): TApiContextModel => ({
+			api,
+		}),
+		[api]
+	);
 
-  return <ApiContext.Provider value={apiContextModel}>{children}</ApiContext.Provider>;
+	return <ApiContext.Provider value={apiContextModel}>{children}</ApiContext.Provider>;
 }
 
 /**
@@ -88,11 +88,11 @@ export function ApiContextProvider({
  * @throws Error if used outside ApiContextProvider
  */
 export function useApi(): TApiContextModel {
-  const context = React.useContext(ApiContext);
-  if (context === undefined) {
-    throw new Error('useApi must be used within ApiContextProvider');
-  }
-  return context;
+	const context = React.useContext(ApiContext);
+	if (context === undefined) {
+		throw new Error('useApi must be used within ApiContextProvider');
+	}
+	return context;
 }
 
 export default ApiContextProvider;

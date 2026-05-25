@@ -1,118 +1,118 @@
 .album-carousel-component {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-  padding: 4px 0;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	position: relative;
+	overflow: hidden;
+	padding: 4px 0;
 }
 
 .album-carousel-nav {
-  flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #ddd;
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  cursor: pointer;
-  font-size: 1.1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #333;
-  z-index: 2;
+	flex-shrink: 0;
+	background: rgba(255, 255, 255, 0.9);
+	border: 1px solid #ddd;
+	border-radius: 50%;
+	width: 28px;
+	height: 28px;
+	cursor: pointer;
+	font-size: 1.1rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #333;
+	z-index: 2;
 
-  &:disabled {
-    opacity: 0.25;
-    cursor: default;
-  }
+	&:disabled {
+		opacity: 0.25;
+		cursor: default;
+	}
 
-  &:hover:not(:disabled) {
-    background: #f0f0f0;
-  }
+	&:hover:not(:disabled) {
+		background: #f0f0f0;
+	}
 }
 
 .album-carousel-track {
-  flex: 1;
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  overflow: hidden;
-  padding: 0 6px;
+	flex: 1;
+	display: flex;
+	gap: 8px;
+	justify-content: center;
+	overflow: hidden;
+	padding: 0 6px;
 }
 
 .album-carousel-card {
-  flex-shrink: 0;
-  border-radius: 6px;
-  overflow: hidden;
-  background: #f5f5f5;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  max-height: calc(100% - 20px);
-  cursor: pointer;
-  transition:
-    transform 0.15s,
-    box-shadow 0.15s;
+	flex-shrink: 0;
+	border-radius: 6px;
+	overflow: hidden;
+	background: #f5f5f5;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	max-height: calc(100% - 20px);
+	cursor: pointer;
+	transition:
+		transform 0.15s,
+		box-shadow 0.15s;
 
-  &:hover {
-    transform: scale(1.03);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  }
+	&:hover {
+		transform: scale(1.03);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+	}
 
-  img {
-    width: 100%;
-    aspect-ratio: 1;
-    object-fit: cover;
-    display: block;
-  }
+	img {
+		width: 100%;
+		aspect-ratio: 1;
+		object-fit: cover;
+		display: block;
+	}
 }
 
 .album-carousel-card-info {
-  padding: 4px 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
+	padding: 4px 6px;
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
 }
 
 .album-carousel-card-title {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #222;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+	font-size: 0.72rem;
+	font-weight: 600;
+	color: #222;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .album-carousel-card-count {
-  font-size: 0.65rem;
-  color: #888;
+	font-size: 0.65rem;
+	color: #888;
 }
 
 .album-carousel-dots {
-  position: absolute;
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 4px;
+	position: absolute;
+	bottom: 2px;
+	left: 50%;
+	transform: translateX(-50%);
+	display: flex;
+	gap: 4px;
 }
 
 .album-carousel-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  border: none;
-  background: #ccc;
-  cursor: pointer;
-  padding: 0;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	border: none;
+	background: #ccc;
+	cursor: pointer;
+	padding: 0;
 
-  &.active {
-    background: #333;
-  }
+	&.active {
+		background: #333;
+	}
 
-  &:hover {
-    background: #999;
-  }
+	&:hover {
+		background: #999;
+	}
 }

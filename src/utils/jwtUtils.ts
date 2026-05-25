@@ -6,15 +6,15 @@
  * - Malformed tokens (wrong segments, invalid base64/JSON) → expired, so callers clear storage and force re-login.
  */
 export function isTokenExpired(jwt: string): boolean {
-  try {
-    const parts = jwt.split('.');
-    if (parts.length < 2) return true;
-    const payload = JSON.parse(atob(parts[1]));
-    const exp = payload.exp;
-    if (!exp) return false;
-    // RFC 7519: valid only while current time is strictly before exp (compare whole seconds).
-    return Math.floor(Date.now() / 1000) >= exp;
-  } catch {
-    return true;
-  }
+	try {
+		const parts = jwt.split('.');
+		if (parts.length < 2) return true;
+		const payload = JSON.parse(atob(parts[1]));
+		const exp = payload.exp;
+		if (!exp) return false;
+		// RFC 7519: valid only while current time is strictly before exp (compare whole seconds).
+		return Math.floor(Date.now() / 1000) >= exp;
+	} catch {
+		return true;
+	}
 }

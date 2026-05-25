@@ -6,40 +6,40 @@ import { describe, it, expect } from 'vitest';
 import { buildPasswordGrantTokenRequest } from '../authTokenRequest';
 
 describe('buildPasswordGrantTokenRequest', () => {
-  const base = {
-    username: 'u',
-    password: 'p',
-    clientId: 'cid',
-    clientSecret: 'sec',
-  };
+	const base = {
+		username: 'u',
+		password: 'p',
+		clientId: 'cid',
+		clientSecret: 'sec',
+	};
 
-  it('sets rememberMe true only when strictly true', () => {
-    expect(buildPasswordGrantTokenRequest({ ...base, rememberMe: true }).rememberMe).toBe(true);
-    expect(buildPasswordGrantTokenRequest({ ...base, rememberMe: undefined }).rememberMe).toBe(
-      false
-    );
-    expect(buildPasswordGrantTokenRequest({ ...base, rememberMe: false }).rememberMe).toBe(false);
-  });
+	it('sets rememberMe true only when strictly true', () => {
+		expect(buildPasswordGrantTokenRequest({ ...base, rememberMe: true }).rememberMe).toBe(true);
+		expect(buildPasswordGrantTokenRequest({ ...base, rememberMe: undefined }).rememberMe).toBe(
+			false
+		);
+		expect(buildPasswordGrantTokenRequest({ ...base, rememberMe: false }).rememberMe).toBe(false);
+	});
 
-  it('includes password grant fields', () => {
-    const r = buildPasswordGrantTokenRequest({ ...base, rememberMe: true });
-    expect(r).toMatchObject({
-      grantType: 'password',
-      username: 'u',
-      password: 'p',
-      clientId: 'cid',
-      clientSecret: 'sec',
-      rememberMe: true,
-    });
-  });
+	it('includes password grant fields', () => {
+		const r = buildPasswordGrantTokenRequest({ ...base, rememberMe: true });
+		expect(r).toMatchObject({
+			grantType: 'password',
+			username: 'u',
+			password: 'p',
+			clientId: 'cid',
+			clientSecret: 'sec',
+			rememberMe: true,
+		});
+	});
 
-  it('coerces truthy non-boolean rememberMe values to false', () => {
-    expect(
-      buildPasswordGrantTokenRequest({ ...base, rememberMe: 'true' as unknown as boolean })
-        .rememberMe
-    ).toBe(false);
-    expect(
-      buildPasswordGrantTokenRequest({ ...base, rememberMe: 1 as unknown as boolean }).rememberMe
-    ).toBe(false);
-  });
+	it('coerces truthy non-boolean rememberMe values to false', () => {
+		expect(
+			buildPasswordGrantTokenRequest({ ...base, rememberMe: 'true' as unknown as boolean })
+				.rememberMe
+		).toBe(false);
+		expect(
+			buildPasswordGrantTokenRequest({ ...base, rememberMe: 1 as unknown as boolean }).rememberMe
+		).toBe(false);
+	});
 });

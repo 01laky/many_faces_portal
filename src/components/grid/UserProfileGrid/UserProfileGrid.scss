@@ -1,101 +1,101 @@
 .userprofile-grid-component {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  padding: 4px;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	padding: 4px;
 }
 
 .userprofile-grid-items {
-  flex: 1;
-  min-height: 0;
-  height: 100%;
-  display: grid;
-  grid-template-columns: repeat(var(--grid-cols, 3), minmax(0, 1fr));
-  grid-auto-rows: minmax(0, 1fr);
-  gap: 6px;
-  overflow: hidden;
-  align-content: stretch;
+	flex: 1;
+	min-height: 0;
+	height: 100%;
+	display: grid;
+	grid-template-columns: repeat(var(--grid-cols, 3), minmax(0, 1fr));
+	grid-auto-rows: minmax(0, 1fr);
+	gap: 6px;
+	overflow: hidden;
+	align-content: stretch;
 }
 
 .userprofile-grid-card {
-  border-radius: 6px;
-  overflow: hidden;
-  background: #fff;
-  border: 1px solid #eee;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 6px 8px;
-  gap: 2px;
-  min-height: 0;
-  height: 100%;
+	border-radius: 6px;
+	overflow: hidden;
+	background: #fff;
+	border: 1px solid #eee;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 10px 6px 8px;
+	gap: 2px;
+	min-height: 0;
+	height: 100%;
 }
 
 .userprofile-grid-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-bottom: 2px;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	object-fit: cover;
+	margin-bottom: 2px;
 }
 
 .userprofile-grid-card-name {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: #222;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  text-align: center;
+	font-size: 0.7rem;
+	font-weight: 600;
+	color: #222;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 100%;
+	text-align: center;
 }
 
 .userprofile-grid-card-role {
-  font-size: 0.58rem;
-  color: #888;
+	font-size: 0.58rem;
+	color: #888;
 }
 
 .userprofile-grid-card-posts {
-  font-size: 0.55rem;
-  color: #aaa;
+	font-size: 0.55rem;
+	color: #aaa;
 }
 
 .userprofile-grid-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 4px 0 2px;
-  flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	padding: 4px 0 2px;
+	flex-shrink: 0;
 
-  button {
-    background: none;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    width: 26px;
-    height: 26px;
-    cursor: pointer;
-    font-size: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #333;
+	button {
+		background: none;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		width: 26px;
+		height: 26px;
+		cursor: pointer;
+		font-size: 1rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: #333;
 
-    &:disabled {
-      opacity: 0.3;
-      cursor: default;
-    }
+		&:disabled {
+			opacity: 0.3;
+			cursor: default;
+		}
 
-    &:hover:not(:disabled) {
-      background: #f0f0f0;
-    }
-  }
+		&:hover:not(:disabled) {
+			background: #f0f0f0;
+		}
+	}
 
-  span {
-    font-size: 0.75rem;
-    color: #666;
-  }
+	span {
+		font-size: 0.75rem;
+		color: #666;
+	}
 }

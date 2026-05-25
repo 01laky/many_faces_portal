@@ -2,102 +2,102 @@
 @import '../../styles/AnimatedGradient.scss';
 
 .app-footer {
-  position: sticky;
-  bottom: 0;
-  z-index: 1000;
-  width: 100%;
-  overflow: hidden;
-  background: rgba(10, 10, 30, 0.15);
-  backdrop-filter: blur(14px) saturate(1.4);
-  -webkit-backdrop-filter: blur(14px) saturate(1.4);
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.3);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  transition:
-    border-color 0.3s ease,
-    border-width 0.3s ease;
+	position: sticky;
+	bottom: 0;
+	z-index: 1000;
+	width: 100%;
+	overflow: hidden;
+	background: rgba(10, 10, 30, 0.15);
+	backdrop-filter: blur(14px) saturate(1.4);
+	-webkit-backdrop-filter: blur(14px) saturate(1.4);
+	box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.3);
+	border-top: 1px solid rgba(255, 255, 255, 0.08);
+	transition:
+		border-color 0.3s ease,
+		border-width 0.3s ease;
 
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--gradient-bg, rgba(13, 110, 253, 0.45));
-    background-size: var(--gradient-size, auto);
-    animation: var(--gradient-animation, none);
-    opacity: 0.82;
-    pointer-events: none;
-  }
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: var(--gradient-bg, rgba(13, 110, 253, 0.45));
+		background-size: var(--gradient-size, auto);
+		animation: var(--gradient-animation, none);
+		opacity: 0.82;
+		pointer-events: none;
+	}
 }
 
 .footer-border-top,
 .footer-border-bottom {
-  height: 2px;
-  background: rgba(255, 255, 255, 0.1);
-  position: relative;
-  transition: background 0.3s ease;
+	height: 2px;
+	background: rgba(255, 255, 255, 0.1);
+	position: relative;
+	transition: background 0.3s ease;
 }
 
 .footer-main {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1rem;
-  position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.5rem 1rem;
+	position: relative;
 }
 
 // Rounded content panel (same as header panels)
 .footer-panel {
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 0.5rem 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
+	border-radius: 12px;
+	background: rgba(0, 0, 0, 0.2);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	padding: 0.5rem 1rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 1rem;
 }
 
 .footer-messages-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.9);
-  cursor: pointer;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  transition:
-    background 0.15s,
-    border-color 0.15s;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	border-radius: 8px;
+	background: rgba(255, 255, 255, 0.1);
+	color: rgba(255, 255, 255, 0.9);
+	cursor: pointer;
+	font-size: 0.8125rem;
+	font-weight: 600;
+	transition:
+		background 0.15s,
+		border-color 0.15s;
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.18);
-    border-color: rgba(255, 255, 255, 0.5);
-  }
+	&:hover {
+		background: rgba(255, 255, 255, 0.18);
+		border-color: rgba(255, 255, 255, 0.5);
+	}
 }
 
 .footer-messages-label {
-  @media (max-width: 480px) {
-    display: none;
-  }
+	@media (max-width: 480px) {
+		display: none;
+	}
 }
 
 .footer-text {
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+	color: rgba(255, 255, 255, 0.85);
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.04em;
 }
 
 @media (max-width: 768px) {
-  .footer-main {
-    padding: 0.4rem 0.75rem;
-  }
+	.footer-main {
+		padding: 0.4rem 0.75rem;
+	}
 
-  .footer-panel {
-    padding: 0.4rem 0.75rem;
-    gap: 0.75rem;
-  }
+	.footer-panel {
+		padding: 0.4rem 0.75rem;
+		gap: 0.75rem;
+	}
 }

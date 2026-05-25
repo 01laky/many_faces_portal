@@ -7,27 +7,27 @@ import { ProtectedRoute } from '../ProtectedRoute';
 const useAuthMock = vi.fn();
 
 vi.mock('../../../contexts/AuthContext', () => ({
-  useAuth: () => useAuthMock(),
+	useAuth: () => useAuthMock(),
 }));
 
 describe('ProtectedRoute GPL', () => {
-  it('GPL-6: no loading UI when session already hydrated', () => {
-    useAuthMock.mockReturnValue({ isAuthenticated: true, isLoading: true });
-    render(
-      <MemoryRouter initialEntries={['/en/home']}>
-        <Routes>
-          <Route
-            path="/:lang/home"
-            element={
-              <ProtectedRoute>
-                <div data-testid="protected-content">content</div>
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </MemoryRouter>
-    );
-    expect(screen.queryByText('Loading...')).toBeNull();
-    expect(screen.getByTestId('protected-content')).toBeTruthy();
-  });
+	it('GPL-6: no loading UI when session already hydrated', () => {
+		useAuthMock.mockReturnValue({ isAuthenticated: true, isLoading: true });
+		render(
+			<MemoryRouter initialEntries={['/en/home']}>
+				<Routes>
+					<Route
+						path="/:lang/home"
+						element={
+							<ProtectedRoute>
+								<div data-testid="protected-content">content</div>
+							</ProtectedRoute>
+						}
+					/>
+				</Routes>
+			</MemoryRouter>
+		);
+		expect(screen.queryByText('Loading...')).toBeNull();
+		expect(screen.getByTestId('protected-content')).toBeTruthy();
+	});
 });

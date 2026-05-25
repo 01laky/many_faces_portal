@@ -3,8 +3,8 @@
  * Validates that the production bundle boots far enough to paint `body` — no auth, no API dependency.
  */
 describe('FE preview (built SPA)', () => {
-  it('loads the shell', () => {
-    cy.visit('/');
-    cy.get('body').should('be.visible');
-  });
+	it('loads the shell', () => {
+		cy.visit('/');
+		cy.get('body').should('be.visible');
+	});
 });

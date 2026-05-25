@@ -13,35 +13,35 @@ import { AppBootstrapGate } from './components/AppBootstrapGate';
 import { AppRoutes } from './routes';
 
 function MessengerProviderWithToken({ children }: { children: ReactNode }) {
-  const { token } = useAuth();
-  return <MessengerProvider token={token}>{children}</MessengerProvider>;
+	const { token } = useAuth();
+	return <MessengerProvider token={token}>{children}</MessengerProvider>;
 }
 
 function ApiContextProviderWithToken({ children }: { children: ReactNode }) {
-  const { token } = useAuth();
-  return <ApiContextProvider accessToken={token}>{children}</ApiContextProvider>;
+	const { token } = useAuth();
+	return <ApiContextProvider accessToken={token}>{children}</ApiContextProvider>;
 }
 
 function App() {
-  return (
-    <BrowserRouter>
-      <AppProvider>
-        <AuthProvider>
-          <ApiContextProviderWithToken>
-            <MessengerProviderWithToken>
-              <FaceConfigProvider>
-                <GradientAnimationPreferenceProvider>
-                  <AppBootstrapGate>
-                    <AppRoutes />
-                  </AppBootstrapGate>
-                </GradientAnimationPreferenceProvider>
-              </FaceConfigProvider>
-            </MessengerProviderWithToken>
-          </ApiContextProviderWithToken>
-        </AuthProvider>
-      </AppProvider>
-    </BrowserRouter>
-  );
+	return (
+		<BrowserRouter>
+			<AppProvider>
+				<AuthProvider>
+					<ApiContextProviderWithToken>
+						<MessengerProviderWithToken>
+							<FaceConfigProvider>
+								<GradientAnimationPreferenceProvider>
+									<AppBootstrapGate>
+										<AppRoutes />
+									</AppBootstrapGate>
+								</GradientAnimationPreferenceProvider>
+							</FaceConfigProvider>
+						</MessengerProviderWithToken>
+					</ApiContextProviderWithToken>
+				</AuthProvider>
+			</AppProvider>
+		</BrowserRouter>
+	);
 }
 
 export default App;

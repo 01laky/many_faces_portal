@@ -8,18 +8,18 @@ import type { OAuth2TokenRequest } from '../../api';
  * - Matches backend: `RememberMe == true` selects Jwt:ExpiresInMinutesRememberMe.
  */
 export function buildPasswordGrantTokenRequest(params: {
-  username: string;
-  password: string;
-  rememberMe?: boolean;
-  clientId: string;
-  clientSecret: string;
+	username: string;
+	password: string;
+	rememberMe?: boolean;
+	clientId: string;
+	clientSecret: string;
 }): OAuth2TokenRequest {
-  return {
-    grantType: 'password',
-    username: params.username,
-    password: params.password,
-    rememberMe: params.rememberMe === true,
-    clientId: params.clientId,
-    clientSecret: params.clientSecret,
-  };
+	return {
+		grantType: 'password',
+		username: params.username,
+		password: params.password,
+		rememberMe: params.rememberMe === true,
+		clientId: params.clientId,
+		clientSecret: params.clientSecret,
+	};
 }

@@ -1,18 +1,18 @@
 import {
-  getCreatorSafeReason,
-  getCreatorStatusLabel,
-  shouldShowCreatorStatusBadge,
-  type AiReviewStatus,
-  type ContentApprovalStatus,
+	getCreatorSafeReason,
+	getCreatorStatusLabel,
+	shouldShowCreatorStatusBadge,
+	type AiReviewStatus,
+	type ContentApprovalStatus,
 } from '../../../utils/contentModeration';
 import './CreatorModerationBadge.scss';
 
 /** Props mirror the subset of blog/album/reel DTO fields that are safe to show next to creator-owned content. */
 interface CreatorModerationBadgeProps {
-  approvalStatus?: ContentApprovalStatus | string | null;
-  aiReviewStatus?: AiReviewStatus | string | null;
-  aiReviewUserMessage?: string | null;
-  humanDecisionReason?: string | null;
+	approvalStatus?: ContentApprovalStatus | string | null;
+	aiReviewStatus?: AiReviewStatus | string | null;
+	aiReviewUserMessage?: string | null;
+	humanDecisionReason?: string | null;
 }
 
 /**
@@ -20,19 +20,19 @@ interface CreatorModerationBadgeProps {
  * Tooltip prefers the safe user-facing reason; falls back to the status label.
  */
 export function CreatorModerationBadge({
-  approvalStatus,
-  aiReviewStatus,
-  aiReviewUserMessage,
-  humanDecisionReason,
+	approvalStatus,
+	aiReviewStatus,
+	aiReviewUserMessage,
+	humanDecisionReason,
 }: CreatorModerationBadgeProps) {
-  if (!shouldShowCreatorStatusBadge(approvalStatus)) return null;
+	if (!shouldShowCreatorStatusBadge(approvalStatus)) return null;
 
-  const label = getCreatorStatusLabel(approvalStatus, aiReviewStatus);
-  const reason = getCreatorSafeReason(aiReviewUserMessage, humanDecisionReason);
+	const label = getCreatorStatusLabel(approvalStatus, aiReviewStatus);
+	const reason = getCreatorSafeReason(aiReviewUserMessage, humanDecisionReason);
 
-  return (
-    <span className="creator-moderation-badge" title={reason ?? label}>
-      {label}
-    </span>
-  );
+	return (
+		<span className="creator-moderation-badge" title={reason ?? label}>
+			{label}
+		</span>
+	);
 }

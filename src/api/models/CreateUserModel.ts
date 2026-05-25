@@ -3,9 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export type CreateUserModel = {
-    email: string;
-    password: string;
-    firstName?: string | null;
-    lastName?: string | null;
+	email: string;
+	password: string;
+	firstName?: string | null;
+	lastName?: string | null;
 };
-

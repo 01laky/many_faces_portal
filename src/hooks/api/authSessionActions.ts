@@ -17,13 +17,13 @@ import { isTokenExpired } from '../../utils/jwtUtils';
 import { env } from '../../config/env';
 import { buildPasswordGrantTokenRequest } from './authTokenRequest';
 import {
-  type AuthWebStorage,
-  persistAccessToken,
-  persistRefreshToken,
-  clearAuthStorage,
-  getAccessTokenFromStorage,
-  getRefreshTokenFromStorage,
-  AUTH_STORAGE_KEYS,
+	type AuthWebStorage,
+	persistAccessToken,
+	persistRefreshToken,
+	clearAuthStorage,
+	getAccessTokenFromStorage,
+	getRefreshTokenFromStorage,
+	AUTH_STORAGE_KEYS,
 } from '../../utils/authStorage';
 
 export type { AuthWebStorage } from '../../utils/authStorage';
@@ -31,15 +31,15 @@ export { AUTH_STORAGE_KEYS };
 
 /** Normalizes token payloads from `/api/oauth2/token` (codegen may surface `accessToken` or legacy `token`). */
 interface TokenResponse {
-  accessToken?: string;
-  refreshToken?: string;
-  token?: string;
+	accessToken?: string;
+	refreshToken?: string;
+	token?: string;
 }
 
 /** Public self-service registration; returns raw API response (hook layer decides cache invalidation). */
 export async function registerUser(data: RegisterModel): Promise<unknown> {
-  logger.info('Registering user', { email: data.email });
-  return AuthService.postApiAuthRegister({ requestBody: data });
+	logger.info('Registering user', { email: data.email });
+	return AuthService.postApiAuthRegister({ requestBody: data });
 }
 
 /**
@@ -51,57 +51,57 @@ export async function registerUser(data: RegisterModel): Promise<unknown> {
  * can show a single string without importing OpenAPI types in components.
  */
 export async function runPasswordGrantLogin(
-  credentials: {
-    username: string;
-    password: string;
-    rememberMe?: boolean;
-  },
-  storage: AuthWebStorage = localStorage
+	credentials: {
+		username: string;
+		password: string;
+		rememberMe?: boolean;
+	},
+	storage: AuthWebStorage = localStorage
 ): Promise<{ accessToken: string; refreshToken?: string }> {
-  logger.info('Attempting login', { username: credentials.username });
+	logger.info('Attempting login', { username: credentials.username });
 
-  const tokenRequest = buildPasswordGrantTokenRequest({
-    username: credentials.username,
-    password: credentials.password,
-    rememberMe: credentials.rememberMe,
-    clientId: env.oauth2ClientId,
-    clientSecret: env.oauth2ClientSecret,
-  });
+	const tokenRequest = buildPasswordGrantTokenRequest({
+		username: credentials.username,
+		password: credentials.password,
+		rememberMe: credentials.rememberMe,
+		clientId: env.oauth2ClientId,
+		clientSecret: env.oauth2ClientSecret,
+	});
 
-  let response;
-  try {
-    response = await OAuth2Service.postApiOauth2Token({
-      requestBody: tokenRequest,
-    });
-  } catch (error) {
-    if (error instanceof ApiError) {
-      const errorMessage =
-        error.body?.errorDescription ||
-        error.body?.error ||
-        error.body?.message ||
-        error.message ||
-        'Login failed';
-      throw new Error(errorMessage, { cause: error });
-    }
-    throw error;
-  }
+	let response;
+	try {
+		response = await OAuth2Service.postApiOauth2Token({
+			requestBody: tokenRequest,
+		});
+	} catch (error) {
+		if (error instanceof ApiError) {
+			const errorMessage =
+				error.body?.errorDescription ||
+				error.body?.error ||
+				error.body?.message ||
+				error.message ||
+				'Login failed';
+			throw new Error(errorMessage, { cause: error });
+		}
+		throw error;
+	}
 
-  const tokenData = response as unknown as TokenResponse;
-  const accessToken = tokenData.accessToken || (tokenData as unknown as { token?: string }).token;
+	const tokenData = response as unknown as TokenResponse;
+	const accessToken = tokenData.accessToken || (tokenData as unknown as { token?: string }).token;
 
-  if (!accessToken) {
-    throw new Error('No access token received from server');
-  }
+	if (!accessToken) {
+		throw new Error('No access token received from server');
+	}
 
-  persistAccessToken(accessToken, storage, setAuthToken);
-  if (tokenData.refreshToken) {
-    persistRefreshToken(tokenData.refreshToken, storage);
-  }
+	persistAccessToken(accessToken, storage, setAuthToken);
+	if (tokenData.refreshToken) {
+		persistRefreshToken(tokenData.refreshToken, storage);
+	}
 
-  return {
-    accessToken,
-    refreshToken: tokenData.refreshToken,
-  };
+	return {
+		accessToken,
+		refreshToken: tokenData.refreshToken,
+	};
 }
 
 /**
@@ -112,28 +112,28 @@ export async function runPasswordGrantLogin(
  * - If valid: calls `applyAuthToken(token)` (keeps header aligned with cache) and returns `{ accessToken }`.
  */
 export function readAuthTokenQueryValue(
-  storage: AuthWebStorage = localStorage,
-  tokenExpired: (jwt: string) => boolean = isTokenExpired,
-  applyAuthToken: (t: string | null) => void = setAuthToken
+	storage: AuthWebStorage = localStorage,
+	tokenExpired: (jwt: string) => boolean = isTokenExpired,
+	applyAuthToken: (t: string | null) => void = setAuthToken
 ): { accessToken: string } | null {
-  const token = getAccessTokenFromStorage(storage);
-  if (!token || tokenExpired(token)) {
-    if (token) {
-      clearAuthStorage(storage, applyAuthToken);
-    }
-    return null;
-  }
-  applyAuthToken(token);
-  return { accessToken: token };
+	const token = getAccessTokenFromStorage(storage);
+	if (!token || tokenExpired(token)) {
+		if (token) {
+			clearAuthStorage(storage, applyAuthToken);
+		}
+		return null;
+	}
+	applyAuthToken(token);
+	return { accessToken: token };
 }
 
 /** Logout helper: clears axios bearer and OAuth token keys (idempotent). */
 export function clearLocalAuthSession(
-  storage: AuthWebStorage = localStorage,
-  applyAuthToken: (t: string | null) => void = setAuthToken
+	storage: AuthWebStorage = localStorage,
+	applyAuthToken: (t: string | null) => void = setAuthToken
 ): void {
-  clearAuthStorage(storage, applyAuthToken);
-  logger.info('User logged out');
+	clearAuthStorage(storage, applyAuthToken);
+	logger.info('User logged out');
 }
 
 /**
@@ -142,40 +142,40 @@ export function clearLocalAuthSession(
  * hard logout / re-login path.
  */
 export async function runRefreshGrantLogin(
-  storage: AuthWebStorage = localStorage
+	storage: AuthWebStorage = localStorage
 ): Promise<{ accessToken: string; refreshToken?: string }> {
-  const refreshToken = getRefreshTokenFromStorage(storage);
-  if (!refreshToken) {
-    throw new Error('No refresh token available');
-  }
+	const refreshToken = getRefreshTokenFromStorage(storage);
+	if (!refreshToken) {
+		throw new Error('No refresh token available');
+	}
 
-  logger.info('Refreshing token');
+	logger.info('Refreshing token');
 
-  const tokenRequest: OAuth2TokenRequest = {
-    grantType: 'refresh_token',
-    refreshToken,
-    clientId: env.oauth2ClientId,
-    clientSecret: env.oauth2ClientSecret,
-  };
+	const tokenRequest: OAuth2TokenRequest = {
+		grantType: 'refresh_token',
+		refreshToken,
+		clientId: env.oauth2ClientId,
+		clientSecret: env.oauth2ClientSecret,
+	};
 
-  const response = await OAuth2Service.postApiOauth2Token({
-    requestBody: tokenRequest,
-  });
+	const response = await OAuth2Service.postApiOauth2Token({
+		requestBody: tokenRequest,
+	});
 
-  const tokenData = response as unknown as TokenResponse;
-  const accessToken = tokenData.accessToken || (tokenData as unknown as { token?: string }).token;
+	const tokenData = response as unknown as TokenResponse;
+	const accessToken = tokenData.accessToken || (tokenData as unknown as { token?: string }).token;
 
-  if (!accessToken) {
-    throw new Error('No access token received from server');
-  }
+	if (!accessToken) {
+		throw new Error('No access token received from server');
+	}
 
-  persistAccessToken(accessToken, storage, setAuthToken);
-  if (tokenData.refreshToken) {
-    persistRefreshToken(tokenData.refreshToken, storage);
-  }
+	persistAccessToken(accessToken, storage, setAuthToken);
+	if (tokenData.refreshToken) {
+		persistRefreshToken(tokenData.refreshToken, storage);
+	}
 
-  return {
-    accessToken,
-    refreshToken: tokenData.refreshToken,
-  };
+	return {
+		accessToken,
+		refreshToken: tokenData.refreshToken,
+	};
 }

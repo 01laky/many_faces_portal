@@ -1,19 +1,19 @@
 .reel-detail-page {
-  width: 100%;
+	width: 100%;
 }
 
 .reel-detail-video-wrap {
-  width: 100%;
-  max-width: 100%;
-  margin: 1rem 0;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #111;
+	width: 100%;
+	max-width: 100%;
+	margin: 1rem 0;
+	border-radius: 8px;
+	overflow: hidden;
+	background: #111;
 }
 
 .reel-detail-video {
-  display: block;
-  width: 100%;
-  max-height: 70vh;
-  object-fit: contain;
+	display: block;
+	width: 100%;
+	max-height: 70vh;
+	object-fit: contain;
 }

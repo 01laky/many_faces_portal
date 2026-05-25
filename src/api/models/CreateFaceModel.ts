@@ -3,9 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export type CreateFaceModel = {
-    index: string;
-    title: string;
-    description?: string | null;
-    color?: string | null;
+	index: string;
+	title: string;
+	description?: string | null;
+	color?: string | null;
 };
-

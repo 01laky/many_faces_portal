@@ -3,24 +3,24 @@
 import { buildMainLogoMarkup } from '../components/MainLogo/mainLogoMarkup';
 import { buildPreloaderBrandTitleHtml } from '../components/GlobalAppPreloader/appBrandDisplayName';
 import {
-  GLOBAL_PRELOADER_BG,
-  GLOBAL_PRELOADER_SPINNER_GAP_PX,
-  GLOBAL_PRELOADER_SPINNER_SLOT_PX,
-  GLOBAL_PRELOADER_LOGO_SIZE_PX,
-  GLOBAL_PRELOADER_TITLE_FONT_PX,
-  GLOBAL_PRELOADER_TITLE_GAP_PX,
-  GLOBAL_PRELOADER_VANILLA_DOT_GAP_PX,
-  GLOBAL_PRELOADER_VANILLA_DOT_PX,
+	GLOBAL_PRELOADER_BG,
+	GLOBAL_PRELOADER_SPINNER_GAP_PX,
+	GLOBAL_PRELOADER_SPINNER_SLOT_PX,
+	GLOBAL_PRELOADER_LOGO_SIZE_PX,
+	GLOBAL_PRELOADER_TITLE_FONT_PX,
+	GLOBAL_PRELOADER_TITLE_GAP_PX,
+	GLOBAL_PRELOADER_VANILLA_DOT_GAP_PX,
+	GLOBAL_PRELOADER_VANILLA_DOT_PX,
 } from '../components/GlobalAppPreloader/preloaderTokens';
 import {
-  buildBrandFontFaceCss,
-  buildVanillaMobileMediaCss,
+	buildBrandFontFaceCss,
+	buildVanillaMobileMediaCss,
 } from '../components/GlobalAppPreloader/preloaderResponsiveCss';
 
 function buildVanillaStyle(): string {
-  return (
-    buildBrandFontFaceCss() +
-    `
+	return (
+		buildBrandFontFaceCss() +
+		`
 .global-app-preloader-vanilla{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;min-height:100dvh;background:${GLOBAL_PRELOADER_BG};margin:0;padding:0;overflow:hidden;box-sizing:border-box}
 .global-app-preloader-vanilla__stack{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
 .global-app-preloader-vanilla__logo{width:${GLOBAL_PRELOADER_LOGO_SIZE_PX}px;height:${GLOBAL_PRELOADER_LOGO_SIZE_PX}px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -34,22 +34,22 @@ function buildVanillaStyle(): string {
 @keyframes global-preloader-bounce{0%,80%,100%{transform:scale(.75);opacity:.55}40%{transform:scale(1);opacity:1}}
 @media (prefers-reduced-motion:reduce){.global-app-preloader-vanilla__dots{visibility:hidden}}
 ${buildVanillaMobileMediaCss()}`.trim()
-  );
+	);
 }
 
 export function buildVanillaPreloaderHtml(): string {
-  return (
-    `<style>${buildVanillaStyle()}</style>` +
-    '<div class="global-app-preloader-vanilla" role="status" aria-busy="true" aria-label="Loading application">' +
-    '<div class="global-app-preloader-vanilla__stack">' +
-    `<div class="global-app-preloader-vanilla__logo">${buildMainLogoMarkup()}</div>` +
-    buildPreloaderBrandTitleHtml() +
-    '<div class="global-app-preloader-vanilla__dots" aria-hidden="true">' +
-    '<span class="global-app-preloader-vanilla__dot"></span>'.repeat(3) +
-    '</div></div></div>'
-  );
+	return (
+		`<style>${buildVanillaStyle()}</style>` +
+		'<div class="global-app-preloader-vanilla" role="status" aria-busy="true" aria-label="Loading application">' +
+		'<div class="global-app-preloader-vanilla__stack">' +
+		`<div class="global-app-preloader-vanilla__logo">${buildMainLogoMarkup()}</div>` +
+		buildPreloaderBrandTitleHtml() +
+		'<div class="global-app-preloader-vanilla__dots" aria-hidden="true">' +
+		'<span class="global-app-preloader-vanilla__dot"></span>'.repeat(3) +
+		'</div></div></div>'
+	);
 }
 
 export function buildVanillaPreloaderHeadStyle(): string {
-  return buildVanillaStyle();
+	return buildVanillaStyle();
 }

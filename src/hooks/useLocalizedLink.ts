@@ -14,23 +14,23 @@ import type { SupportedLanguage } from '../i18n/constants';
  * **Why not `navigate`:** use `useLocalizedNavigate` for imperative router moves — this helper only builds strings.
  */
 export function useLocalizedLink() {
-  const { lang } = useParams<{ lang: string }>();
-  const { currentLanguage } = useApp();
-  const { t: i18nT } = useTranslation('common');
-  const { isAuthenticated } = useAuth();
-  const { selectedFace } = useFaceConfig();
+	const { lang } = useParams<{ lang: string }>();
+	const { currentLanguage } = useApp();
+	const { t: i18nT } = useTranslation('common');
+	const { isAuthenticated } = useAuth();
+	const { selectedFace } = useFaceConfig();
 
-  /** Memo-free factory: delegates to pure `buildLocalizedLinkPath` for testability. */
-  const getLocalizedPath = (path: string): string => {
-    const targetLang = (lang as SupportedLanguage) || currentLanguage;
-    return buildLocalizedLinkPath({
-      path,
-      targetLang,
-      isAuthenticated,
-      selectedFace,
-      translate: (key: string) => i18nT(key, { lng: targetLang }),
-    });
-  };
+	/** Memo-free factory: delegates to pure `buildLocalizedLinkPath` for testability. */
+	const getLocalizedPath = (path: string): string => {
+		const targetLang = (lang as SupportedLanguage) || currentLanguage;
+		return buildLocalizedLinkPath({
+			path,
+			targetLang,
+			isAuthenticated,
+			selectedFace,
+			translate: (key: string) => i18nT(key, { lng: targetLang }),
+		});
+	};
 
-  return getLocalizedPath;
+	return getLocalizedPath;
 }

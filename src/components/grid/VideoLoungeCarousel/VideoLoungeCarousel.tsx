@@ -12,13 +12,13 @@ import { useFaceConfig } from '../../../contexts/FaceConfigContext';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
 import { COMPONENT_TYPE_ID } from '../../../constants/componentTypeIds';
 import {
-  listVideoLounges,
-  type FaceVideoLoungeDto,
+	listVideoLounges,
+	type FaceVideoLoungeDto,
 } from '../../../api/services/VideoLoungesService';
 import { VideoLoungeCard } from '../VideoLoungeCard';
 import {
-  useStablePaginationEmit,
-  useSyncedPaginationReport,
+	useStablePaginationEmit,
+	useSyncedPaginationReport,
 } from '../../../hooks/usePaginationParentSync';
 import './VideoLoungeCarousel.scss';
 
@@ -26,160 +26,160 @@ const CARD_WIDTH = 200;
 const CARD_GAP = 8;
 
 export interface VideoLoungeCarouselProps {
-  page?: number;
-  totalPages?: number;
-  onPageChange?: (page: number, totalPages: number) => void;
+	page?: number;
+	totalPages?: number;
+	onPageChange?: (page: number, totalPages: number) => void;
 }
 
 export function VideoLoungeCarousel({
-  page: controlledPage,
-  totalPages: _totalPages,
-  onPageChange,
+	page: controlledPage,
+	totalPages: _totalPages,
+	onPageChange,
 }: VideoLoungeCarouselProps = {}) {
-  const { t } = useTranslation('common');
-  const containerRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
-  const getLocalizedPath = useLocalizedLink();
-  const { token } = useAuth();
-  const { selectedFace } = useFaceConfig();
-  const [lounges, setLounges] = useState<FaceVideoLoungeDto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [visibleCount, setVisibleCount] = useState(2);
-  const [internalPage, setInternalPage] = useState(0);
-  const isControlled = onPageChange != null;
-  const page = isControlled && controlledPage !== undefined ? controlledPage : internalPage;
+	const { t } = useTranslation('common');
+	const containerRef = useRef<HTMLDivElement>(null);
+	const navigate = useNavigate();
+	const getLocalizedPath = useLocalizedLink();
+	const { token } = useAuth();
+	const { selectedFace } = useFaceConfig();
+	const [lounges, setLounges] = useState<FaceVideoLoungeDto[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [visibleCount, setVisibleCount] = useState(2);
+	const [internalPage, setInternalPage] = useState(0);
+	const isControlled = onPageChange != null;
+	const page = isControlled && controlledPage !== undefined ? controlledPage : internalPage;
 
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      await Promise.resolve();
-      if (!selectedFace || !token) {
-        if (!cancelled) {
-          setLounges([]);
-          setLoading(false);
-        }
-        return;
-      }
-      if (!cancelled) setLoading(true);
-      try {
-        const list = await listVideoLounges(selectedFace.id, token);
-        if (!cancelled) setLounges(list);
-      } catch {
-        if (!cancelled) setLounges([]);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedFace, token]);
+	useEffect(() => {
+		let cancelled = false;
+		void (async () => {
+			await Promise.resolve();
+			if (!selectedFace || !token) {
+				if (!cancelled) {
+					setLounges([]);
+					setLoading(false);
+				}
+				return;
+			}
+			if (!cancelled) setLoading(true);
+			try {
+				const list = await listVideoLounges(selectedFace.id, token);
+				if (!cancelled) setLounges(list);
+			} catch {
+				if (!cancelled) setLounges([]);
+			} finally {
+				if (!cancelled) setLoading(false);
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, [selectedFace, token]);
 
-  const calcVisible = useCallback(() => {
-    if (!containerRef.current) return;
-    const w = containerRef.current.clientWidth - 60;
-    const count = Math.max(1, Math.floor((w + CARD_GAP) / (CARD_WIDTH + CARD_GAP)));
-    setVisibleCount(count);
-  }, []);
+	const calcVisible = useCallback(() => {
+		if (!containerRef.current) return;
+		const w = containerRef.current.clientWidth - 60;
+		const count = Math.max(1, Math.floor((w + CARD_GAP) / (CARD_WIDTH + CARD_GAP)));
+		setVisibleCount(count);
+	}, []);
 
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    queueMicrotask(() => calcVisible());
-    const ro = new ResizeObserver(() => calcVisible());
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [calcVisible]);
+	useEffect(() => {
+		const el = containerRef.current;
+		if (!el) return;
+		queueMicrotask(() => calcVisible());
+		const ro = new ResizeObserver(() => calcVisible());
+		ro.observe(el);
+		return () => ro.disconnect();
+	}, [calcVisible]);
 
-  const totalPages = Math.max(1, Math.ceil(lounges.length / visibleCount));
-  const clampedPage = Math.min(page, Math.max(0, totalPages - 1));
-  const visibleLounges = useMemo(
-    () => lounges.slice(clampedPage * visibleCount, (clampedPage + 1) * visibleCount),
-    [clampedPage, visibleCount, lounges]
-  );
+	const totalPages = Math.max(1, Math.ceil(lounges.length / visibleCount));
+	const clampedPage = Math.min(page, Math.max(0, totalPages - 1));
+	const visibleLounges = useMemo(
+		() => lounges.slice(clampedPage * visibleCount, (clampedPage + 1) * visibleCount),
+		[clampedPage, visibleCount, lounges]
+	);
 
-  const emitPage = useStablePaginationEmit(onPageChange);
-  useSyncedPaginationReport(emitPage, clampedPage, totalPages);
+	const emitPage = useStablePaginationEmit(onPageChange);
+	useSyncedPaginationReport(emitPage, clampedPage, totalPages);
 
-  const setPage = useCallback(
-    (value: number | ((prev: number) => number)) => {
-      const next =
-        typeof value === 'function'
-          ? value(isControlled ? (controlledPage ?? 0) : internalPage)
-          : value;
-      if (isControlled) emitPage(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
-      else setInternalPage(next);
-    },
-    [isControlled, controlledPage, internalPage, totalPages, emitPage]
-  );
+	const setPage = useCallback(
+		(value: number | ((prev: number) => number)) => {
+			const next =
+				typeof value === 'function'
+					? value(isControlled ? (controlledPage ?? 0) : internalPage)
+					: value;
+			if (isControlled) emitPage(Math.max(0, Math.min(next, totalPages - 1)), totalPages);
+			else setInternalPage(next);
+		},
+		[isControlled, controlledPage, internalPage, totalPages, emitPage]
+	);
 
-  const showInternalNav = !isControlled;
+	const showInternalNav = !isControlled;
 
-  const goDetail = (id: number) => {
-    navigate(getLocalizedPath(`/detail/${COMPONENT_TYPE_ID.videoLoungeCarousel}/${id}`));
-  };
+	const goDetail = (id: number) => {
+		navigate(getLocalizedPath(`/detail/${COMPONENT_TYPE_ID.videoLoungeCarousel}/${id}`));
+	};
 
-  if (!selectedFace || !token) {
-    return (
-      <div className="videolounge-carousel-component" ref={containerRef}>
-        <p className="videolounge-carousel-hint">{t(k.guest.videoLounges)}</p>
-      </div>
-    );
-  }
+	if (!selectedFace || !token) {
+		return (
+			<div className="videolounge-carousel-component" ref={containerRef}>
+				<p className="videolounge-carousel-hint">{t(k.guest.videoLounges)}</p>
+			</div>
+		);
+	}
 
-  if (loading) {
-    return (
-      <div
-        className="videolounge-carousel-component videolounge-carousel-component--center"
-        ref={containerRef}
-      >
-        <Loader2 className="videolounge-carousel-spinner" size={28} />
-      </div>
-    );
-  }
+	if (loading) {
+		return (
+			<div
+				className="videolounge-carousel-component videolounge-carousel-component--center"
+				ref={containerRef}
+			>
+				<Loader2 className="videolounge-carousel-spinner" size={28} />
+			</div>
+		);
+	}
 
-  return (
-    <div className="videolounge-carousel-component" ref={containerRef}>
-      {showInternalNav && (
-        <button
-          className="videolounge-carousel-nav videolounge-carousel-prev"
-          disabled={clampedPage === 0}
-          onClick={() => setPage((p) => p - 1)}
-        >
-          ‹
-        </button>
-      )}
+	return (
+		<div className="videolounge-carousel-component" ref={containerRef}>
+			{showInternalNav && (
+				<button
+					className="videolounge-carousel-nav videolounge-carousel-prev"
+					disabled={clampedPage === 0}
+					onClick={() => setPage((p) => p - 1)}
+				>
+					‹
+				</button>
+			)}
 
-      <div className="videolounge-carousel-track">
-        {visibleLounges.map((lounge) => (
-          <div key={lounge.id} className="videolounge-carousel-slot" style={{ width: CARD_WIDTH }}>
-            <VideoLoungeCard lounge={lounge} onOpen={() => goDetail(lounge.id)} />
-          </div>
-        ))}
-      </div>
+			<div className="videolounge-carousel-track">
+				{visibleLounges.map((lounge) => (
+					<div key={lounge.id} className="videolounge-carousel-slot" style={{ width: CARD_WIDTH }}>
+						<VideoLoungeCard lounge={lounge} onOpen={() => goDetail(lounge.id)} />
+					</div>
+				))}
+			</div>
 
-      {showInternalNav && (
-        <button
-          className="videolounge-carousel-nav videolounge-carousel-next"
-          disabled={clampedPage >= totalPages - 1}
-          onClick={() => setPage((p) => p + 1)}
-        >
-          ›
-        </button>
-      )}
+			{showInternalNav && (
+				<button
+					className="videolounge-carousel-nav videolounge-carousel-next"
+					disabled={clampedPage >= totalPages - 1}
+					onClick={() => setPage((p) => p + 1)}
+				>
+					›
+				</button>
+			)}
 
-      {showInternalNav && totalPages > 1 && (
-        <div className="videolounge-carousel-dots">
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i}
-              type="button"
-              className={`videolounge-carousel-dot ${i === clampedPage ? 'active' : ''}`}
-              onClick={() => setPage(i)}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
+			{showInternalNav && totalPages > 1 && (
+				<div className="videolounge-carousel-dots">
+					{Array.from({ length: totalPages }, (_, i) => (
+						<button
+							key={i}
+							type="button"
+							className={`videolounge-carousel-dot ${i === clampedPage ? 'active' : ''}`}
+							onClick={() => setPage(i)}
+						/>
+					))}
+				</div>
+			)}
+		</div>
+	);
 }

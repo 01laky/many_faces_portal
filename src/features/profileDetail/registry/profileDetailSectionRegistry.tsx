@@ -11,39 +11,39 @@ import { UserContentSectionPlaceholder } from '../sections/UserContentSectionPla
 
 /** Maps a validated grid item to its portal section component (unknown types render a fallback). */
 export function renderProfileDetailSection(item: ProfileDetailGridItem): ReactNode {
-  const props = item.props ?? {};
-  switch (item.sectionType) {
-    case 'profileHero':
-      return (
-        <ProfileHeroSection
-          includeMeta={props.includeMeta !== false}
-          includeLike={props.includeLike !== false}
-        />
-      );
-    case 'profileMeta':
-      return <ProfileMetaSection />;
-    case 'profileActions':
-      return <ProfileActionsSection />;
-    case 'profileComments':
-      return <ProfileCommentsSection />;
-    case 'profileReviews':
-      return (
-        <ProfileReviewsSection
-          showRecensionsDisabledMessage={props.showRecensionsDisabledMessage !== false}
-          hideWhenRecensionsDisabled={props.hideWhenRecensionsDisabled === true}
-        />
-      );
-    case 'userAlbums':
-      return <UserContentSectionPlaceholder sectionKey="userAlbums" />;
-    case 'userBlogs':
-      return <UserContentSectionPlaceholder sectionKey="userBlogs" />;
-    case 'userReels':
-      return <UserContentSectionPlaceholder sectionKey="userReels" />;
-    case 'userStories':
-      return <UserContentSectionPlaceholder sectionKey="userStories" />;
-    case 'spacer':
-      return <ProfileSpacerSection />;
-    default:
-      return <ProfileUnknownSection sectionType={item.sectionType} />;
-  }
+	const props = item.props ?? {};
+	switch (item.sectionType) {
+		case 'profileHero':
+			return (
+				<ProfileHeroSection
+					includeMeta={props.includeMeta !== false}
+					includeLike={props.includeLike !== false}
+				/>
+			);
+		case 'profileMeta':
+			return <ProfileMetaSection />;
+		case 'profileActions':
+			return <ProfileActionsSection />;
+		case 'profileComments':
+			return <ProfileCommentsSection />;
+		case 'profileReviews':
+			return (
+				<ProfileReviewsSection
+					showRecensionsDisabledMessage={props.showRecensionsDisabledMessage !== false}
+					hideWhenRecensionsDisabled={props.hideWhenRecensionsDisabled === true}
+				/>
+			);
+		case 'userAlbums':
+			return <UserContentSectionPlaceholder sectionKey="userAlbums" />;
+		case 'userBlogs':
+			return <UserContentSectionPlaceholder sectionKey="userBlogs" />;
+		case 'userReels':
+			return <UserContentSectionPlaceholder sectionKey="userReels" />;
+		case 'userStories':
+			return <UserContentSectionPlaceholder sectionKey="userStories" />;
+		case 'spacer':
+			return <ProfileSpacerSection />;
+		default:
+			return <ProfileUnknownSection sectionType={item.sectionType} />;
+	}
 }

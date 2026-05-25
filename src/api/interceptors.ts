@@ -50,9 +50,7 @@ function forceLogout() {
 
 function notifyTokenRefreshed(accessToken: string) {
 	if (typeof window !== 'undefined') {
-		window.dispatchEvent(
-			new CustomEvent('auth:token-refreshed', { detail: { accessToken } })
-		);
+		window.dispatchEvent(new CustomEvent('auth:token-refreshed', { detail: { accessToken } }));
 	}
 }
 
@@ -131,10 +129,7 @@ export function setupAxiosInterceptors() {
 				processQueue(refreshError);
 				const axiosRefreshErr = refreshError as AxiosError | undefined;
 				if (
-					isRateLimitResponse(
-						axiosRefreshErr?.response?.status,
-						axiosRefreshErr?.response?.data
-					)
+					isRateLimitResponse(axiosRefreshErr?.response?.status, axiosRefreshErr?.response?.data)
 				) {
 					return Promise.reject(refreshError);
 				}

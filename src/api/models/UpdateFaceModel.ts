@@ -3,9 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export type UpdateFaceModel = {
-    index?: string | null;
-    title?: string | null;
-    description?: string | null;
-    color?: string | null;
+	index?: string | null;
+	title?: string | null;
+	description?: string | null;
+	color?: string | null;
 };
-

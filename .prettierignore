@@ -1,20 +1,8 @@
-# Dependencies
+dist
 node_modules
 .yarn
 .pnp.*
-
-# Build outputs
-dist
-dist-ssr
-*.local
-
-# Generated files
+coverage
 openapi.json
-src/api/**/*
-
-# Logs
-*.log
-
-# Editor
-.vscode
-.idea
+cypress/videos
+cypress/screenshots

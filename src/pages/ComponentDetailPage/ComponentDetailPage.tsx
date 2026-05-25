@@ -8,34 +8,34 @@ import { VideoLoungeDetailPage } from '../VideoLoungeDetailPage';
  * Dispatches by component type id (matches backend `ComponentTypeId`).
  */
 export function ComponentDetailPage() {
-  const { componentTypeId, entityId } = useParams<{
-    componentTypeId: string;
-    entityId: string;
-  }>();
-  const { t } = useTranslation('common');
+	const { componentTypeId, entityId } = useParams<{
+		componentTypeId: string;
+		entityId: string;
+	}>();
+	const { t } = useTranslation('common');
 
-  const typeId = Number(componentTypeId);
-  const entity = Number(entityId);
+	const typeId = Number(componentTypeId);
+	const entity = Number(entityId);
 
-  if (!Number.isFinite(typeId) || !Number.isFinite(entity)) {
-    return (
-      <div style={{ padding: 24 }}>
-        <p>{t('componentDetail.invalid', 'Invalid link.')}</p>
-      </div>
-    );
-  }
+	if (!Number.isFinite(typeId) || !Number.isFinite(entity)) {
+		return (
+			<div style={{ padding: 24 }}>
+				<p>{t('componentDetail.invalid', 'Invalid link.')}</p>
+			</div>
+		);
+	}
 
-  if (typeId === 4) {
-    return <ChatRoomDetailPage roomId={entity} />;
-  }
+	if (typeId === 4) {
+		return <ChatRoomDetailPage roomId={entity} />;
+	}
 
-  if (typeId === 8) {
-    return <VideoLoungeDetailPage loungeId={entity} />;
-  }
+	if (typeId === 8) {
+		return <VideoLoungeDetailPage loungeId={entity} />;
+	}
 
-  return (
-    <div style={{ padding: 24 }}>
-      <p>{t('componentDetail.notImplemented', 'This detail type is not implemented yet.')}</p>
-    </div>
-  );
+	return (
+		<div style={{ padding: 24 }}>
+			<p>{t('componentDetail.notImplemented', 'This detail type is not implemented yet.')}</p>
+		</div>
+	);
 }

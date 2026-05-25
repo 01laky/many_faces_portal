@@ -6,23 +6,23 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import {
-  getBlog,
-  likeBlog,
-  unlikeBlog,
-  getBlogComments,
-  createBlogComment,
-  deleteBlogComment,
-  deleteBlog,
-  type BlogItem,
-  type BlogComment,
+	getBlog,
+	likeBlog,
+	unlikeBlog,
+	getBlogComments,
+	createBlogComment,
+	deleteBlogComment,
+	deleteBlog,
+	type BlogItem,
+	type BlogComment,
 } from '../../api/services/BlogsService';
 import { BlogForm } from '../../components/grid/BlogForm';
 import { useContentDetailAutoEdit } from '../../hooks/useContentDetailAutoEdit';
 import { getContentDetailOwnerFlags } from '../../utils/contentDetailPage';
 import { formatContentDate } from '../../utils/contentDetailFormat';
 import {
-  htmlToPlainTextPreview,
-  shouldUsePlainTextModerationPreview,
+	htmlToPlainTextPreview,
+	shouldUsePlainTextModerationPreview,
 } from '../../utils/moderationPreview';
 import { ModerationSafeText } from '../../components/moderation/ModerationSafeText';
 import { sanitizeBlogHtml } from '../../utils/blogHtmlSecurity';
@@ -35,291 +35,291 @@ import '../../styles/contentDetailPage.scss';
  * and the server still allows creator edits (pending or rejected). `?edit=1` auto-opens the editor once per navigation.
  */
 export function BlogDetailPage() {
-  const { id } = useParams<{ id: string }>();
-  const { token, user } = useAuth();
-  const { t } = useTranslation('common');
-  const navigate = useNavigate();
-  const getLocalizedPath = useLocalizedLink();
+	const { id } = useParams<{ id: string }>();
+	const { token, user } = useAuth();
+	const { t } = useTranslation('common');
+	const navigate = useNavigate();
+	const getLocalizedPath = useLocalizedLink();
 
-  const [blog, setBlog] = useState<BlogItem | null>(null);
-  const [comments, setComments] = useState<BlogComment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [likeLoading, setLikeLoading] = useState(false);
-  const [commentText, setCommentText] = useState('');
-  const [commentLoading, setCommentLoading] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+	const [blog, setBlog] = useState<BlogItem | null>(null);
+	const [comments, setComments] = useState<BlogComment[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(false);
+	const [likeLoading, setLikeLoading] = useState(false);
+	const [commentText, setCommentText] = useState('');
+	const [commentLoading, setCommentLoading] = useState(false);
+	const [deleting, setDeleting] = useState(false);
 
-  const loadBlog = useCallback(async () => {
-    if (!id || !token) return;
-    try {
-      const data = await getBlog(Number(id), token);
-      setBlog(data);
-      setError(false);
-    } catch {
-      setError(true);
-      setBlog(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [id, token]);
+	const loadBlog = useCallback(async () => {
+		if (!id || !token) return;
+		try {
+			const data = await getBlog(Number(id), token);
+			setBlog(data);
+			setError(false);
+		} catch {
+			setError(true);
+			setBlog(null);
+		} finally {
+			setLoading(false);
+		}
+	}, [id, token]);
 
-  const loadComments = useCallback(async () => {
-    if (!id || !token) return;
-    try {
-      const data = await getBlogComments(Number(id), token);
-      setComments(data);
-    } catch {
-      // silently fail
-    }
-  }, [id, token]);
+	const loadComments = useCallback(async () => {
+		if (!id || !token) return;
+		try {
+			const data = await getBlogComments(Number(id), token);
+			setComments(data);
+		} catch {
+			// silently fail
+		}
+	}, [id, token]);
 
-  useEffect(() => {
-    void (async () => {
-      await Promise.resolve();
-      await loadBlog();
-      await loadComments();
-    })();
-  }, [loadBlog, loadComments]);
+	useEffect(() => {
+		void (async () => {
+			await Promise.resolve();
+			await loadBlog();
+			await loadComments();
+		})();
+	}, [loadBlog, loadComments]);
 
-  const { isOwner, showEditUi, showDeleteUi } = getContentDetailOwnerFlags(
-    user?.id,
-    blog?.creatorId,
-    blog?.approvalStatus
-  );
-  const { editing, setEditing } = useContentDetailAutoEdit({
-    routeId: id,
-    entityLoaded: Boolean(blog),
-    showEditUi,
-  });
-  const usePlainTextPreview = shouldUsePlainTextModerationPreview(blog?.approvalStatus, isOwner);
+	const { isOwner, showEditUi, showDeleteUi } = getContentDetailOwnerFlags(
+		user?.id,
+		blog?.creatorId,
+		blog?.approvalStatus
+	);
+	const { editing, setEditing } = useContentDetailAutoEdit({
+		routeId: id,
+		entityLoaded: Boolean(blog),
+		showEditUi,
+	});
+	const usePlainTextPreview = shouldUsePlainTextModerationPreview(blog?.approvalStatus, isOwner);
 
-  const handleLike = async () => {
-    if (!blog || !token) return;
-    setLikeLoading(true);
-    try {
-      if (blog.isLikedByMe) {
-        await unlikeBlog(blog.id, token);
-      } else {
-        await likeBlog(blog.id, token);
-      }
-      await loadBlog();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed');
-    } finally {
-      setLikeLoading(false);
-    }
-  };
+	const handleLike = async () => {
+		if (!blog || !token) return;
+		setLikeLoading(true);
+		try {
+			if (blog.isLikedByMe) {
+				await unlikeBlog(blog.id, token);
+			} else {
+				await likeBlog(blog.id, token);
+			}
+			await loadBlog();
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : 'Failed');
+		} finally {
+			setLikeLoading(false);
+		}
+	};
 
-  const handleCommentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!blog || !token || !commentText.trim()) return;
-    setCommentLoading(true);
-    try {
-      await createBlogComment(blog.id, commentText.trim(), token);
-      setCommentText('');
-      await loadComments();
-      await loadBlog();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed');
-    } finally {
-      setCommentLoading(false);
-    }
-  };
+	const handleCommentSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		if (!blog || !token || !commentText.trim()) return;
+		setCommentLoading(true);
+		try {
+			await createBlogComment(blog.id, commentText.trim(), token);
+			setCommentText('');
+			await loadComments();
+			await loadBlog();
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : 'Failed');
+		} finally {
+			setCommentLoading(false);
+		}
+	};
 
-  const handleDeleteComment = async (commentId: number) => {
-    if (!blog || !token) return;
-    try {
-      await deleteBlogComment(blog.id, commentId, token);
-      await loadComments();
-      await loadBlog();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed');
-    }
-  };
+	const handleDeleteComment = async (commentId: number) => {
+		if (!blog || !token) return;
+		try {
+			await deleteBlogComment(blog.id, commentId, token);
+			await loadComments();
+			await loadBlog();
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : 'Failed');
+		}
+	};
 
-  const handleDelete = async () => {
-    if (!blog || !token) return;
-    setDeleting(true);
-    try {
-      await deleteBlog(blog.id, token);
-      toast.success('Blog deleted');
-      navigate(getLocalizedPath('/list/3'));
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed');
-    } finally {
-      setDeleting(false);
-    }
-  };
+	const handleDelete = async () => {
+		if (!blog || !token) return;
+		setDeleting(true);
+		try {
+			await deleteBlog(blog.id, token);
+			toast.success('Blog deleted');
+			navigate(getLocalizedPath('/list/3'));
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : 'Failed');
+		} finally {
+			setDeleting(false);
+		}
+	};
 
-  const handleBlogSaved = (saved: BlogItem) => {
-    setBlog(saved);
-    setEditing(false);
-    toast.success('Blog updated');
-    loadBlog();
-  };
+	const handleBlogSaved = (saved: BlogItem) => {
+		setBlog(saved);
+		setEditing(false);
+		toast.success('Blog updated');
+		loadBlog();
+	};
 
-  if (loading) {
-    return (
-      <div className="blog-detail-page">
-        <div className="blog-detail-loading">
-          <Loader2 size={32} className="blog-detail-spinner" />
-        </div>
-      </div>
-    );
-  }
+	if (loading) {
+		return (
+			<div className="blog-detail-page">
+				<div className="blog-detail-loading">
+					<Loader2 size={32} className="blog-detail-spinner" />
+				</div>
+			</div>
+		);
+	}
 
-  if (error || !blog) {
-    return (
-      <div className="blog-detail-page">
-        <div className="blog-detail-error">{t('blogDetail.notFound', 'Blog not found')}</div>
-      </div>
-    );
-  }
+	if (error || !blog) {
+		return (
+			<div className="blog-detail-page">
+				<div className="blog-detail-error">{t('blogDetail.notFound', 'Blog not found')}</div>
+			</div>
+		);
+	}
 
-  return (
-    <div className="blog-detail-page">
-      {(showEditUi || showDeleteUi) && (
-        <div className="blog-detail-header">
-          <div className="blog-detail-header-actions">
-            {showEditUi && (
-              <button
-                className="blog-detail-action-btn"
-                onClick={() => setEditing(!editing)}
-                title="Edit"
-              >
-                <Pencil size={16} />
-              </button>
-            )}
-            {showDeleteUi && (
-              <button
-                className="blog-detail-action-btn blog-detail-action-btn--danger"
-                onClick={handleDelete}
-                disabled={deleting}
-                title="Delete"
-              >
-                {deleting ? (
-                  <Loader2 size={16} className="blog-detail-spinner" />
-                ) : (
-                  <Trash2 size={16} />
-                )}
-              </button>
-            )}
-          </div>
-        </div>
-      )}
+	return (
+		<div className="blog-detail-page">
+			{(showEditUi || showDeleteUi) && (
+				<div className="blog-detail-header">
+					<div className="blog-detail-header-actions">
+						{showEditUi && (
+							<button
+								className="blog-detail-action-btn"
+								onClick={() => setEditing(!editing)}
+								title="Edit"
+							>
+								<Pencil size={16} />
+							</button>
+						)}
+						{showDeleteUi && (
+							<button
+								className="blog-detail-action-btn blog-detail-action-btn--danger"
+								onClick={handleDelete}
+								disabled={deleting}
+								title="Delete"
+							>
+								{deleting ? (
+									<Loader2 size={16} className="blog-detail-spinner" />
+								) : (
+									<Trash2 size={16} />
+								)}
+							</button>
+						)}
+					</div>
+				</div>
+			)}
 
-      {editing && showEditUi && (
-        <div className="blog-detail-edit-panel">
-          <BlogForm editBlog={blog} onSaved={handleBlogSaved} onCancel={() => setEditing(false)} />
-        </div>
-      )}
+			{editing && showEditUi && (
+				<div className="blog-detail-edit-panel">
+					<BlogForm editBlog={blog} onSaved={handleBlogSaved} onCancel={() => setEditing(false)} />
+				</div>
+			)}
 
-      <div className="blog-detail-info">
-        <h1 className="blog-detail-title">{blog.title}</h1>
-        <div className="blog-detail-meta">
-          <span className="blog-detail-badge">{blog.faceTitle}</span>
-          <span className="blog-detail-creator">by {blog.creatorName}</span>
-          <span className="blog-detail-date content-detail-date">
-            {formatContentDate(blog.createdAt)}
-          </span>
-        </div>
-      </div>
+			<div className="blog-detail-info">
+				<h1 className="blog-detail-title">{blog.title}</h1>
+				<div className="blog-detail-meta">
+					<span className="blog-detail-badge">{blog.faceTitle}</span>
+					<span className="blog-detail-creator">by {blog.creatorName}</span>
+					<span className="blog-detail-date content-detail-date">
+						{formatContentDate(blog.createdAt)}
+					</span>
+				</div>
+			</div>
 
-      {/* Blog images */}
-      {blog.images.length > 0 && (
-        <div className="blog-detail-images">
-          {blog.images.map((img) => {
-            const src = sanitizeMediaUrl(img.imageUrl);
-            if (!src) return null;
-            return (
-              <img key={img.id} src={src} alt="" className="blog-detail-image" loading="lazy" />
-            );
-          })}
-        </div>
-      )}
+			{/* Blog images */}
+			{blog.images.length > 0 && (
+				<div className="blog-detail-images">
+					{blog.images.map((img) => {
+						const src = sanitizeMediaUrl(img.imageUrl);
+						if (!src) return null;
+						return (
+							<img key={img.id} src={src} alt="" className="blog-detail-image" loading="lazy" />
+						);
+					})}
+				</div>
+			)}
 
-      {/* PI-8: pending/rejected owner view uses plain text; approved public content may render stored HTML */}
-      {usePlainTextPreview ? (
-        <ModerationSafeText
-          className="blog-detail-content blog-detail-content--plain"
-          text={htmlToPlainTextPreview(blog.content)}
-        />
-      ) : (
-        <div
-          className="blog-detail-content"
-          dangerouslySetInnerHTML={{ __html: sanitizeBlogHtml(blog.content) }}
-        />
-      )}
+			{/* PI-8: pending/rejected owner view uses plain text; approved public content may render stored HTML */}
+			{usePlainTextPreview ? (
+				<ModerationSafeText
+					className="blog-detail-content blog-detail-content--plain"
+					text={htmlToPlainTextPreview(blog.content)}
+				/>
+			) : (
+				<div
+					className="blog-detail-content"
+					dangerouslySetInnerHTML={{ __html: sanitizeBlogHtml(blog.content) }}
+				/>
+			)}
 
-      {/* Like + stats bar */}
-      <div className="blog-detail-stats">
-        <button
-          className={`blog-detail-like-btn ${blog.isLikedByMe ? 'blog-detail-like-btn--liked' : ''}`}
-          onClick={handleLike}
-          disabled={likeLoading}
-        >
-          <Heart size={18} fill={blog.isLikedByMe ? 'currentColor' : 'none'} />
-          <span>{blog.likesCount}</span>
-        </button>
-        <span className="blog-detail-stat">
-          <MessageSquare size={16} />
-          <span>{blog.commentsCount}</span>
-        </span>
-      </div>
+			{/* Like + stats bar */}
+			<div className="blog-detail-stats">
+				<button
+					className={`blog-detail-like-btn ${blog.isLikedByMe ? 'blog-detail-like-btn--liked' : ''}`}
+					onClick={handleLike}
+					disabled={likeLoading}
+				>
+					<Heart size={18} fill={blog.isLikedByMe ? 'currentColor' : 'none'} />
+					<span>{blog.likesCount}</span>
+				</button>
+				<span className="blog-detail-stat">
+					<MessageSquare size={16} />
+					<span>{blog.commentsCount}</span>
+				</span>
+			</div>
 
-      {/* Comments section */}
-      <div className="blog-detail-comments">
-        <h2 className="blog-detail-comments-title">
-          {t('blogDetail.comments', 'Comments')} ({comments.length})
-        </h2>
+			{/* Comments section */}
+			<div className="blog-detail-comments">
+				<h2 className="blog-detail-comments-title">
+					{t('blogDetail.comments', 'Comments')} ({comments.length})
+				</h2>
 
-        <form className="blog-detail-comment-form" onSubmit={handleCommentSubmit}>
-          <input
-            type="text"
-            className="blog-detail-comment-input"
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            placeholder={t('blogDetail.writeComment', 'Write a comment...')}
-            maxLength={2000}
-          />
-          <button
-            type="submit"
-            className="blog-detail-comment-submit"
-            disabled={commentLoading || !commentText.trim()}
-          >
-            {commentLoading ? (
-              <Loader2 size={16} className="blog-detail-spinner" />
-            ) : (
-              <Send size={16} />
-            )}
-          </button>
-        </form>
+				<form className="blog-detail-comment-form" onSubmit={handleCommentSubmit}>
+					<input
+						type="text"
+						className="blog-detail-comment-input"
+						value={commentText}
+						onChange={(e) => setCommentText(e.target.value)}
+						placeholder={t('blogDetail.writeComment', 'Write a comment...')}
+						maxLength={2000}
+					/>
+					<button
+						type="submit"
+						className="blog-detail-comment-submit"
+						disabled={commentLoading || !commentText.trim()}
+					>
+						{commentLoading ? (
+							<Loader2 size={16} className="blog-detail-spinner" />
+						) : (
+							<Send size={16} />
+						)}
+					</button>
+				</form>
 
-        <div className="blog-detail-comments-list">
-          {comments.map((c) => (
-            <div key={c.id} className="blog-detail-comment">
-              <div className="blog-detail-comment-header">
-                <span className="blog-detail-comment-author">{c.userName}</span>
-                <span className="blog-detail-comment-date">{formatContentDate(c.createdAt)}</span>
-                <button
-                  className="blog-detail-comment-delete"
-                  onClick={() => handleDeleteComment(c.id)}
-                  title="Delete"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-              <p className="blog-detail-comment-text">{c.content}</p>
-            </div>
-          ))}
-          {comments.length === 0 && (
-            <p className="blog-detail-no-comments">
-              {t('blogDetail.noComments', 'No comments yet')}
-            </p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+				<div className="blog-detail-comments-list">
+					{comments.map((c) => (
+						<div key={c.id} className="blog-detail-comment">
+							<div className="blog-detail-comment-header">
+								<span className="blog-detail-comment-author">{c.userName}</span>
+								<span className="blog-detail-comment-date">{formatContentDate(c.createdAt)}</span>
+								<button
+									className="blog-detail-comment-delete"
+									onClick={() => handleDeleteComment(c.id)}
+									title="Delete"
+								>
+									<Trash2 size={14} />
+								</button>
+							</div>
+							<p className="blog-detail-comment-text">{c.content}</p>
+						</div>
+					))}
+					{comments.length === 0 && (
+						<p className="blog-detail-no-comments">
+							{t('blogDetail.noComments', 'No comments yet')}
+						</p>
+					)}
+				</div>
+			</div>
+		</div>
+	);
 }

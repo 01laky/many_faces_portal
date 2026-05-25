@@ -16,41 +16,41 @@ import prettier from 'eslint-config-prettier';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
-  globalIgnores(['dist', 'node_modules', '.yarn/**/*', 'cypress/**/*', 'cypress.config.mjs']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    ignores: ['src/api/**/*'], // Ignore generated API files
-    extends: [
-      js.configs.recommended,
-      ...tseslint.configs.recommended,
-      reactRefresh.configs.vite,
-      reactHooks.configs.flat.recommended,
-      prettier, // Must be last to override other configs
-    ],
-    plugins: {
-      'react-hooks': reactHooks,
-    },
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
-    },
-    rules: {
-      // Allow unused vars that start with underscore
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-        },
-      ],
-      // Semicolons are handled by Prettier
-    },
-  },
-  {
-    // Context files can export hooks alongside components
-    files: ['src/contexts/**/*.{ts,tsx}'],
-    rules: {
-      'react-refresh/only-export-components': 'off',
-    },
-  },
+	globalIgnores(['dist', 'node_modules', '.yarn/**/*', 'cypress/**/*', 'cypress.config.mjs']),
+	{
+		files: ['**/*.{ts,tsx}'],
+		ignores: ['src/api/**/*'], // Ignore generated API files
+		extends: [
+			js.configs.recommended,
+			...tseslint.configs.recommended,
+			reactRefresh.configs.vite,
+			reactHooks.configs.flat.recommended,
+			prettier, // Must be last to override other configs
+		],
+		plugins: {
+			'react-hooks': reactHooks,
+		},
+		languageOptions: {
+			ecmaVersion: 2020,
+			globals: globals.browser,
+		},
+		rules: {
+			// Allow unused vars that start with underscore
+			'@typescript-eslint/no-unused-vars': [
+				'error',
+				{
+					argsIgnorePattern: '^_',
+					varsIgnorePattern: '^_',
+				},
+			],
+			// Semicolons are handled by Prettier
+		},
+	},
+	{
+		// Context files can export hooks alongside components
+		files: ['src/contexts/**/*.{ts,tsx}'],
+		rules: {
+			'react-refresh/only-export-components': 'off',
+		},
+	},
 ]);

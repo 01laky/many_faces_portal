@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: fe-demo-dev
     ports:
-      - "8081:8081"
+      - '8081:8081'
     volumes:
       - .:/app
       - /app/node_modules
@@ -31,7 +31,7 @@ services:
       dockerfile: Dockerfile
     container_name: fe-demo-prod
     ports:
-      - "8080:80"
+      - '8080:80'
     restart: unless-stopped
     networks:
       - fe-demo-network

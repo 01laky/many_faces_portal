@@ -7,17 +7,15 @@ import type { AccessTokenProvider } from './accessTokenProvider';
  * Accepts a provider so negotiate/reconnect reads the latest token (PSH1-C1).
  */
 export function buildAuthenticatedHubConnection(
-  hubRelativePath: string,
-  accessTokenProvider: AccessTokenProvider | string
+	hubRelativePath: string,
+	accessTokenProvider: AccessTokenProvider | string
 ): HubConnection {
-  const factory: AccessTokenProvider =
-    typeof accessTokenProvider === 'function'
-      ? accessTokenProvider
-      : () => accessTokenProvider;
+	const factory: AccessTokenProvider =
+		typeof accessTokenProvider === 'function' ? accessTokenProvider : () => accessTokenProvider;
 
-  const hubUrl = absoluteScopedUrl(hubRelativePath);
-  return new HubConnectionBuilder()
-    .withUrl(hubUrl, { accessTokenFactory: () => factory() ?? '' })
-    .withAutomaticReconnect()
-    .build();
+	const hubUrl = absoluteScopedUrl(hubRelativePath);
+	return new HubConnectionBuilder()
+		.withUrl(hubUrl, { accessTokenFactory: () => factory() ?? '' })
+		.withAutomaticReconnect()
+		.build();
 }

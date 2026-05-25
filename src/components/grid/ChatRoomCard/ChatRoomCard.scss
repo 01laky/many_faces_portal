@@ -1,63 +1,63 @@
 .chatroom-card {
-  border-radius: 6px;
-  overflow: hidden;
-  background: #fff;
-  border: 1px solid #eee;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px;
-  min-height: 0;
-  height: 100%;
+	border-radius: 6px;
+	overflow: hidden;
+	background: #fff;
+	border: 1px solid #eee;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px;
+	min-height: 0;
+	height: 100%;
 }
 
 .chatroom-card--interactive {
-  cursor: pointer;
+	cursor: pointer;
 
-  &:hover {
-    border-color: #ccc;
-    background: #fafafa;
-  }
+	&:hover {
+		border-color: #ccc;
+		background: #fafafa;
+	}
 
-  &:focus-visible {
-    outline: 2px solid #6b8cff;
-    outline-offset: 1px;
-  }
+	&:focus-visible {
+		outline: 2px solid #6b8cff;
+		outline-offset: 1px;
+	}
 }
 
 .chatroom-card-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	object-fit: cover;
+	flex-shrink: 0;
 }
 
 .chatroom-card-info {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	min-width: 0;
 }
 
 .chatroom-card-name {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #222;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+	font-size: 0.72rem;
+	font-weight: 600;
+	color: #222;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .chatroom-card-meta {
-  font-size: 0.58rem;
-  color: #888;
+	font-size: 0.58rem;
+	color: #888;
 }
 
 .chatroom-card-activity {
-  font-size: 0.58rem;
-  color: #666;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+	font-size: 0.58rem;
+	color: #666;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }

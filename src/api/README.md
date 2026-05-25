@@ -42,37 +42,37 @@ import type { RegisterModel, OAuth2TokenRequest } from './api';
 
 // Register a user
 const registerData: RegisterModel = {
-  email: 'user@example.com',
-  password: 'Password123!',
-  firstName: 'John',
-  lastName: 'Doe',
+	email: 'user@example.com',
+	password: 'Password123!',
+	firstName: 'John',
+	lastName: 'Doe',
 };
 
 try {
-  const result = await AuthService.postApiAuthRegister({
-    requestBody: registerData,
-  });
-  console.log('Registration successful', result);
+	const result = await AuthService.postApiAuthRegister({
+		requestBody: registerData,
+	});
+	console.log('Registration successful', result);
 } catch (error) {
-  console.error('Registration failed', error);
+	console.error('Registration failed', error);
 }
 
 // Get OAuth2 token
 const tokenRequest: OAuth2TokenRequest = {
-  grantType: 'password',
-  username: 'user@example.com',
-  password: 'Password123!',
-  clientId: 'be-demo-client',
-  clientSecret: 'be-demo-secret-very-strong-key',
+	grantType: 'password',
+	username: 'user@example.com',
+	password: 'Password123!',
+	clientId: 'be-demo-client',
+	clientSecret: 'be-demo-secret-very-strong-key',
 };
 
 try {
-  const tokenResponse = await OAuth2Service.postApiOauth2Token({
-    requestBody: tokenRequest,
-  });
-  console.log('Token received', tokenResponse);
+	const tokenResponse = await OAuth2Service.postApiOauth2Token({
+		requestBody: tokenRequest,
+	});
+	console.log('Token received', tokenResponse);
 } catch (error) {
-  console.error('Token request failed', error);
+	console.error('Token request failed', error);
 }
 ```
 
@@ -122,12 +122,12 @@ All API calls return `CancelablePromise` which can throw `ApiError`:
 import { ApiError } from './api';
 
 try {
-  await AuthService.postApiAuthRegister({ requestBody: data });
+	await AuthService.postApiAuthRegister({ requestBody: data });
 } catch (error) {
-  if (error instanceof ApiError) {
-    console.error('API Error:', error.status, error.body);
-  } else {
-    console.error('Unknown error:', error);
-  }
+	if (error instanceof ApiError) {
+		console.error('API Error:', error.status, error.body);
+	} else {
+		console.error('Unknown error:', error);
+	}
 }
 ```

@@ -1,143 +1,143 @@
 // Chat Page Styles
 
 .chat-page {
-  display: flex;
-  flex-direction: column;
-  min-height: calc(100vh - 80px);
-  width: 100%;
-  padding: 1rem;
+	display: flex;
+	flex-direction: column;
+	min-height: calc(100vh - 80px);
+	width: 100%;
+	padding: 1rem;
 }
 
 .chat-page__status-bar {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 0.75rem;
-  flex-shrink: 0;
+	display: flex;
+	justify-content: flex-end;
+	margin-bottom: 0.75rem;
+	flex-shrink: 0;
 }
 
 .chat-page__ai-disabled {
-  margin: 0 0 0.75rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  background: #fff3cd;
-  color: #856404;
-  font-size: 0.9rem;
+	margin: 0 0 0.75rem;
+	padding: 0.5rem 0.75rem;
+	border-radius: 6px;
+	background: #fff3cd;
+	color: #856404;
+	font-size: 0.9rem;
 }
 
 .chat-page__status {
-  font-size: 0.875rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+	font-size: 0.875rem;
+	padding: 0.25rem 0.5rem;
+	border-radius: 4px;
 
-  &--connecting,
-  &--reconnecting {
-    background: #fff3cd;
-    color: #856404;
-  }
+	&--connecting,
+	&--reconnecting {
+		background: #fff3cd;
+		color: #856404;
+	}
 
-  &--connected {
-    background: #d1e7dd;
-    color: #0f5132;
-  }
+	&--connected {
+		background: #d1e7dd;
+		color: #0f5132;
+	}
 
-  &--disconnected {
-    background: #f8d7da;
-    color: #842029;
-  }
+	&--disconnected {
+		background: #f8d7da;
+		color: #842029;
+	}
 }
 
 .chat-page__messages {
-  flex: 1;
-  overflow-y: auto;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  min-height: 200px;
-  background: #f8f9fa;
+	flex: 1;
+	overflow-y: auto;
+	border: 1px solid #dee2e6;
+	border-radius: 8px;
+	padding: 1rem;
+	margin-bottom: 1rem;
+	min-height: 200px;
+	background: #f8f9fa;
 }
 
 .chat-page__empty {
-  margin: 0;
-  color: #6c757d;
-  font-size: 0.9rem;
+	margin: 0;
+	color: #6c757d;
+	font-size: 0.9rem;
 }
 
 .chat-page__message {
-  margin-bottom: 1rem;
+	margin-bottom: 1rem;
 
-  &:last-child {
-    margin-bottom: 0;
-  }
+	&:last-child {
+		margin-bottom: 0;
+	}
 }
 
 .chat-page__message-label {
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-  color: #495057;
+	display: block;
+	font-size: 0.75rem;
+	font-weight: 600;
+	margin-bottom: 0.25rem;
+	color: #495057;
 }
 
 .chat-page__message--user .chat-page__message-label {
-  color: #0d6efd;
+	color: #0d6efd;
 }
 
 .chat-page__message--ai .chat-page__message-label {
-  color: #198754;
+	color: #198754;
 }
 
 .chat-page__message-content {
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  line-height: 1.4;
-  white-space: pre-wrap;
-  word-break: break-word;
+	padding: 0.5rem 0.75rem;
+	border-radius: 8px;
+	font-size: 0.95rem;
+	line-height: 1.4;
+	white-space: pre-wrap;
+	word-break: break-word;
 
-  &.chat-page__typing {
-    color: #6c757d;
-    font-style: italic;
-  }
+	&.chat-page__typing {
+		color: #6c757d;
+		font-style: italic;
+	}
 }
 
 .chat-page__message--user .chat-page__message-content {
-  background: #cfe2ff;
-  margin-left: 0;
-  margin-right: 2rem;
+	background: #cfe2ff;
+	margin-left: 0;
+	margin-right: 2rem;
 }
 
 .chat-page__message--ai .chat-page__message-content {
-  background: #d1e7dd;
-  margin-left: 2rem;
-  margin-right: 0;
+	background: #d1e7dd;
+	margin-left: 2rem;
+	margin-right: 0;
 }
 
 .chat-page__input-row {
-  display: flex;
-  gap: 0.5rem;
-  flex-shrink: 0;
+	display: flex;
+	gap: 0.5rem;
+	flex-shrink: 0;
 }
 
 .chat-page__input {
-  flex: 1;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #ced4da;
-  border-radius: 6px;
-  font-size: 1rem;
+	flex: 1;
+	padding: 0.5rem 0.75rem;
+	border: 1px solid #ced4da;
+	border-radius: 6px;
+	font-size: 1rem;
 
-  &:focus {
-    outline: none;
-    border-color: #86b7fe;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-  }
+	&:focus {
+		outline: none;
+		border-color: #86b7fe;
+		box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+	}
 
-  &:disabled {
-    background: #e9ecef;
-    cursor: not-allowed;
-  }
+	&:disabled {
+		background: #e9ecef;
+		cursor: not-allowed;
+	}
 }
 
 .chat-page__send {
-  flex-shrink: 0;
+	flex-shrink: 0;
 }

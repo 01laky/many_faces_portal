@@ -1,118 +1,118 @@
 .wall-tickets-section {
-  width: 100%;
-  padding: 0 1rem 2rem;
+	width: 100%;
+	padding: 0 1rem 2rem;
 
-  &__muted {
-    color: #888;
-    text-align: center;
-    padding: 1rem;
-  }
+	&__muted {
+		color: #888;
+		text-align: center;
+		padding: 1rem;
+	}
 
-  &__error {
-    color: #c62828;
-    text-align: center;
-  }
+	&__error {
+		color: #c62828;
+		text-align: center;
+	}
 
-  &__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
+	&__list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
 
-  &__card {
-    width: 100%;
-    text-align: left;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 12px;
-    padding: 0.85rem 1rem;
-    background: rgba(255, 255, 255, 0.55);
-    cursor: pointer;
-    font: inherit;
-    color: inherit;
-    transition:
-      box-shadow 0.15s ease,
-      border-color 0.15s ease;
+	&__card {
+		width: 100%;
+		text-align: left;
+		border: 1px solid rgba(0, 0, 0, 0.1);
+		border-radius: 12px;
+		padding: 0.85rem 1rem;
+		background: rgba(255, 255, 255, 0.55);
+		cursor: pointer;
+		font: inherit;
+		color: inherit;
+		transition:
+			box-shadow 0.15s ease,
+			border-color 0.15s ease;
 
-    &:hover {
-      border-color: rgba(13, 110, 253, 0.35);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-    }
-  }
+		&:hover {
+			border-color: rgba(13, 110, 253, 0.35);
+			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+		}
+	}
 
-  &__card-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.35rem;
-    font-size: 0.8rem;
-  }
+	&__card-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 0.35rem;
+		font-size: 0.8rem;
+	}
 
-  &__status {
-    text-transform: uppercase;
-    font-size: 0.7rem;
-    letter-spacing: 0.04em;
-    padding: 0.15rem 0.45rem;
-    border-radius: 4px;
+	&__status {
+		text-transform: uppercase;
+		font-size: 0.7rem;
+		letter-spacing: 0.04em;
+		padding: 0.15rem 0.45rem;
+		border-radius: 4px;
 
-    &--active {
-      background: #e3f2fd;
-      color: #1565c0;
-    }
+		&--active {
+			background: #e3f2fd;
+			color: #1565c0;
+		}
 
-    &--approved {
-      background: #e8f5e9;
-      color: #2e7d32;
-    }
+		&--approved {
+			background: #e8f5e9;
+			color: #2e7d32;
+		}
 
-    &--denied {
-      background: #ffebee;
-      color: #c62828;
-    }
-  }
+		&--denied {
+			background: #ffebee;
+			color: #c62828;
+		}
+	}
 
-  &__meta {
-    color: #666;
-  }
+	&__meta {
+		color: #666;
+	}
 
-  &__title {
-    margin: 0 0 0.35rem;
-    font-size: 1.05rem;
-  }
+	&__title {
+		margin: 0 0 0.35rem;
+		font-size: 1.05rem;
+	}
 
-  &__preview {
-    margin: 0 0 0.5rem;
-    font-size: 0.9rem;
-    color: #444;
-    line-height: 1.4;
-  }
+	&__preview {
+		margin: 0 0 0.5rem;
+		font-size: 0.9rem;
+		color: #444;
+		line-height: 1.4;
+	}
 
-  &__author {
-    font-size: 0.8rem;
-    color: #777;
-  }
+	&__author {
+		font-size: 0.8rem;
+		color: #777;
+	}
 
-  &__pager {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    margin-top: 1.25rem;
+	&__pager {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem;
+		margin-top: 1.25rem;
 
-    button {
-      font: inherit;
-      padding: 0.35rem 0.75rem;
-      border-radius: 8px;
-      border: 1px solid rgba(0, 0, 0, 0.15);
-      background: #fff;
-      cursor: pointer;
+		button {
+			font: inherit;
+			padding: 0.35rem 0.75rem;
+			border-radius: 8px;
+			border: 1px solid rgba(0, 0, 0, 0.15);
+			background: #fff;
+			cursor: pointer;
 
-      &:disabled {
-        opacity: 0.45;
-        cursor: not-allowed;
-      }
-    }
-  }
+			&:disabled {
+				opacity: 0.45;
+				cursor: not-allowed;
+			}
+		}
+	}
 }

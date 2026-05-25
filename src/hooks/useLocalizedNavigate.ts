@@ -9,14 +9,14 @@ import type { SupportedLanguage } from '../i18n/constants';
  * (e.g. `profile/edit`). Uses React Router `navigate` under the hood; `replace` forwards to RR options.
  */
 export function useLocalizedNavigate() {
-  const navigate = useNavigate();
-  const { lang } = useParams<{ lang: string }>();
-  const { currentLanguage } = useApp();
+	const navigate = useNavigate();
+	const { lang } = useParams<{ lang: string }>();
+	const { currentLanguage } = useApp();
 
-  const localizedNavigate = (path: string, options?: { replace?: boolean }) => {
-    const target = buildLocalizedNavigateTarget(path, lang, currentLanguage as SupportedLanguage);
-    navigate(target, options);
-  };
+	const localizedNavigate = (path: string, options?: { replace?: boolean }) => {
+		const target = buildLocalizedNavigateTarget(path, lang, currentLanguage as SupportedLanguage);
+		navigate(target, options);
+	};
 
-  return localizedNavigate;
+	return localizedNavigate;
 }

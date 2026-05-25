@@ -1,24 +1,24 @@
 // Face / portal content routes: full width of the scroll area (no centered column).
 .app-content {
-  .face-page-view,
-  .face-page-content,
-  .face-profile-detail-page,
-  .face-profiles-list-page,
-  .wall-tickets-section,
-  .stories-list-page,
-  .vl-detail,
-  .blog-detail-page,
-  .album-detail-page,
-  .reel-detail-page,
-  .chat-page,
-  .chatroom-detail,
-  .my-submissions-page,
-  .users-page,
-  .user-detail-page,
-  .profile-page-grid-layout,
-  .page-grid-layout {
-    width: 100%;
-    max-width: none;
-    margin-inline: 0;
-  }
+	.face-page-view,
+	.face-page-content,
+	.face-profile-detail-page,
+	.face-profiles-list-page,
+	.wall-tickets-section,
+	.stories-list-page,
+	.vl-detail,
+	.blog-detail-page,
+	.album-detail-page,
+	.reel-detail-page,
+	.chat-page,
+	.chatroom-detail,
+	.my-submissions-page,
+	.users-page,
+	.user-detail-page,
+	.profile-page-grid-layout,
+	.page-grid-layout {
+		width: 100%;
+		max-width: none;
+		margin-inline: 0;
+	}
 }

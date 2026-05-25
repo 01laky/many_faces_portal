@@ -8,34 +8,37 @@ import { persistAccessToken, persistRefreshToken } from '../utils/authStorage';
 
 /** OAuth2 token payload returned by `POST …/register/complete` (extends standard token response). */
 export interface RegisterCompleteTokenResponse {
-  accessToken: string;
-  refreshToken?: string;
-  tokenType: string;
-  expiresIn: number;
-  userId: string;
-  email: string;
+	accessToken: string;
+	refreshToken?: string;
+	tokenType: string;
+	expiresIn: number;
+	userId: string;
+	email: string;
 }
 
 const REGISTRATION_RATE_LIMIT_MESSAGE =
-  'Too many registration attempts. Please wait a moment and try again.';
+	'Too many registration attempts. Please wait a moment and try again.';
 
 /** Safe user-facing errors — no stack traces or raw HTTP bodies (PSH1-A14). */
-export function mapRegistrationHttpError(status: number, context: 'prefill' | 'complete' | 'request'): Error {
-  if (status === 429) {
-    return new Error(REGISTRATION_RATE_LIMIT_MESSAGE);
-  }
-  if (context === 'prefill') {
-    return new Error('Invalid registration link');
-  }
-  if (context === 'complete') {
-    return new Error('Registration complete failed');
-  }
-  return new Error('Registration request failed');
+export function mapRegistrationHttpError(
+	status: number,
+	context: 'prefill' | 'complete' | 'request'
+): Error {
+	if (status === 429) {
+		return new Error(REGISTRATION_RATE_LIMIT_MESSAGE);
+	}
+	if (context === 'prefill') {
+		return new Error('Invalid registration link');
+	}
+	if (context === 'complete') {
+		return new Error('Registration complete failed');
+	}
+	return new Error('Registration request failed');
 }
 
 function oauthBase(): string {
-  const base = env.apiUrl.replace(/\/$/, '');
-  return `${base}/api/oauth2/register`;
+	const base = env.apiUrl.replace(/\/$/, '');
+	return `${base}/api/oauth2/register`;
 }
 
 /**
@@ -43,69 +46,69 @@ function oauthBase(): string {
  * Backend always returns success shape when HTTP 200 (no email enumeration).
  */
 export async function postRegisterRequest(body: {
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  locale?: string;
+	email: string;
+	firstName?: string;
+	lastName?: string;
+	locale?: string;
 }): Promise<void> {
-  const res = await fetch(`${oauthBase()}/request`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    throw mapRegistrationHttpError(res.status, 'request');
-  }
+	const res = await fetch(`${oauthBase()}/request`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+		body: JSON.stringify(body),
+	});
+	if (!res.ok) {
+		throw mapRegistrationHttpError(res.status, 'request');
+	}
 }
 
 /**
  * Step 2 (prefill): load email/names for UI; `valid` false when invite expired or unknown hash.
  */
 export async function getRegisterPrefill(hash: string): Promise<{
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  valid: boolean;
+	email: string;
+	firstName?: string;
+	lastName?: string;
+	valid: boolean;
 }> {
-  const res = await fetch(`${oauthBase()}/prefill?hash=${encodeURIComponent(hash)}`, {
-    headers: { Accept: 'application/json' },
-  });
-  if (!res.ok) {
-    throw mapRegistrationHttpError(res.status, 'prefill');
-  }
-  return res.json();
+	const res = await fetch(`${oauthBase()}/prefill?hash=${encodeURIComponent(hash)}`, {
+		headers: { Accept: 'application/json' },
+	});
+	if (!res.ok) {
+		throw mapRegistrationHttpError(res.status, 'prefill');
+	}
+	return res.json();
 }
 
 /**
  * Step 2 (submit): verify hash+code, create account, receive OAuth tokens for auto-login.
  */
 export async function postRegisterComplete(body: {
-  hash: string;
-  code: string;
-  password: string;
-  firstName?: string;
-  lastName?: string;
-  rememberMe?: boolean;
+	hash: string;
+	code: string;
+	password: string;
+	firstName?: string;
+	lastName?: string;
+	rememberMe?: boolean;
 }): Promise<RegisterCompleteTokenResponse> {
-  const res = await fetch(`${oauthBase()}/complete`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify({
-      ...body,
-      clientId: env.oauth2ClientId,
-      clientSecret: env.oauth2ClientSecret,
-    }),
-  });
-  if (!res.ok) {
-    throw mapRegistrationHttpError(res.status, 'complete');
-  }
-  return res.json();
+	const res = await fetch(`${oauthBase()}/complete`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+		body: JSON.stringify({
+			...body,
+			clientId: env.oauth2ClientId,
+			clientSecret: env.oauth2ClientSecret,
+		}),
+	});
+	if (!res.ok) {
+		throw mapRegistrationHttpError(res.status, 'complete');
+	}
+	return res.json();
 }
 
 /** Persist tokens like login so subsequent API calls use the new session immediately. */
 export function persistTokensFromRegistration(tokens: RegisterCompleteTokenResponse): void {
-  persistAccessToken(tokens.accessToken, localStorage, setAuthToken);
-  if (tokens.refreshToken) {
-    persistRefreshToken(tokens.refreshToken, localStorage);
-  }
+	persistAccessToken(tokens.accessToken, localStorage, setAuthToken);
+	if (tokens.refreshToken) {
+		persistRefreshToken(tokens.refreshToken, localStorage);
+	}
 }

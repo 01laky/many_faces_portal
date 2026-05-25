@@ -1,39 +1,39 @@
 .album-component {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  border-radius: 2px;
+	position: relative;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	border-radius: 2px;
 }
 
 .album-main-photo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
 }
 
 .album-thumbnails {
-  position: absolute;
-  bottom: 6px;
-  right: 6px;
-  display: flex;
-  gap: 3px;
+	position: absolute;
+	bottom: 6px;
+	right: 6px;
+	display: flex;
+	gap: 3px;
 }
 
 .album-thumb {
-  width: 36px;
-  height: 36px;
-  object-fit: cover;
-  border-radius: 3px;
-  border: 2px solid #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+	width: 36px;
+	height: 36px;
+	object-fit: cover;
+	border-radius: 3px;
+	border: 2px solid #fff;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* Scale thumbs for very small containers */
 @container (max-width: 200px) {
-  .album-thumb {
-    width: 24px;
-    height: 24px;
-  }
+	.album-thumb {
+		width: 24px;
+		height: 24px;
+	}
 }

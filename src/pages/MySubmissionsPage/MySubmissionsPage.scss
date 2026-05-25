@@ -1,62 +1,62 @@
 .my-submissions-page {
-  width: 100%;
-  padding: 2rem 1rem;
+	width: 100%;
+	padding: 2rem 1rem;
 }
 
 .my-submissions-page__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	margin-bottom: 1.5rem;
 }
 
 .my-submissions-page__empty,
 .my-submissions-page__group {
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  border-radius: 16px;
-  padding: 1rem;
-  background: rgba(15, 23, 42, 0.04);
-  margin-bottom: 1rem;
+	border: 1px solid rgba(148, 163, 184, 0.28);
+	border-radius: 16px;
+	padding: 1rem;
+	background: rgba(15, 23, 42, 0.04);
+	margin-bottom: 1rem;
 }
 
 .my-submissions-page__cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1rem;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	gap: 1rem;
 }
 
 .my-submissions-page__card {
-  border: 1px solid rgba(148, 163, 184, 0.24);
-  border-radius: 14px;
-  padding: 1rem;
-  background: #fff;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+	border: 1px solid rgba(148, 163, 184, 0.24);
+	border-radius: 14px;
+	padding: 1rem;
+	background: #fff;
+	box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
 }
 
 .my-submissions-page__card-top,
 .my-submissions-page__actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75rem;
 }
 
 .my-submissions-page__card-top {
-  justify-content: space-between;
-  color: #475569;
-  font-size: 0.85rem;
+	justify-content: space-between;
+	color: #475569;
+	font-size: 0.85rem;
 }
 
 .my-submissions-page__reason {
-  color: #92400e;
-  background: #fffbeb;
-  border-radius: 10px;
-  padding: 0.6rem;
+	color: #92400e;
+	background: #fffbeb;
+	border-radius: 10px;
+	padding: 0.6rem;
 }
 
 .my-submissions-page__date,
 .my-submissions-page__actions span {
-  color: #64748b;
-  font-size: 0.9rem;
+	color: #64748b;
+	font-size: 0.9rem;
 }

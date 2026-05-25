@@ -1,122 +1,122 @@
 .album-grid-component {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  padding: 4px;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	padding: 4px;
 }
 
 .album-grid-items {
-  flex: 1;
-  min-height: 0;
-  height: 100%;
-  display: grid;
-  grid-template-columns: repeat(var(--grid-cols, 2), minmax(0, 1fr));
-  grid-auto-rows: auto;
-  gap: 6px;
-  overflow: hidden;
-  align-content: start;
-  align-items: start;
+	flex: 1;
+	min-height: 0;
+	height: 100%;
+	display: grid;
+	grid-template-columns: repeat(var(--grid-cols, 2), minmax(0, 1fr));
+	grid-auto-rows: auto;
+	gap: 6px;
+	overflow: hidden;
+	align-content: start;
+	align-items: start;
 }
 
 .album-grid-items--sized {
-  align-content: stretch;
-  justify-content: stretch;
-  align-items: center;
-  justify-items: center;
+	align-content: stretch;
+	justify-content: stretch;
+	align-items: center;
+	justify-items: center;
 }
 
 .album-grid-card {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: 4px;
-  overflow: hidden;
-  background: #f5f5f5;
-  display: grid;
-  grid-template-rows: 1fr auto;
-  min-height: 0;
-  cursor: pointer;
-  transition:
-    transform 0.15s,
-    box-shadow 0.15s;
+	width: 100%;
+	aspect-ratio: 1 / 1;
+	border-radius: 4px;
+	overflow: hidden;
+	background: #f5f5f5;
+	display: grid;
+	grid-template-rows: 1fr auto;
+	min-height: 0;
+	cursor: pointer;
+	transition:
+		transform 0.15s,
+		box-shadow 0.15s;
 
-  &:hover {
-    transform: scale(1.03);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  }
+	&:hover {
+		transform: scale(1.03);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+	}
 }
 
 .album-grid-card--sized {
-  aspect-ratio: unset;
+	aspect-ratio: unset;
 }
 
 .album-grid-card-cover {
-  min-height: 0;
-  overflow: hidden;
+	min-height: 0;
+	overflow: hidden;
 
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
+	img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
 }
 
 .album-grid-card-info {
-  padding: 4px 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
+	padding: 4px 6px;
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
 }
 
 .album-grid-card-title {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #222;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+	font-size: 0.72rem;
+	font-weight: 600;
+	color: #222;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .album-grid-card-count {
-  font-size: 0.65rem;
-  color: #888;
+	font-size: 0.65rem;
+	color: #888;
 }
 
 .album-grid-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 4px 0 2px;
-  flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	padding: 4px 0 2px;
+	flex-shrink: 0;
 
-  button {
-    background: none;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    width: 26px;
-    height: 26px;
-    cursor: pointer;
-    font-size: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #333;
+	button {
+		background: none;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		width: 26px;
+		height: 26px;
+		cursor: pointer;
+		font-size: 1rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: #333;
 
-    &:disabled {
-      opacity: 0.3;
-      cursor: default;
-    }
+		&:disabled {
+			opacity: 0.3;
+			cursor: default;
+		}
 
-    &:hover:not(:disabled) {
-      background: #f0f0f0;
-    }
-  }
+		&:hover:not(:disabled) {
+			background: #f0f0f0;
+		}
+	}
 
-  span {
-    font-size: 0.75rem;
-    color: #666;
-  }
+	span {
+		font-size: 0.75rem;
+		color: #666;
+	}
 }

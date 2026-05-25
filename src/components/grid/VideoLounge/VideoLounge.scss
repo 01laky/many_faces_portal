@@ -1,33 +1,33 @@
 .videolounge-component {
-  height: 100%;
-  min-height: 54px;
+	height: 100%;
+	min-height: 54px;
 }
 
 .videolounge-component--center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .videolounge-component--empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 12px;
 }
 
 .videolounge-empty-text {
-  font-size: 0.75rem;
-  color: #888;
-  text-align: center;
+	font-size: 0.75rem;
+	color: #888;
+	text-align: center;
 }
 
 .videolounge-loading {
-  animation: videolounge-spin 0.8s linear infinite;
+	animation: videolounge-spin 0.8s linear infinite;
 }
 
 @keyframes videolounge-spin {
-  to {
-    transform: rotate(360deg);
-  }
+	to {
+		transform: rotate(360deg);
+	}
 }

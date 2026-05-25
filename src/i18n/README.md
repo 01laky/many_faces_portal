@@ -32,9 +32,9 @@ import { useTranslation } from 'react-i18next';
 import { useApp } from '../contexts/AppContext';
 
 function Example() {
-  const { t } = useTranslation('common');
-  // or: const { t } = useApp();
-  return <h1>{t('pages.login.title')}</h1>;
+	const { t } = useTranslation('common');
+	// or: const { t } = useApp();
+	return <h1>{t('pages.login.title')}</h1>;
 }
 ```
 

@@ -5,14 +5,14 @@ import { getAccessTokenFromStorage } from '../../utils/authStorage';
  * Used by services that use fetch directly (Friends, Messages, etc.).
  */
 export async function authAwareFetch(
-  url: string,
-  options: RequestInit & { token?: string }
+	url: string,
+	options: RequestInit & { token?: string }
 ): Promise<Response> {
-  const token = options.token;
-  const { token: _, ...fetchOptions } = options;
-  const res = await fetch(url, fetchOptions);
-  if (res.status === 401 && token && getAccessTokenFromStorage()) {
-    window.dispatchEvent(new CustomEvent('auth:unauthorized'));
-  }
-  return res;
+	const token = options.token;
+	const { token: _, ...fetchOptions } = options;
+	const res = await fetch(url, fetchOptions);
+	if (res.status === 401 && token && getAccessTokenFromStorage()) {
+		window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+	}
+	return res;
 }

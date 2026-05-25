@@ -13,36 +13,36 @@
 
 /** Snapshot of all supported `VITE_*` variables after defaults are applied. */
 export interface EnvConfig {
-  /** Base URL for REST clients (OpenAPI `OpenAPI.BASE` wiring). Must be parseable by `new URL()`. */
-  apiUrl: string;
-  /**
-   * First URL segment before `/api/...` for tenant-scoped routing on the **public** SPA (guest “face” host).
-   * Example: `public` → requests hit `/public/api/...` when no face slug is in the path.
-   */
-  defaultFacePrefix: string;
+	/** Base URL for REST clients (OpenAPI `OpenAPI.BASE` wiring). Must be parseable by `new URL()`. */
+	apiUrl: string;
+	/**
+	 * First URL segment before `/api/...` for tenant-scoped routing on the **public** SPA (guest “face” host).
+	 * Example: `public` → requests hit `/public/api/...` when no face slug is in the path.
+	 */
+	defaultFacePrefix: string;
 
-  /** OAuth2 **client_id** registered with many_faces_backend (Resource Owner + refresh flows). */
-  oauth2ClientId: string;
-  /** OAuth2 **client_secret** (public demo — replace in real deployments; never commit production secrets). */
-  oauth2ClientSecret: string;
+	/** OAuth2 **client_id** registered with many_faces_backend (Resource Owner + refresh flows). */
+	oauth2ClientId: string;
+	/** OAuth2 **client_secret** (public demo — replace in real deployments; never commit production secrets). */
+	oauth2ClientSecret: string;
 
-  /** Seq ingestion / UI URL, or `/seq-proxy` in dev — validated only when `enableSeqLogging` is true. */
-  seqUrl: string;
-  /** When true, client logger may forward structured events to Seq (subject to logger implementation). */
-  enableSeqLogging: boolean;
+	/** Seq ingestion / UI URL, or `/seq-proxy` in dev — validated only when `enableSeqLogging` is true. */
+	seqUrl: string;
+	/** When true, client logger may forward structured events to Seq (subject to logger implementation). */
+	enableSeqLogging: boolean;
 
-  appName: string;
-  appVersion: string;
-  /** Vite mode string (`development` / `production` / custom). */
-  environment: string;
+	appName: string;
+	appVersion: string;
+	/** Vite mode string (`development` / `production` / custom). */
+	environment: string;
 
-  /** Gates verbose `logEnvConfig` console output in dev. */
-  debugMode: boolean;
+	/** Gates verbose `logEnvConfig` console output in dev. */
+	debugMode: boolean;
 }
 
 /** Reads `import.meta.env[key]` with a string default when unset or empty. */
 function getEnv(key: string, defaultValue: string): string {
-  return import.meta.env[key] || defaultValue;
+	return import.meta.env[key] || defaultValue;
 }
 
 /**
@@ -57,59 +57,59 @@ const PORTAL_DEV_PROXY_PORTS = new Set(['9080', '9081']);
 
 /** Pure helper — Vitest covers LAN hostnames on nginx proxy ports. */
 export function resolveApiUrl(
-  fromEnv: string,
-  isDev: boolean,
-  location?: Pick<Location, 'port' | 'origin'>
+	fromEnv: string,
+	isDev: boolean,
+	location?: Pick<Location, 'port' | 'origin'>
 ): string {
-  if (!isDev || !location) return fromEnv;
-  if (PORTAL_DEV_PROXY_PORTS.has(location.port)) {
-    return location.origin;
-  }
-  return fromEnv;
+	if (!isDev || !location) return fromEnv;
+	if (PORTAL_DEV_PROXY_PORTS.has(location.port)) {
+		return location.origin;
+	}
+	return fromEnv;
 }
 
 /** Accepts `true` / `1` as truthy; any other explicit string is treated as false. */
 function getBoolEnv(key: string, defaultValue: boolean): boolean {
-  const value = import.meta.env[key];
-  if (value === undefined) return defaultValue;
-  return value === 'true' || value === '1';
+	const value = import.meta.env[key];
+	if (value === undefined) return defaultValue;
+	return value === 'true' || value === '1';
 }
 
 /** Live singleton parsed once at module load — tests should override via `collectEnvValidationErrors` clones. */
 const viteApiFallback = getEnv('VITE_API_URL', 'https://localhost:8001');
 
 export const env: EnvConfig = {
-  // API Configuration
-  apiUrl:
-    typeof window !== 'undefined'
-      ? resolveApiUrl(viteApiFallback, !!import.meta.env.DEV, window.location)
-      : resolveApiUrl(viteApiFallback, !!import.meta.env.DEV),
-  defaultFacePrefix: getEnv('VITE_DEFAULT_FACE_PREFIX', 'public'),
+	// API Configuration
+	apiUrl:
+		typeof window !== 'undefined'
+			? resolveApiUrl(viteApiFallback, !!import.meta.env.DEV, window.location)
+			: resolveApiUrl(viteApiFallback, !!import.meta.env.DEV),
+	defaultFacePrefix: getEnv('VITE_DEFAULT_FACE_PREFIX', 'public'),
 
-  // OAuth2 Configuration
-  oauth2ClientId: getEnv('VITE_OAUTH2_CLIENT_ID', 'be-demo-client'),
-  oauth2ClientSecret: getEnv('VITE_OAUTH2_CLIENT_SECRET', 'be-demo-secret-very-strong-key'),
+	// OAuth2 Configuration
+	oauth2ClientId: getEnv('VITE_OAUTH2_CLIENT_ID', 'be-demo-client'),
+	oauth2ClientSecret: getEnv('VITE_OAUTH2_CLIENT_SECRET', 'be-demo-secret-very-strong-key'),
 
-  // Seq Logging Configuration
-  // In dev, always use Vite proxy (same-origin) to avoid CORS/503
-  seqUrl: import.meta.env.DEV ? '/seq-proxy' : getEnv('VITE_SEQ_URL', 'http://localhost:5342'),
-  enableSeqLogging: getBoolEnv('VITE_ENABLE_SEQ_LOGGING', false),
+	// Seq Logging Configuration
+	// In dev, always use Vite proxy (same-origin) to avoid CORS/503
+	seqUrl: import.meta.env.DEV ? '/seq-proxy' : getEnv('VITE_SEQ_URL', 'http://localhost:5342'),
+	enableSeqLogging: getBoolEnv('VITE_ENABLE_SEQ_LOGGING', false),
 
-  // Application Configuration
-  appName: getEnv('VITE_APP_NAME', 'Be Demo Frontend'),
-  appVersion: getEnv('VITE_APP_VERSION', '1.0.0'),
-  environment: import.meta.env.MODE || 'development',
+	// Application Configuration
+	appName: getEnv('VITE_APP_NAME', 'Be Demo Frontend'),
+	appVersion: getEnv('VITE_APP_VERSION', '1.0.0'),
+	environment: import.meta.env.MODE || 'development',
 
-  // Development Configuration
-  debugMode: getBoolEnv('VITE_DEBUG_MODE', false),
+	// Development Configuration
+	debugMode: getBoolEnv('VITE_DEBUG_MODE', false),
 };
 
 /** Demo OAuth secret shipped in `.env.example` — must not be used in production builds (PSH1-E02). */
 export const DEMO_OAUTH2_CLIENT_SECRET = 'be-demo-secret-very-strong-key';
 
 export interface EnvValidationOptions {
-  /** When true, enforce HTTPS API URL and non-demo OAuth secret. */
-  production?: boolean;
+	/** When true, enforce HTTPS API URL and non-demo OAuth secret. */
+	production?: boolean;
 }
 
 /**
@@ -118,69 +118,69 @@ export interface EnvValidationOptions {
  * where Seq is intentionally off.
  */
 export function collectEnvValidationErrors(
-  cfg: EnvConfig,
-  options: EnvValidationOptions = {}
+	cfg: EnvConfig,
+	options: EnvValidationOptions = {}
 ): string[] {
-  const errors: string[] = [];
+	const errors: string[] = [];
 
-  try {
-    const api = new URL(cfg.apiUrl);
-    if (options.production && api.protocol !== 'https:') {
-      errors.push(`Production builds require HTTPS VITE_API_URL (got ${cfg.apiUrl})`);
-    }
-  } catch {
-    errors.push(`Invalid VITE_API_URL: ${cfg.apiUrl}`);
-  }
+	try {
+		const api = new URL(cfg.apiUrl);
+		if (options.production && api.protocol !== 'https:') {
+			errors.push(`Production builds require HTTPS VITE_API_URL (got ${cfg.apiUrl})`);
+		}
+	} catch {
+		errors.push(`Invalid VITE_API_URL: ${cfg.apiUrl}`);
+	}
 
-  if (cfg.enableSeqLogging) {
-    try {
-      new URL(cfg.seqUrl);
-    } catch {
-      errors.push(`Invalid VITE_SEQ_URL: ${cfg.seqUrl}`);
-    }
-  }
+	if (cfg.enableSeqLogging) {
+		try {
+			new URL(cfg.seqUrl);
+		} catch {
+			errors.push(`Invalid VITE_SEQ_URL: ${cfg.seqUrl}`);
+		}
+	}
 
-  if (!cfg.oauth2ClientId) {
-    errors.push('VITE_OAUTH2_CLIENT_ID is required');
-  }
+	if (!cfg.oauth2ClientId) {
+		errors.push('VITE_OAUTH2_CLIENT_ID is required');
+	}
 
-  if (!cfg.oauth2ClientSecret) {
-    errors.push('VITE_OAUTH2_CLIENT_SECRET is required');
-  }
+	if (!cfg.oauth2ClientSecret) {
+		errors.push('VITE_OAUTH2_CLIENT_SECRET is required');
+	}
 
-  if (options.production && cfg.oauth2ClientSecret === DEMO_OAUTH2_CLIENT_SECRET) {
-    errors.push(
-      'Production builds must not use the demo VITE_OAUTH2_CLIENT_SECRET — configure a deployment-specific value'
-    );
-  }
+	if (options.production && cfg.oauth2ClientSecret === DEMO_OAUTH2_CLIENT_SECRET) {
+		errors.push(
+			'Production builds must not use the demo VITE_OAUTH2_CLIENT_SECRET — configure a deployment-specific value'
+		);
+	}
 
-  return errors;
+	return errors;
 }
 
 /** Side effect: console + optional throw in production when `collectEnvValidationErrors` returns messages. */
 export function validateEnv(): void {
-  const errors = collectEnvValidationErrors(env, { production: import.meta.env.PROD });
+	const errors = collectEnvValidationErrors(env, { production: import.meta.env.PROD });
 
-  if (errors.length > 0) {
-    console.error('❌ Environment configuration errors:');
-    errors.forEach((error) => console.error(`   - ${error}`));
-    if (import.meta.env.PROD) {
-      throw new Error('Invalid environment configuration');
-    }
-  }
+	if (errors.length > 0) {
+		console.error('❌ Environment configuration errors:');
+		errors.forEach((error) => console.error(`   - ${error}`));
+		if (import.meta.env.PROD) {
+			throw new Error('Invalid environment configuration');
+		}
+	}
 }
 
 /** Pretty-prints selected keys when `debugMode` is on — avoid calling from hot paths. */
 export function logEnvConfig(): void {
-  if (import.meta.env.DEV && env.debugMode) {
-    console.log('🔧 Environment Configuration:');
-    console.log(`   API URL: ${env.apiUrl}`);
-    console.log(`   Seq URL: ${env.seqUrl}`);
-    console.log(`   Seq Logging: ${env.enableSeqLogging ? 'enabled' : 'disabled'}`);
-    console.log(`   OAuth2 Client ID: ${env.oauth2ClientId}`);
-    console.log(`   App Name: ${env.appName}`);
-    console.log(`   App Version: ${env.appVersion}`);
-    console.log(`   Environment: ${env.environment}`);
-    console.log(`   Debug Mode: ${env.debugMode ? 'enabled' : 'disabled'}`);
-  }
+	if (import.meta.env.DEV && env.debugMode) {
+		console.log('🔧 Environment Configuration:');
+		console.log(`   API URL: ${env.apiUrl}`);
+		console.log(`   Seq URL: ${env.seqUrl}`);
+		console.log(`   Seq Logging: ${env.enableSeqLogging ? 'enabled' : 'disabled'}`);
+		console.log(`   OAuth2 Client ID: ${env.oauth2ClientId}`);
+		console.log(`   App Name: ${env.appName}`);
+		console.log(`   App Version: ${env.appVersion}`);
+		console.log(`   Environment: ${env.environment}`);
+		console.log(`   Debug Mode: ${env.debugMode ? 'enabled' : 'disabled'}`);
+	}
 }

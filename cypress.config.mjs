@@ -8,15 +8,15 @@
 import { defineConfig } from 'cypress';
 
 export default defineConfig({
-  e2e: {
-    baseUrl: 'http://127.0.0.1:4173',
-    specPattern: 'cypress/e2e/**/*.cy.js',
-    supportFile: false,
-    video: false,
-    viewportWidth: 1280,
-    viewportHeight: 720,
-  },
-  env: {
-    E2E_API_URL: process.env.E2E_API_URL ?? 'http://127.0.0.1:8000',
-  },
+	e2e: {
+		baseUrl: 'http://127.0.0.1:4173',
+		specPattern: 'cypress/e2e/**/*.cy.js',
+		supportFile: false,
+		video: false,
+		viewportWidth: 1280,
+		viewportHeight: 720,
+	},
+	env: {
+		E2E_API_URL: process.env.E2E_API_URL ?? 'http://127.0.0.1:8000',
+	},
 });

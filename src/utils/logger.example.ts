@@ -11,29 +11,29 @@ logger.error('Failed to load user data', new Error('Network error'), { userId: '
 
 // Log with properties
 logger.debug('Component rendered', {
-  componentName: 'UserProfile',
-  renderTime: 150,
-  props: { userId: '123' },
+	componentName: 'UserProfile',
+	renderTime: 150,
+	props: { userId: '123' },
 });
 
 // Log errors
 try {
-  // Some code that might throw
-  throw new Error('Something went wrong');
+	// Some code that might throw
+	throw new Error('Something went wrong');
 } catch (error) {
-  logger.error('An error occurred', error, {
-    context: 'UserProfile',
-    action: 'loadData',
-  });
+	logger.error('An error occurred', error, {
+		context: 'UserProfile',
+		action: 'loadData',
+	});
 }
 
 // Fatal errors (will flush immediately)
 logger.fatal('Application crashed', new Error('Critical error'), {
-  component: 'App',
-  state: 'initialization',
+	component: 'App',
+	state: 'initialization',
 });
 
 // Manual flush (useful before page unload)
 window.addEventListener('beforeunload', () => {
-  logger.flushLogs();
+	logger.flushLogs();
 });
