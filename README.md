@@ -1,24 +1,26 @@
 # Many Faces AI (MFAI) - frontend application
 
+**Version:** [`0.9.0`](./VERSION) · [Changelog](./CHANGELOG.md)
+
 **User-facing web experience for Many Faces AI.** This React app renders face-scoped social spaces: dynamic page grids, localized routes, auth flows, content modules, stories, chat rooms, profiles, submissions, and role-aware actions backed by the API. Layout and modules come from admin-managed **`gridSchema`** JSON per face — not hard-coded routes. Users never talk to workers or AI directly.
 
 ### Three pillars
 
-| Pillar | Highlights |
-| ------ | ----------- |
-| **Security (PSH1)** | OAuth tokens in `localStorage`; single-flight refresh; production **`validateEnv()`** (HTTPS API, no demo OAuth secret); face-scoped routing; blog HTML sanitization; SignalR JWT via `accessTokenFactory`. CI: `node ../scripts/verify-portal-security-tests.mjs`. [`docs/SECURITY.md`](./docs/SECURITY.md). |
-| **AI (user-facing)** | **AI-assisted content approval** — create album/blog/reel → **My submissions** shows moderation status (no raw model output). Backend runs `ReviewContent`; portal shows creator-safe copy only. [`../docs/guides/ai-assisted-content-approval.md`](../docs/guides/ai-assisted-content-approval.md). |
-| **Configuration** | **`GET /api/faces/config`** drives navigation, gradients, and page list; **face URL prefix** scopes all API calls; **capabilities** from `/api/me/capabilities` gate UI actions; i18n routes (en/sk/cs). Grid blocks: albums, blogs, reels, stories, chat, profiles, wall tickets. |
+| Pillar               | Highlights                                                                                                                                                                                                                                                                                                    |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Security (PSH1)**  | OAuth tokens in `localStorage`; single-flight refresh; production **`validateEnv()`** (HTTPS API, no demo OAuth secret); face-scoped routing; blog HTML sanitization; SignalR JWT via `accessTokenFactory`. CI: `node ../scripts/verify-portal-security-tests.mjs`. [`docs/SECURITY.md`](./docs/SECURITY.md). |
+| **AI (user-facing)** | **AI-assisted content approval** — create album/blog/reel → **My submissions** shows moderation status (no raw model output). Backend runs `ReviewContent`; portal shows creator-safe copy only. [`../docs/guides/ai-assisted-content-approval.md`](../docs/guides/ai-assisted-content-approval.md).          |
+| **Configuration**    | **`GET /api/faces/config`** drives navigation, gradients, and page list; **face URL prefix** scopes all API calls; **capabilities** from `/api/me/capabilities` gate UI actions; i18n routes (en/sk/cs). Grid blocks: albums, blogs, reels, stories, chat, profiles, wall tickets.                            |
 
-| Start here          | Link                                                                                               |
-| ------------------- | -------------------------------------------------------------------------------------------------- |
-| **Security (PSH1)** | [`docs/SECURITY.md`](./docs/SECURITY.md) — tokens, env validation, XSS/URL, SignalR, CI gate       |
-| Run in full stack   | `../scripts/start-all-dev.sh` from `many_faces_main`                                               |
-| Local app           | `http://localhost:9080` / `https://localhost:9081` via portal proxy                                |
+| Start here                  | Link                                                                                                                                                              |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Security (PSH1)**         | [`docs/SECURITY.md`](./docs/SECURITY.md) — tokens, env validation, XSS/URL, SignalR, CI gate                                                                      |
+| Run in full stack           | `../scripts/start-all-dev.sh` from `many_faces_main`                                                                                                              |
+| Local app                   | `http://localhost:9080` / `https://localhost:9081` via portal proxy                                                                                               |
 | Global ADMIN vs SUPER_ADMIN | Portal for **`ADMIN`**; admin app requires **`SUPER_ADMIN`** — [`../docs/guides/admin-superadmin-only-access.md`](../docs/guides/admin-superadmin-only-access.md) |
-| Performance / Query | [`docs/performance-and-query-appendix.md`](./docs/performance-and-query-appendix.md)               |
-| Content approval UX | [`../docs/guides/ai-assisted-content-approval.md`](../docs/guides/ai-assisted-content-approval.md) |
-| Static i18n         | [`../docs/guides/static-localization-and-i18n.md`](../docs/guides/static-localization-and-i18n.md) |
+| Performance / Query         | [`docs/performance-and-query-appendix.md`](./docs/performance-and-query-appendix.md)                                                                              |
+| Content approval UX         | [`../docs/guides/ai-assisted-content-approval.md`](../docs/guides/ai-assisted-content-approval.md)                                                                |
+| Static i18n                 | [`../docs/guides/static-localization-and-i18n.md`](../docs/guides/static-localization-and-i18n.md)                                                                |
 
 ### Security at a glance (PSH1)
 
