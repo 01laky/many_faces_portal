@@ -2,6 +2,16 @@
 
 **User-facing web experience for Many Faces AI.** This React app renders face-scoped social spaces: dynamic page grids, localized routes, auth flows, content modules, stories, chat rooms, profiles, submissions, and role-aware actions backed by the API.
 
+> **First visit?** Layout and modules are **not hard-coded** — pages come from admin-managed **`gridSchema`** JSON per face. Users never talk to workers or AI directly.
+
+### Three pillars
+
+| Pillar | Highlights |
+| ------ | ----------- |
+| **Security (PSH1)** | OAuth tokens in `localStorage`; single-flight refresh; production **`validateEnv()`** (HTTPS API, no demo OAuth secret); face-scoped routing; blog HTML sanitization; SignalR JWT via `accessTokenFactory`. CI: `node ../scripts/verify-portal-security-tests.mjs`. [`docs/SECURITY.md`](./docs/SECURITY.md). |
+| **AI (user-facing)** | **AI-assisted content approval** — create album/blog/reel → **My submissions** shows moderation status (no raw model output). Backend runs `ReviewContent`; portal shows creator-safe copy only. [`../docs/guides/ai-assisted-content-approval.md`](../docs/guides/ai-assisted-content-approval.md). |
+| **Configuration** | **`GET /api/faces/config`** drives navigation, gradients, and page list; **face URL prefix** scopes all API calls; **capabilities** from `/api/me/capabilities` gate UI actions; i18n routes (en/sk/cs). Grid blocks: albums, blogs, reels, stories, chat, profiles, wall tickets. |
+
 | Start here          | Link                                                                                               |
 | ------------------- | -------------------------------------------------------------------------------------------------- |
 | **Security (PSH1)** | [`docs/SECURITY.md`](./docs/SECURITY.md) — tokens, env validation, XSS/URL, SignalR, CI gate       |
