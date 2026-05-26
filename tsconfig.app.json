@@ -16,6 +16,11 @@
 		"noEmit": true,
 		"jsx": "react-jsx",
 		"resolveJsonModule": true,
+		"ignoreDeprecations": "6.0",
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./src/*"]
+		},
 
 		/* Linting */
 		"strict": true,

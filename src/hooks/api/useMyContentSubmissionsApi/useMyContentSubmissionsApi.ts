@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { OpenAPI } from '../../api/core/OpenAPI';
-import { request as __request } from '../../api/core/request';
-import type { MyContentSubmission } from '../../utils/contentModeration';
+import { OpenAPI } from '@/api/core/OpenAPI';
+import { request as __request } from '@/api/core/request';
+import type { MyContentSubmission } from '@/utils/contentModeration';
 
 /**
  * React Query hook for `GET /api/my/content-submissions`.

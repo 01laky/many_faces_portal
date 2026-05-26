@@ -70,6 +70,9 @@ export default defineConfig({
 		https: false,
 	},
 	resolve: {
+		alias: {
+			'@': path.join(__dirname, 'src'),
+		},
 		extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json'],
 	},
 	optimizeDeps: {

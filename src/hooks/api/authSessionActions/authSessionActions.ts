@@ -9,32 +9,24 @@
  * All network calls use generated OpenAPI clients (`OAuth2Service`, `AuthService`) and map `ApiError` bodies
  * to `Error` for consistent React Query `onError` handling.
  */
-import { AuthService, OAuth2Service, ApiError } from '../../api';
-import type { OAuth2TokenRequest, RegisterModel } from '../../api';
-import { setAuthToken } from '../../api/config';
-import { logger } from '../../utils/logger';
-import { isTokenExpired } from '../../utils/jwtUtils';
-import { env } from '../../config/env';
-import { buildPasswordGrantTokenRequest } from './authTokenRequest';
+import { AuthService, OAuth2Service, ApiError } from '@/api';
+import type { OAuth2TokenRequest, RegisterModel } from '@/api';
+import { setAuthToken } from '@/api/config';
+import { env } from '@/config/env';
+import { buildPasswordGrantTokenRequest } from '@/hooks/api/authTokenRequest';
 import {
-	type AuthWebStorage,
-	persistAccessToken,
-	persistRefreshToken,
 	clearAuthStorage,
 	getAccessTokenFromStorage,
 	getRefreshTokenFromStorage,
-	AUTH_STORAGE_KEYS,
-} from '../../utils/authStorage';
+	persistAccessToken,
+	persistRefreshToken,
+} from '@/utils/authStorage';
+import { isTokenExpired } from '@/utils/jwtUtils';
+import { logger } from '@/utils/logger';
+import type { AuthWebStorage, TokenResponse } from './types';
 
-export type { AuthWebStorage } from '../../utils/authStorage';
-export { AUTH_STORAGE_KEYS };
-
-/** Normalizes token payloads from `/api/oauth2/token` (codegen may surface `accessToken` or legacy `token`). */
-interface TokenResponse {
-	accessToken?: string;
-	refreshToken?: string;
-	token?: string;
-}
+export type { AuthWebStorage } from './types';
+export { AUTH_STORAGE_KEYS } from './types';
 
 /** Public self-service registration; returns raw API response (hook layer decides cache invalidation). */
 export async function registerUser(data: RegisterModel): Promise<unknown> {

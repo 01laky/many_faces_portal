@@ -5,7 +5,7 @@ import {
 	createMeCapabilitiesQueryOptions,
 	meCapabilitiesKeys,
 	meCapabilitiesTokenFingerprint,
-} from '../useMeCapabilities';
+} from '@/hooks/api/useMeCapabilities';
 
 vi.mock('../../../api/meCapabilitiesClient');
 

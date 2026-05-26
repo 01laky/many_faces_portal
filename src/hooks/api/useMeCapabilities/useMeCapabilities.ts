@@ -1,6 +1,6 @@
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
-import { fetchMeCapabilities } from '../../api/meCapabilitiesClient';
-import type { MeCapabilities } from '../../acl/capabilitiesTypes';
+import { fetchMeCapabilities } from '@/api/meCapabilitiesClient';
+import type { MeCapabilities } from '@/acl/capabilitiesTypes';
 
 export const meCapabilitiesKeys = {
 	all: ['meCapabilities'] as const,

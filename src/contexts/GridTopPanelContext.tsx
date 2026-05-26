@@ -1,23 +1,11 @@
-import { createContext, useContext, type ReactNode } from 'react';
-import type { GridComponentType } from '../components/PageGridLayout';
+import { createContext, useContext } from 'react';
+import type { GridTopPanelContextValue, GridTopPanelProviderProps } from './types';
 
-export type GridTopPanelState = null | { mode: 'create'; componentType: GridComponentType };
-
-export type GridTopPanelContextValue = {
-	gridTopPanel: GridTopPanelState;
-	openGridCreate: (componentType: GridComponentType) => void;
-	closeGridPanel: () => void;
-};
+export type { GridTopPanelContextValue, GridTopPanelState } from './types';
 
 const GridTopPanelContext = createContext<GridTopPanelContextValue | null>(null);
 
-export function GridTopPanelProvider({
-	children,
-	value,
-}: {
-	children: ReactNode;
-	value: GridTopPanelContextValue;
-}) {
+export function GridTopPanelProvider({ children, value }: GridTopPanelProviderProps) {
 	return <GridTopPanelContext.Provider value={value}>{children}</GridTopPanelContext.Provider>;
 }
 

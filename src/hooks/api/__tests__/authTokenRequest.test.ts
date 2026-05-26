@@ -3,7 +3,7 @@
  * forwards static grant fields expected by `OAuth2Service.postApiOauth2Token` / many_faces_backend token endpoint.
  */
 import { describe, it, expect } from 'vitest';
-import { buildPasswordGrantTokenRequest } from '../authTokenRequest';
+import { buildPasswordGrantTokenRequest } from '@/hooks/api/authTokenRequest';
 
 describe('buildPasswordGrantTokenRequest', () => {
 	const base = {

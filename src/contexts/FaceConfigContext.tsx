@@ -7,7 +7,6 @@ import {
 	useMemo,
 	useRef,
 } from 'react';
-import type { ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { getFacesConfig } from '../api/config/getFacesConfig';
@@ -18,24 +17,11 @@ import { logger } from '../utils/logger';
 import { invalidateMemoizedFacePrefixCache } from '../api/config';
 import { buildFaceHomePath, resolvePostAuthHomePath } from '../utils/faceHomePath';
 import { supportedLanguages } from '../i18n/constants';
-
-interface FaceConfigContextType {
-	allFaces: FacesConfigResponse;
-	publicFaces: FaceConfig[];
-	privateFaces: FaceConfig[];
-	availableFaces: FaceConfig[];
-	selectedFace: FaceConfig | null;
-	selectFace: (faceId: number) => void;
-	isLoading: boolean;
-	error: Error | null;
-	reload: (authToken?: string | null) => Promise<FacesConfigResponse>;
-	getFaceHomePath: () => string;
-	getPostAuthHomePath: () => string;
-}
+import type { FaceConfigContextType, FaceConfigProviderProps } from './types';
 
 const FaceConfigContext = createContext<FaceConfigContextType | undefined>(undefined);
 
-export function FaceConfigProvider({ children }: { children: ReactNode }) {
+export function FaceConfigProvider({ children }: FaceConfigProviderProps) {
 	const location = useLocation();
 	const { isAuthenticated, token } = useAuth();
 	const [allFaces, setAllFaces] = useState<FacesConfigResponse>([]);

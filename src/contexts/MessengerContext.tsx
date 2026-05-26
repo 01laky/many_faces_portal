@@ -6,39 +6,15 @@ import {
 	useMemo,
 	useRef,
 	useState,
-	type ReactNode,
 } from 'react';
 import type { HubConnection } from '@microsoft/signalr';
 import { resolveHubAccessToken } from '../utils/authStorage';
 import { buildAuthenticatedHubConnection } from '../api/signalr/buildAuthenticatedHubConnection';
-
-type ConnectionState = 'Connecting' | 'Connected' | 'Disconnected';
-
-interface MessengerContextValue {
-	connectionState: ConnectionState;
-	sendMessage: (receiverId: string, content: string) => Promise<void>;
-	acceptMessageRequest: (senderId: string) => Promise<void>;
-	rejectMessageRequest: (senderId: string) => Promise<void>;
-	onChatMessage: (
-		cb: (
-			senderId: string,
-			senderName: string,
-			content: string,
-			sentAt: string,
-			messageId: number
-		) => void
-	) => () => void;
-	onMessageRequest: (
-		cb: (senderId: string, senderName: string, content: string, sentAt: string) => void
-	) => () => void;
-	onFriendRequest: (cb: (senderId: string, senderName: string) => void) => () => void;
-	onMessageRequestAccepted: (cb: (accepterId: string, accepterName: string) => void) => () => void;
-	onMessageRequestRejected: (cb: (rejecterId: string) => void) => () => void;
-	onNotification: (
-		cb: (id: number, title: string, message: string, type: string, createdAt: string) => void
-	) => () => void;
-	onPlatformChatError: (cb: (code: string) => void) => () => void;
-}
+import type {
+	MessengerConnectionState,
+	MessengerContextValue,
+	MessengerProviderProps,
+} from './types';
 
 const MessengerContext = createContext<MessengerContextValue | null>(null);
 
@@ -48,14 +24,8 @@ export function useMessenger() {
 	return ctx;
 }
 
-export function MessengerProvider({
-	token,
-	children,
-}: {
-	token: string | null;
-	children: ReactNode;
-}) {
-	const [connectionState, setConnectionState] = useState<ConnectionState>('Disconnected');
+export function MessengerProvider({ token, children }: MessengerProviderProps) {
+	const [connectionState, setConnectionState] = useState<MessengerConnectionState>('Disconnected');
 	const connectionRef = useRef<HubConnection | null>(null);
 	const tokenRef = useRef(token);
 

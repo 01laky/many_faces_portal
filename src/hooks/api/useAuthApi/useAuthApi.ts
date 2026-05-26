@@ -1,13 +1,14 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
-import { logger } from '../../utils/logger';
-import { meCapabilitiesKeys } from './useMeCapabilities';
 import {
+	clearLocalAuthSession,
+	readAuthTokenQueryValue,
 	registerUser,
 	runPasswordGrantLogin,
-	readAuthTokenQueryValue,
-	clearLocalAuthSession,
 	runRefreshGrantLogin,
-} from './authSessionActions';
+} from '@/hooks/api/authSessionActions';
+import { meCapabilitiesKeys } from '@/hooks/api/useMeCapabilities';
+import { logger } from '@/utils/logger';
+import type { LoginCredentials } from './types';
 
 /**
  * Auth React Query façade: thin wrappers around `authSessionActions` so components never touch OpenAPI
@@ -62,8 +63,7 @@ export function useLogin() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: (credentials: { username: string; password: string; rememberMe?: boolean }) =>
-			runPasswordGrantLogin(credentials),
+		mutationFn: (credentials: LoginCredentials) => runPasswordGrantLogin(credentials),
 		onSuccess: (data) => {
 			queryClient.setQueryData(authKeys.token(), data);
 			queryClient.invalidateQueries({ queryKey: authKeys.user() });

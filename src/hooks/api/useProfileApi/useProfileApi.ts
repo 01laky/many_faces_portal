@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '../../contexts/AuthContext';
-import { useFaceConfig } from '../../contexts/FaceConfigContext';
-import * as profileApi from '../../api/profile/profileApi';
-import type { SupportedLanguage } from '../../i18n/constants';
+import * as profileApi from '@/api/profile/profileApi';
+import { useAuth } from '@/contexts/AuthContext';
+import { useFaceConfig } from '@/contexts/FaceConfigContext';
+import type { UpdateProfileData } from './types';
 
 /**
  * Stable React Query key for profile reads/writes. Includes `faceId` when the viewer is scoped to a face
@@ -47,15 +47,7 @@ export function useProfile() {
 	const resolvedAvatarUrl = profile?.faceAvatarUrl ?? profile?.globalAvatarUrl ?? null;
 
 	const updateMutation = useMutation({
-		mutationFn: (data: {
-			firstName?: string | null;
-			lastName?: string | null;
-			enableAnimatedGradient?: boolean;
-			preferredUiLanguage?: SupportedLanguage | null;
-			lastSelectedFaceId?: number | null;
-			clearPreferredUiLanguage?: boolean;
-			clearLastSelectedFaceId?: boolean;
-		}) => profileApi.updateProfile(token, data),
+		mutationFn: (data: UpdateProfileData) => profileApi.updateProfile(token, data),
 		onSuccess: () => queryClient.invalidateQueries({ queryKey: profileQueryKey(faceId) }),
 	});
 

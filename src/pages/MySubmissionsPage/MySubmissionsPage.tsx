@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useMyContentSubmissions } from '../../hooks/api/useMyContentSubmissionsApi';
+import { useMyContentSubmissions } from '@/hooks/api/useMyContentSubmissionsApi';
 import {
 	SUBMISSION_GROUP_LABELS,
 	getCreatorSafeReason,

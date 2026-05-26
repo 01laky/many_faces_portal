@@ -7,11 +7,10 @@ import {
 	useMemo,
 	useRef,
 } from 'react';
-import type { ReactNode } from 'react';
 import { setAuthToken } from '../api/config';
 import { logger } from '../utils/logger';
 import { isTokenExpired } from '../utils/jwtUtils';
-import { jwtUserFromToken, type PortalJwtUser } from '../utils/jwtUserFromToken';
+import { jwtUserFromToken } from '../utils/jwtUserFromToken';
 import { getAccessTokenFromStorage } from '../utils/authStorage';
 import { setupAuthStorageSync } from '../utils/authSessionSync';
 import { resetPortalAuthSession } from '../utils/portalAuthSession';
@@ -22,13 +21,19 @@ import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import {
+	authKeys,
+	useAuthToken,
 	useLogin as useLoginMutation,
 	useLogout as useLogoutMutation,
-	useAuthToken,
 	useRefreshToken as useRefreshTokenMutation,
-} from '../hooks/api/useAuthApi';
-import { authKeys } from '../hooks/api/useAuthApi';
-import { useMeCapabilities } from '../hooks/api/useMeCapabilities';
+} from '@/hooks/api/useAuthApi';
+import { useMeCapabilities } from '@/hooks/api/useMeCapabilities';
+import type {
+	AuthContextType,
+	AuthProviderProps,
+	AuthUser,
+	MeCapabilitiesWarmupProps,
+} from './types';
 
 /**
  * Session / expiry — intentional layering (see performance prompt §2.8):
@@ -39,27 +44,9 @@ import { useMeCapabilities } from '../hooks/api/useMeCapabilities';
  * Logout UX may fire from any layer; keep behavior consistent (toast + redirect handled by listeners/pages).
  */
 
-type User = PortalJwtUser;
-
-interface AuthContextType {
-	isAuthenticated: boolean;
-	isLoading: boolean;
-	/** True after the one-shot cold-start session read completes; stays true during login/logout. */
-	isSessionHydrated: boolean;
-	user: User | null;
-	token: string | null;
-	login: (
-		username: string,
-		password: string,
-		options?: { rememberMe?: boolean }
-	) => Promise<string | undefined>;
-	logout: () => Promise<void>;
-	refreshAuth: () => Promise<void>;
-}
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-function MeCapabilitiesWarmup({ token }: { token: string | null }) {
+function MeCapabilitiesWarmup({ token }: MeCapabilitiesWarmupProps) {
 	useMeCapabilities(token, Boolean(token));
 	return null;
 }
@@ -67,18 +54,18 @@ function MeCapabilitiesWarmup({ token }: { token: string | null }) {
 function clearAuthReactState(
 	setToken: (t: string | null) => void,
 	setIsAuthenticated: (v: boolean) => void,
-	setUser: (u: User | null) => void
+	setUser: (u: AuthUser | null) => void
 ): void {
 	setToken(null);
 	setIsAuthenticated(false);
 	setUser(null);
 }
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: AuthProviderProps) {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isSessionHydrated, setIsSessionHydrated] = useState(false);
-	const [user, setUser] = useState<User | null>(null);
+	const [user, setUser] = useState<AuthUser | null>(null);
 	const [token, setToken] = useState<string | null>(null);
 	const { t, i18n } = useTranslation('common');
 	const queryClient = useQueryClient();

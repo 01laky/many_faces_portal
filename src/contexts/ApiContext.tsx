@@ -12,36 +12,17 @@
  */
 
 import * as React from 'react';
-import type { ReactNode } from 'react';
 import { ApiClient } from '../api/ApiClient';
 import { env } from '../config/env';
+import type { TApiContextModel, TApiContextProviderProps } from './types';
 
-/**
- * API context model
- */
-export interface TApiContextModel {
-	api: ApiClient;
-}
+export type { TApiContextModel, TApiContextProviderProps } from './types';
 
-/**
- * Default API context model (used for initialization)
- */
 const defaultApiContextModel: TApiContextModel = {
 	api: new ApiClient(null, {}, env.apiUrl),
 };
 
-/**
- * API context
- */
 export const ApiContext = React.createContext<TApiContextModel>(defaultApiContextModel);
-
-/**
- * API context provider props
- */
-export interface TApiContextProviderProps {
-	children: ReactNode;
-	accessToken?: string | null;
-}
 
 /**
  * API context provider component

@@ -3,7 +3,7 @@
  * caches invalidate independently (`['profile']` vs `['profile', faceId]`).
  */
 import { describe, it, expect } from 'vitest';
-import { profileQueryKey } from '../useProfileApi';
+import { profileQueryKey } from '@/hooks/api/useProfileApi';
 
 describe('profileQueryKey', () => {
 	it('uses a single segment when faceId is null or undefined', () => {

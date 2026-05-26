@@ -1,7 +1,7 @@
 import { useState, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { UserCircle, Upload, Loader2, LogOut } from 'lucide-react';
-import { useProfile } from '../../hooks/api/useProfileApi';
+import { useProfile } from '@/hooks/api/useProfileApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { toast } from 'react-toastify';

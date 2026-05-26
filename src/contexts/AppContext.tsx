@@ -1,21 +1,15 @@
 import { createContext, useContext, useCallback, useMemo } from 'react';
-import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supportedLanguages, type SupportedLanguage } from '../i18n/constants';
 import { ensureLanguageLoaded } from '../i18n/config';
 import { getAccessTokenFromStorage } from '../utils/authStorage';
 import { writeGuestUiLanguage } from '../utils/guestSessionStorage';
 import * as profileApi from '../api/profile/profileApi';
-
-interface AppContextType {
-	currentLanguage: SupportedLanguage;
-	changeLanguage: (lang: SupportedLanguage) => Promise<void>;
-	t: (key: string, options?: Record<string, unknown>) => string;
-}
+import type { AppContextType, AppProviderProps } from './types';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-export function AppProvider({ children }: { children: ReactNode }) {
+export function AppProvider({ children }: AppProviderProps) {
 	const { i18n, t } = useTranslation('common');
 
 	const currentLanguage = (i18n.language as SupportedLanguage) || 'en';

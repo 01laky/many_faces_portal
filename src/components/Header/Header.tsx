@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
-import { useProfile } from '../../hooks/api/useProfileApi';
+import { useProfile } from '@/hooks/api/useProfileApi';
 import { useAnimatedGradientStyle } from '../../hooks/useAnimatedGradient';
 import { useGradientAnimationPreference } from '../../contexts/GradientAnimationPreferenceContext';
 import { MainLogo } from '../MainLogo';

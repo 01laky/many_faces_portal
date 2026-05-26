@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fetchMyContentSubmissions } from '../useMyContentSubmissionsApi';
+import { fetchMyContentSubmissions } from '@/hooks/api/useMyContentSubmissionsApi';
 
 const mockRequest = vi.fn();
 

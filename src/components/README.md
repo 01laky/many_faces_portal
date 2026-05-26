@@ -34,7 +34,8 @@ From monorepo root:
 ```bash
 node scripts/verify-portal-component-colocation.mjs
 node scripts/audit-portal-inline-symbols.mjs --summary
-node scripts/verify-portal-types-enums-constants-colocation.mjs --warn-only
+node scripts/verify-portal-types-enums-constants-colocation.mjs
+node scripts/verify-portal-types-colocation-tests.mjs
 ```
 
 Helper for a single move:

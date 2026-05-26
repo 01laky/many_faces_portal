@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildPasswordGrantTokenRequest } from '../authTokenRequest';
+import { buildPasswordGrantTokenRequest } from '@/hooks/api/authTokenRequest';
 
 describe('authTokenRequest rememberMe (PSH1-T-A11)', () => {
 	it('rememberMe true → payload true', () => {

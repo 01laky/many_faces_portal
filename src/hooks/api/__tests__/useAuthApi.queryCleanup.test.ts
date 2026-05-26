@@ -4,8 +4,8 @@
  */
 import { describe, it, expect } from 'vitest';
 import { QueryClient } from '@tanstack/react-query';
-import { clearAuthAndCapabilitiesQueries, authKeys } from '../useAuthApi';
-import { meCapabilitiesKeys } from '../useMeCapabilities';
+import { clearAuthAndCapabilitiesQueries, authKeys } from '@/hooks/api/useAuthApi';
+import { meCapabilitiesKeys } from '@/hooks/api/useMeCapabilities';
 
 describe('clearAuthAndCapabilitiesQueries', () => {
 	it('removes auth and meCapabilities queries (refresh failure / security §18)', () => {

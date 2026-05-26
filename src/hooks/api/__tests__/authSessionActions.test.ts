@@ -21,8 +21,8 @@ import {
 	readAuthTokenQueryValue,
 	clearLocalAuthSession,
 	runRefreshGrantLogin,
-} from '../authSessionActions';
-import { authKeys } from '../useAuthApi';
+} from '@/hooks/api/authSessionActions';
+import { authKeys } from '@/hooks/api/useAuthApi';
 
 function makeApiError(body: Record<string, unknown>): ApiError {
 	const response: ApiResult = {

@@ -1,33 +1,21 @@
-import {
-	createContext,
-	useCallback,
-	useContext,
-	useEffect,
-	useMemo,
-	useState,
-	type ReactNode,
-} from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';
 import { useFaceConfig } from './FaceConfigContext';
-import { profileQueryKey, useProfile } from '../hooks/api/useProfileApi';
+import { profileQueryKey, useProfile } from '@/hooks/api/useProfileApi';
 import type { ProfileMe } from '../api/profile/profileApi';
 import {
 	readGuestGradientAnimationEnabled,
 	writeGuestGradientAnimationEnabled,
 } from '../utils/gradientAnimationPreferenceStorage';
+import type {
+	GradientAnimationPreferenceContextValue,
+	GradientAnimationPreferenceProviderProps,
+} from './types';
 
-export interface GradientAnimationPreferenceContextValue {
-	/** Effective flag after reduced-motion override. */
-	animationEnabled: boolean;
-	/** Raw user preference before reduced-motion override. */
-	userWantsAnimation: boolean;
-	prefersReducedMotion: boolean;
-	setAnimationEnabled: (enabled: boolean) => Promise<void>;
-	isUpdating: boolean;
-}
+export type { GradientAnimationPreferenceContextValue } from './types';
 
 const GradientAnimationPreferenceContext = createContext<
 	GradientAnimationPreferenceContextValue | undefined
@@ -38,7 +26,9 @@ function readPrefersReducedMotion(): boolean {
 	return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-export function GradientAnimationPreferenceProvider({ children }: { children: ReactNode }) {
+export function GradientAnimationPreferenceProvider({
+	children,
+}: GradientAnimationPreferenceProviderProps) {
 	const { t } = useTranslation('common');
 	const { isAuthenticated, token } = useAuth();
 	const { selectedFace } = useFaceConfig();

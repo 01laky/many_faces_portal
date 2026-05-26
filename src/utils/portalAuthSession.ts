@@ -1,5 +1,5 @@
 import { setAuthToken } from '../api/config';
-import { clearLocalAuthSession } from '../hooks/api/authSessionActions';
+import { clearLocalAuthSession } from '@/hooks/api/authSessionActions';
 import { type AuthWebStorage } from './authStorage';
 
 /** Clears OAuth tokens + axios bearer (tokens only — no legacy keys). */
