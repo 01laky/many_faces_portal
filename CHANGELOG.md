@@ -8,8 +8,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 | Version       | Theme                                      |
 | ------------- | ------------------------------------------ |
-| [0.9.3](#093) | Contexts colocation + hooks/api re-folder |
-| [0.9.2](#092) | Types/constants colocation rollout        |
+| [0.9.3](#093) | Contexts colocation + hooks/api re-folder  |
+| [0.9.2](#092) | Types/constants colocation rollout         |
 | [0.9.0](#090) | PSH1 security hardening                    |
 | [0.8.0](#080) | VideoLounge, i18n, preloader, AI switch    |
 | [0.7.0](#070) | Moderation helpers, localization bootstrap |
