@@ -42,6 +42,7 @@ export function useStoryRingSlideshow(
 
 	const start = useCallback(async () => {
 		if (!token || faceId == null) return;
+		if (typeof document !== 'undefined' && document.hidden) return;
 		hoverActive.current = true;
 		const sid = story.id;
 		activeStoryIdRef.current = sid;
@@ -66,6 +67,14 @@ export function useStoryRingSlideshow(
 	}, [token, faceId, story.id]);
 
 	useEffect(() => () => stop(), [stop]);
+
+	useEffect(() => {
+		const onVisibility = () => {
+			if (document.visibilityState === 'hidden') stop();
+		};
+		document.addEventListener('visibilitychange', onVisibility);
+		return () => document.removeEventListener('visibilitychange', onVisibility);
+	}, [stop]);
 
 	const src = urls && urls.length > 0 ? urls[Math.abs(idx) % urls.length] : defaultSrc;
 

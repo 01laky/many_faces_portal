@@ -2,17 +2,16 @@
  * AdGrid - Wall tickets as listing cards for the current face (API-backed)
  */
 
-import { useState, useRef, useEffect, useCallback, useMemo, type CSSProperties } from 'react';
+import { useState, useRef, useCallback, useMemo, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
-import {
-	fetchAllWallTicketsForFace,
-	type WallTicketListItem,
-} from '../../../api/services/wallTicketsApi';
+import { useGridBlockFetchEnabled } from '../../../contexts/GridBlockFetchContext';
+import { useAdsGridQuery } from '../../../hooks/api/gridQueries';
 import { wallTicketListingImageUrl } from '../gridDisplayHelpers';
+import { GridMediaImage } from '../../GridMediaImage/GridMediaImage';
 import {
 	useStablePaginationEmit,
 	useSyncedPaginationReport,
@@ -28,9 +27,12 @@ export function AdGrid({ page: controlledPage, onPageChange }: AdGridProps = {})
 	const { selectedFace } = useFaceConfig();
 	const faceId = selectedFace?.id;
 
-	const [items, setItems] = useState<WallTicketListItem[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [loadError, setLoadError] = useState(false);
+	const fetchEnabled = useGridBlockFetchEnabled();
+	const {
+		data: items = [],
+		isLoading: loading,
+		isError: loadError,
+	} = useAdsGridQuery(token, faceId, fetchEnabled);
 	const [internalPage, setInternalPage] = useState(0);
 	const isControlled = onPageChange != null;
 	const page = isControlled && controlledPage !== undefined ? controlledPage : internalPage;
@@ -42,38 +44,6 @@ export function AdGrid({ page: controlledPage, onPageChange }: AdGridProps = {})
 		imageHeightFromCellWidth: 1,
 		infoBlockPx: 42,
 	});
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			await Promise.resolve();
-			if (!token || faceId == null) {
-				if (!cancelled) {
-					setItems([]);
-					setLoading(false);
-				}
-				return;
-			}
-			if (!cancelled) {
-				setLoading(true);
-				setLoadError(false);
-			}
-			try {
-				const list = await fetchAllWallTicketsForFace(token, faceId);
-				if (!cancelled) setItems(list);
-			} catch {
-				if (!cancelled) {
-					setLoadError(true);
-					setItems([]);
-				}
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [token, faceId]);
 
 	const totalPages = Math.max(1, Math.ceil(items.length / itemsPerPage));
 	const clampedPage = Math.min(page, Math.max(0, totalPages - 1));
@@ -128,9 +98,13 @@ export function AdGrid({ page: controlledPage, onPageChange }: AdGridProps = {})
 	return (
 		<div className="ad-grid-component">
 			<div className="ad-grid-items" ref={itemsRef} style={itemsStyle}>
-				{visibleAds.map((ad) => (
+				{visibleAds.map((ad, index) => (
 					<div key={ad.id} className="ad-grid-card">
-						<img src={wallTicketListingImageUrl(ad.id)} alt={ad.title} loading="lazy" />
+						<GridMediaImage
+							src={wallTicketListingImageUrl(ad.id)}
+							alt={ad.title}
+							priority={index === 0}
+						/>
 						<div className="ad-grid-card-info">
 							<span className="ad-grid-card-price">{t(k.wallLabel)}</span>
 							<span className="ad-grid-card-title">{ad.title}</span>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
-import { fetchWallTickets, type WallTicketListItem } from '../../api/services/wallTicketsApi';
+import { useWallTicketsQuery } from '@/hooks/api/useWallTicketsQuery';
 import { WallTicketDetailPanel } from '../WallTicketDetailPanel';
 import './WallTicketsSection.scss';
 import type { WallTicketsSectionProps } from './types';
@@ -11,46 +11,31 @@ export function WallTicketsSection({ refreshKey = 0 }: WallTicketsSectionProps) 
 	const { t } = useTranslation('common');
 	const { token } = useAuth();
 	const { selectedFace } = useFaceConfig();
-	const [items, setItems] = useState<WallTicketListItem[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
 	const [page, setPage] = useState(1);
-	const [totalPages, setTotalPages] = useState(1);
 	const [selectedId, setSelectedId] = useState<number | null>(null);
 	const [listTick, setListTick] = useState(0);
 
+	const { data, isLoading, isError, error, refetch } = useWallTicketsQuery(
+		token,
+		selectedFace?.id,
+		page,
+		20,
+		Boolean(selectedFace && token)
+	);
+
 	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			await Promise.resolve();
-			if (!selectedFace || !token) {
-				if (!cancelled) {
-					setLoading(false);
-					setItems([]);
-				}
-				return;
-			}
-			try {
-				if (!cancelled) setLoading(true);
-				const res = await fetchWallTickets(token, selectedFace.id, page, 20);
-				if (!cancelled) {
-					setItems(res.items);
-					setTotalPages(Math.max(1, res.totalPages));
-					setError(null);
-				}
-			} catch (err) {
-				if (!cancelled) {
-					setError(err instanceof Error && err.message ? err.message : t('wallTickets.loadError'));
-					setItems([]);
-				}
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [selectedFace, token, page, refreshKey, listTick, t]);
+		if (!selectedFace || !token) return;
+		void refetch();
+	}, [refreshKey, listTick, refetch, selectedFace, token]);
+
+	const items = data?.items ?? [];
+	const totalPages = Math.max(1, data?.totalPages ?? 1);
+	const errorMessage =
+		isError && error instanceof Error && error.message
+			? error.message
+			: isError
+				? t('wallTickets.loadError')
+				: null;
 
 	if (!selectedFace) return null;
 
@@ -67,9 +52,9 @@ export function WallTicketsSection({ refreshKey = 0 }: WallTicketsSectionProps) 
 
 	return (
 		<div className="wall-tickets-section">
-			{loading && <p className="wall-tickets-section__muted">{t('wallTickets.loading')}</p>}
-			{error && <p className="wall-tickets-section__error">{error}</p>}
-			{!loading && !error && items.length === 0 && (
+			{isLoading && <p className="wall-tickets-section__muted">{t('wallTickets.loading')}</p>}
+			{errorMessage && <p className="wall-tickets-section__error">{errorMessage}</p>}
+			{!isLoading && !errorMessage && items.length === 0 && (
 				<p className="wall-tickets-section__muted">{t('wallTickets.empty')}</p>
 			)}
 			<ul className="wall-tickets-section__list">

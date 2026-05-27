@@ -7,6 +7,7 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc -b && vite build",
+		"build:analyze": "ANALYZE=true tsc -b && vite build",
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
 		"format": "prettier --write .",
@@ -76,6 +77,7 @@
 		"@radix-ui/react-toggle-group": "^1.1.11",
 		"@radix-ui/react-tooltip": "^1.2.8",
 		"@tanstack/react-query": "^5.100.11",
+		"@tanstack/react-virtual": "^3.13.12",
 		"axios": "^1.16.1",
 		"bootstrap": "^5.3.8",
 		"dompurify": "^3.4.5",
@@ -127,6 +129,7 @@
 		"lint-staged": "^17.0.5",
 		"openapi-typescript-codegen": "^0.30.0",
 		"prettier": "^3.8.3",
+		"rollup-plugin-visualizer": "^6.0.5",
 		"typescript": "~6.0.3",
 		"typescript-eslint": "^8.59.4",
 		"vite": "^8.0.13",

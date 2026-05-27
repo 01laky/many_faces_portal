@@ -8,6 +8,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 | Version       | Theme                                      |
 | ------------- | ------------------------------------------ |
+| [1.0.0](#100) | Portal runtime performance v1 (PT-RP1–30)  |
 | [0.9.3](#093) | Contexts colocation + hooks/api re-folder  |
 | [0.9.2](#092) | Types/constants colocation rollout         |
 | [0.9.0](#090) | PSH1 security hardening                    |
@@ -27,6 +28,23 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 ### Changed
 
 ### Fixed
+
+---
+
+## [1.0.0]
+
+### Added
+
+- Portal runtime performance v1 (**PT-RP1–30**): dynamic grid registry, TanStack grid queries, messenger merge, profile Query bootstrap, scoped messenger hub, chat room parallel load + hub manager, virtualized message lists, video lounge visibility-gated polling, wall tickets Query dedup, auth context split, face-home prefetch, bundle analyzer + `scripts/portal-perf-baseline.mjs`, AI degraded banner, Vitest/Cypress perf budgets, and docs (`runtime-performance-v1.md`, `ai-degraded-ux.md`, query appendix grid keys).
+
+### Changed
+
+- Memoized Album/Blog grid cards and AppRoutes Header/Footer props (PT-RP8, PT-RP11).
+- `useGlobalProfile` shared cache for FaceConfig bootstrap (PT-RP5).
+
+### Fixed
+
+- Story ring slideshow clears intervals on unmount and hidden tab (PT-RP19).
 
 ---
 

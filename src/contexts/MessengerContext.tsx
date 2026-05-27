@@ -9,12 +9,14 @@ import {
 } from 'react';
 import type { HubConnection } from '@microsoft/signalr';
 import { resolveHubAccessToken } from '../utils/authStorage';
-import { buildAuthenticatedHubConnection } from '../api/signalr/buildAuthenticatedHubConnection';
+import { acquireHubConnection, releaseHubConnection } from '../api/signalr/hubConnectionManager';
 import type {
 	MessengerConnectionState,
 	MessengerContextValue,
 	MessengerProviderProps,
 } from './types';
+
+const MESSENGER_HUB_PATH = '/hubs/messenger';
 
 const MessengerContext = createContext<MessengerContextValue | null>(null);
 
@@ -24,7 +26,11 @@ export function useMessenger() {
 	return ctx;
 }
 
-export function MessengerProvider({ token, children }: MessengerProviderProps) {
+export function MessengerProvider({
+	token,
+	children,
+	messengerEnabled = true,
+}: MessengerProviderProps) {
 	const [connectionState, setConnectionState] = useState<MessengerConnectionState>('Disconnected');
 	const connectionRef = useRef<HubConnection | null>(null);
 	const tokenRef = useRef(token);
@@ -121,73 +127,113 @@ export function MessengerProvider({ token, children }: MessengerProviderProps) {
 	);
 
 	useEffect(() => {
-		if (!token) {
-			connectionRef.current?.stop();
+		if (!token || !messengerEnabled) {
 			connectionRef.current = null;
 			queueMicrotask(() => setConnectionState('Disconnected'));
 			return;
 		}
 
-		const connection = buildAuthenticatedHubConnection('/hubs/messenger', () =>
-			resolveHubAccessToken(tokenRef.current)
-		);
+		let cancelled = false;
+		const scopeKey = token;
 
-		connectionRef.current = connection;
-
-		connection.on(
-			'ReceiveChatMessage',
-			(
-				senderId: string,
-				senderName: string,
-				content: string,
-				sentAt: string,
-				messageId: number
-			) => {
-				callbacksRef.current.chatMessage.forEach((cb) =>
-					cb(senderId, senderName, content, sentAt, messageId)
-				);
-			}
-		);
-		connection.on(
-			'ReceiveMessageRequest',
-			(senderId: string, senderName: string, content: string, sentAt: string) => {
-				callbacksRef.current.messageRequest.forEach((cb) =>
-					cb(senderId, senderName, content, sentAt)
-				);
-			}
-		);
-		connection.on('ReceiveFriendRequest', (senderId: string, senderName: string) => {
+		const onReceiveChatMessage = (
+			senderId: string,
+			senderName: string,
+			content: string,
+			sentAt: string,
+			messageId: number
+		) => {
+			callbacksRef.current.chatMessage.forEach((cb) =>
+				cb(senderId, senderName, content, sentAt, messageId)
+			);
+		};
+		const onReceiveMessageRequest = (
+			senderId: string,
+			senderName: string,
+			content: string,
+			sentAt: string
+		) => {
+			callbacksRef.current.messageRequest.forEach((cb) =>
+				cb(senderId, senderName, content, sentAt)
+			);
+		};
+		const onReceiveFriendRequest = (senderId: string, senderName: string) => {
 			callbacksRef.current.friendRequest.forEach((cb) => cb(senderId, senderName));
-		});
-		connection.on('MessageRequestAccepted', (accepterId: string, accepterName: string) => {
+		};
+		const onMessageRequestAcceptedEvent = (accepterId: string, accepterName: string) => {
 			callbacksRef.current.messageRequestAccepted.forEach((cb) => cb(accepterId, accepterName));
-		});
-		connection.on('MessageRequestRejected', (rejecterId: string) => {
+		};
+		const onMessageRequestRejectedEvent = (rejecterId: string) => {
 			callbacksRef.current.messageRequestRejected.forEach((cb) => cb(rejecterId));
-		});
-		connection.on(
-			'ReceiveNotification',
-			(id: number, title: string, message: string, type: string, createdAt: string) => {
-				callbacksRef.current.notification.forEach((cb) => cb(id, title, message, type, createdAt));
-			}
-		);
-
-		connection.on('ReceivePlatformChatError', (code: string) => {
+		};
+		const onReceiveNotification = (
+			id: number,
+			title: string,
+			message: string,
+			type: string,
+			createdAt: string
+		) => {
+			callbacksRef.current.notification.forEach((cb) => cb(id, title, message, type, createdAt));
+		};
+		const onReceivePlatformChatError = (code: string) => {
 			callbacksRef.current.platformChatError.forEach((cb) => cb(code));
-		});
+		};
 
 		queueMicrotask(() => setConnectionState('Connecting'));
-		connection
-			.start()
-			.then(() => setConnectionState('Connected'))
-			.catch(() => setConnectionState('Disconnected'));
+
+		void (async () => {
+			try {
+				const connection = await acquireHubConnection(MESSENGER_HUB_PATH, scopeKey, () =>
+					resolveHubAccessToken(tokenRef.current)
+				);
+				if (cancelled) {
+					await releaseHubConnection(MESSENGER_HUB_PATH, scopeKey);
+					return;
+				}
+
+				connectionRef.current = connection;
+
+				connection.on('ReceiveChatMessage', onReceiveChatMessage);
+				connection.on('ReceiveMessageRequest', onReceiveMessageRequest);
+				connection.on('ReceiveFriendRequest', onReceiveFriendRequest);
+				connection.on('MessageRequestAccepted', onMessageRequestAcceptedEvent);
+				connection.on('MessageRequestRejected', onMessageRequestRejectedEvent);
+				connection.on('ReceiveNotification', onReceiveNotification);
+				connection.on('ReceivePlatformChatError', onReceivePlatformChatError);
+
+				connection.onreconnecting(() => {
+					if (!cancelled) setConnectionState('Connecting');
+				});
+				connection.onreconnected(() => {
+					if (!cancelled) setConnectionState('Connected');
+				});
+				connection.onclose(() => {
+					if (!cancelled) setConnectionState('Disconnected');
+				});
+
+				setConnectionState(connection.state === 'Connected' ? 'Connected' : 'Connecting');
+			} catch {
+				if (!cancelled) setConnectionState('Disconnected');
+			}
+		})();
 
 		return () => {
-			connection.stop();
+			cancelled = true;
+			const conn = connectionRef.current;
+			if (conn) {
+				conn.off('ReceiveChatMessage', onReceiveChatMessage);
+				conn.off('ReceiveMessageRequest', onReceiveMessageRequest);
+				conn.off('ReceiveFriendRequest', onReceiveFriendRequest);
+				conn.off('MessageRequestAccepted', onMessageRequestAcceptedEvent);
+				conn.off('MessageRequestRejected', onMessageRequestRejectedEvent);
+				conn.off('ReceiveNotification', onReceiveNotification);
+				conn.off('ReceivePlatformChatError', onReceivePlatformChatError);
+			}
 			connectionRef.current = null;
+			void releaseHubConnection(MESSENGER_HUB_PATH, scopeKey);
 			queueMicrotask(() => setConnectionState('Disconnected'));
 		};
-	}, [token]);
+	}, [token, messengerEnabled]);
 
 	const value = useMemo(
 		(): MessengerContextValue => ({

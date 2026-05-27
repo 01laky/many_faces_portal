@@ -9,9 +9,10 @@ import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
+import { useGridBlockFetchEnabled } from '../../../contexts/GridBlockFetchContext';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
+import { useChatRoomsGridQuery } from '../../../hooks/api/gridQueries';
 import { COMPONENT_TYPE_ID } from '../../../constants/componentTypeIds';
-import { listChatRooms, type FaceChatRoomDto } from '../../../api/services/ChatRoomsService';
 import { ChatRoomCard } from '../ChatRoomCard';
 import {
 	useStablePaginationEmit,
@@ -32,38 +33,17 @@ export function ChatRoomCarousel({
 	const getLocalizedPath = useLocalizedLink();
 	const { token } = useAuth();
 	const { selectedFace } = useFaceConfig();
-	const [rooms, setRooms] = useState<FaceChatRoomDto[]>([]);
-	const [loading, setLoading] = useState(true);
+	const faceId = selectedFace?.id;
+	const fetchEnabled = useGridBlockFetchEnabled();
+	const { data: rooms = [], isLoading: loading } = useChatRoomsGridQuery(
+		token,
+		faceId,
+		fetchEnabled
+	);
 	const [visibleCount, setVisibleCount] = useState(2);
 	const [internalPage, setInternalPage] = useState(0);
 	const isControlled = onPageChange != null;
 	const page = isControlled && controlledPage !== undefined ? controlledPage : internalPage;
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			await Promise.resolve();
-			if (!selectedFace || !token) {
-				if (!cancelled) {
-					setRooms([]);
-					setLoading(false);
-				}
-				return;
-			}
-			if (!cancelled) setLoading(true);
-			try {
-				const list = await listChatRooms(selectedFace.id, token);
-				if (!cancelled) setRooms(list);
-			} catch {
-				if (!cancelled) setRooms([]);
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [selectedFace, token]);
 
 	const calcVisible = useCallback(() => {
 		if (!containerRef.current) return;

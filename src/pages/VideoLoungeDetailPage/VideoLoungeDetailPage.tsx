@@ -31,7 +31,11 @@ import {
 } from './videoLoungeDetailLogic';
 import { connectStubLiveKitRoom, type StubLiveKitRoom } from './videoLoungeLiveKitStub';
 import './VideoLoungeDetailPage.scss';
-import { LIVE_ROSTER_POLL_MS, HEARTBEAT_INTERVAL_MS } from './constants';
+import {
+	resolveVideoLoungeRefetchInterval,
+	shouldRunVideoLoungeHeartbeat,
+} from './videoLoungePollLogic';
+import { HEARTBEAT_INTERVAL_MS } from './constants';
 
 export function VideoLoungeDetailPage({ loungeId: loungeIdProp }: { loungeId: number }) {
 	const { token } = useAuth();
@@ -58,6 +62,9 @@ export function VideoLoungeDetailPage({ loungeId: loungeIdProp }: { loungeId: nu
 	const liveJoinRef = useRef(liveJoin);
 	const joinModeRef = useRef(joinMode);
 	const phaseRef = useRef(phase);
+	const [pageVisible, setPageVisible] = useState(
+		() => typeof document === 'undefined' || document.visibilityState === 'visible'
+	);
 	const { previewStream, previewError, previewReady, startPreview, stopPreview } =
 		useDevicePreview();
 
@@ -77,6 +84,12 @@ export function VideoLoungeDetailPage({ loungeId: loungeIdProp }: { loungeId: nu
 		joinModeRef.current = joinMode;
 		phaseRef.current = phase;
 	}, [token, liveJoin, joinMode, phase]);
+
+	useEffect(() => {
+		const onVisibility = () => setPageVisible(document.visibilityState === 'visible');
+		document.addEventListener('visibilitychange', onVisibility);
+		return () => document.removeEventListener('visibilitychange', onVisibility);
+	}, []);
 
 	const loadLounge = useCallback(async () => {
 		if (!faceId || !token) return;
@@ -103,7 +116,7 @@ export function VideoLoungeDetailPage({ loungeId: loungeIdProp }: { loungeId: nu
 		queryKey: ['videoLoungeLive', faceId, loungeIdProp, phase],
 		queryFn: () => getVideoLoungeLive(faceId!, loungeIdProp, token!),
 		enabled: Boolean(faceId && token && lounge),
-		refetchInterval: phase === 'lobby' || phase === 'live' ? LIVE_ROSTER_POLL_MS : false,
+		refetchInterval: resolveVideoLoungeRefetchInterval(pageVisible, phase),
 	});
 
 	/** Returns to lobby, tears down stub SFU, and clears connect errors. */
@@ -142,12 +155,13 @@ export function VideoLoungeDetailPage({ loungeId: loungeIdProp }: { loungeId: nu
 	}, [leaveLiveBestEffort]);
 
 	useEffect(() => {
-		if (phase !== 'live' || !faceId || !token) return;
+		if (!shouldRunVideoLoungeHeartbeat({ pageVisible, phase, faceId: faceId ?? null, token }))
+			return;
 		const id = window.setInterval(() => {
 			void heartbeatVideoLoungeLive(faceId, loungeIdProp, token).catch(() => {});
 		}, HEARTBEAT_INTERVAL_MS);
 		return () => clearInterval(id);
-	}, [phase, faceId, token, loungeIdProp]);
+	}, [phase, faceId, token, loungeIdProp, pageVisible]);
 
 	useEffect(() => {
 		if (phase !== 'live' || !liveJoin || !joinMode || !faceId || !token) return;

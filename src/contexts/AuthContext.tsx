@@ -16,6 +16,7 @@ import { setupAuthStorageSync } from '../utils/authSessionSync';
 import { resetPortalAuthSession } from '../utils/portalAuthSession';
 import { runLegacyLocalStorageMigration } from '../utils/legacyStorageMigration';
 import * as profileApi from '../api/profile/profileApi';
+import { profileQueryKey } from '@/hooks/api/useProfileApi';
 import { ensureLanguageLoaded } from '../i18n/config';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
@@ -31,6 +32,8 @@ import { useMeCapabilities } from '@/hooks/api/useMeCapabilities';
 import type {
 	AuthContextType,
 	AuthProviderProps,
+	AuthStateContextType,
+	AuthActionsContextType,
 	AuthUser,
 	MeCapabilitiesWarmupProps,
 } from './types';
@@ -44,7 +47,8 @@ import type {
  * Logout UX may fire from any layer; keep behavior consistent (toast + redirect handled by listeners/pages).
  */
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthStateContext = createContext<AuthStateContextType | undefined>(undefined);
+const AuthActionsContext = createContext<AuthActionsContextType | undefined>(undefined);
 
 function MeCapabilitiesWarmup({ token }: MeCapabilitiesWarmupProps) {
 	useMeCapabilities(token, Boolean(token));
@@ -118,7 +122,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 				},
 			});
 			try {
-				const profile = await profileApi.getProfile(token);
+				const profile = await queryClient.fetchQuery({
+					queryKey: profileQueryKey(),
+					queryFn: () => profileApi.getProfile(token),
+				});
 				if (profile.preferredUiLanguage) {
 					await ensureLanguageLoaded(profile.preferredUiLanguage);
 					await i18n.changeLanguage(profile.preferredUiLanguage);
@@ -127,7 +134,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 				// profile fetch is best-effort on bootstrap
 			}
 		})();
-	}, [token, isAuthenticated, i18n]);
+	}, [token, isAuthenticated, i18n, queryClient]);
 
 	useEffect(() => {
 		void (async () => {
@@ -290,32 +297,53 @@ export function AuthProvider({ children }: AuthProviderProps) {
 		}
 	}, [refreshTokenMutation, logout]);
 
-	const authValue = useMemo(
-		(): AuthContextType => ({
+	const stateValue = useMemo(
+		(): AuthStateContextType => ({
 			isAuthenticated,
 			isLoading,
 			isSessionHydrated,
 			user,
 			token,
+		}),
+		[isAuthenticated, isLoading, isSessionHydrated, user, token]
+	);
+
+	const actionsValue = useMemo(
+		(): AuthActionsContextType => ({
 			login,
 			logout,
 			refreshAuth,
 		}),
-		[isAuthenticated, isLoading, isSessionHydrated, user, token, login, logout, refreshAuth]
+		[login, logout, refreshAuth]
 	);
 
 	return (
-		<AuthContext.Provider value={authValue}>
-			<MeCapabilitiesWarmup token={token} />
-			{children}
-		</AuthContext.Provider>
+		<AuthStateContext.Provider value={stateValue}>
+			<AuthActionsContext.Provider value={actionsValue}>
+				<MeCapabilitiesWarmup token={token} />
+				{children}
+			</AuthActionsContext.Provider>
+		</AuthStateContext.Provider>
 	);
 }
 
-export function useAuth() {
-	const context = useContext(AuthContext);
+export function useAuthState(): AuthStateContextType {
+	const context = useContext(AuthStateContext);
 	if (context === undefined) {
-		throw new Error('useAuth must be used within an AuthProvider');
+		throw new Error('useAuthState must be used within an AuthProvider');
 	}
 	return context;
+}
+
+export function useAuthActions(): AuthActionsContextType {
+	const context = useContext(AuthActionsContext);
+	if (context === undefined) {
+		throw new Error('useAuthActions must be used within an AuthProvider');
+	}
+	return context;
+}
+
+/** Merged auth API — prefer `useAuthState` / `useAuthActions` when only one slice is needed (PT-RP15). */
+export function useAuth(): AuthContextType {
+	return { ...useAuthState(), ...useAuthActions() };
 }

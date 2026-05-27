@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Globe, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -5,18 +6,34 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
 import { LanguageSwitcher } from '../../../components/LanguageSwitcher';
 import { AnimatedGradientToggle } from '../AnimatedGradientToggle';
-import { FriendRequestsTab } from '../../../components/FriendRequestsTab';
-import { MessengerTab } from '../../../components/MessengerTab';
-import { NotificationsTab } from '../../../components/NotificationsTab';
-import { BlockListTab } from '../../../components/BlockListTab';
-import { FollowTab } from '../../../components/FollowTab';
 import { FaceRoleSelectPanel } from '../../../components/FaceRoleSelectPanel';
-import { EditProfileTab } from '../../../components/EditProfileTab';
 import { GridTopPanelContent } from '../../../components/GridTopPanelContent';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
 import { parseGradientSettings } from '../../../hooks/useAnimatedGradient';
+import { usePrefetchFaceHomeQueries } from '../../../hooks/usePrefetchFaceHomeQueries';
 import { PagesNav } from '../PagesNav';
+import { RouteLoadingFallback } from '../../../routes/routeLoadingFallback';
 import type { SettingsSidePanelBodyProps } from './types';
+import { shouldMountMessengerSettingsTab } from '../../../utils/settingsMessengerTabGate';
+
+const LazyEditProfileTab = lazy(() =>
+	import('../../../components/EditProfileTab').then((m) => ({ default: m.EditProfileTab }))
+);
+const LazyFriendRequestsTab = lazy(() =>
+	import('../../../components/FriendRequestsTab').then((m) => ({ default: m.FriendRequestsTab }))
+);
+const LazyMessengerTab = lazy(() =>
+	import('../../../components/MessengerTab').then((m) => ({ default: m.MessengerTab }))
+);
+const LazyNotificationsTab = lazy(() =>
+	import('../../../components/NotificationsTab').then((m) => ({ default: m.NotificationsTab }))
+);
+const LazyBlockListTab = lazy(() =>
+	import('../../../components/BlockListTab').then((m) => ({ default: m.BlockListTab }))
+);
+const LazyFollowTab = lazy(() =>
+	import('../../../components/FollowTab').then((m) => ({ default: m.FollowTab }))
+);
 
 export function SettingsSidePanelBody({
 	gridTopPanel,
@@ -30,6 +47,7 @@ export function SettingsSidePanelBody({
 	const navigate = useNavigate();
 	const getLocalizedPath = useLocalizedLink();
 	const { availableFaces, selectedFace, selectFace, reload } = useFaceConfig();
+	const { prefetchFaceHome, cancelPrefetch } = usePrefetchFaceHomeQueries(token);
 
 	if (gridTopPanel?.mode === 'create') {
 		return (
@@ -43,7 +61,11 @@ export function SettingsSidePanelBody({
 
 	return (
 		<>
-			{settingsTab === 'profile' && <EditProfileTab />}
+			{settingsTab === 'profile' && (
+				<Suspense fallback={<RouteLoadingFallback />}>
+					<LazyEditProfileTab />
+				</Suspense>
+			)}
 			{settingsTab === 'faceRole' && token && selectedFace && (
 				<div className="settings-panel-body-fill settings-section">
 					<FaceRoleSelectPanel
@@ -94,6 +116,10 @@ export function SettingsSidePanelBody({
 								key={face.id}
 								className={`face-card ${isSelected ? 'face-card--selected' : ''}`}
 								onClick={() => selectFace(face.id)}
+								onMouseEnter={() => prefetchFaceHome(face)}
+								onMouseLeave={cancelPrefetch}
+								onFocus={() => prefetchFaceHome(face)}
+								onBlur={cancelPrefetch}
 								type="button"
 							>
 								<div className="face-card-preview" style={{ background: gradientBg }} />
@@ -114,19 +140,33 @@ export function SettingsSidePanelBody({
 			{settingsTab === 'pages' && <PagesNav onNavigate={onSettingsNavigate} />}
 			{settingsTab === 'friendRequests' && token && (
 				<div className="settings-panel-body-fill">
-					<FriendRequestsTab token={token} />
+					<Suspense fallback={<RouteLoadingFallback />}>
+						<LazyFriendRequestsTab token={token} />
+					</Suspense>
 				</div>
 			)}
-			{settingsTab === 'messenger' && token && <MessengerTab token={token} />}
-			{settingsTab === 'notifications' && token && <NotificationsTab token={token} />}
+			{shouldMountMessengerSettingsTab(settingsTab, token) && (
+				<Suspense fallback={<RouteLoadingFallback />}>
+					<LazyMessengerTab token={token!} />
+				</Suspense>
+			)}
+			{settingsTab === 'notifications' && token && (
+				<Suspense fallback={<RouteLoadingFallback />}>
+					<LazyNotificationsTab token={token} />
+				</Suspense>
+			)}
 			{settingsTab === 'blockList' && token && (
 				<div className="settings-panel-body-fill">
-					<BlockListTab token={token} />
+					<Suspense fallback={<RouteLoadingFallback />}>
+						<LazyBlockListTab token={token} />
+					</Suspense>
 				</div>
 			)}
 			{settingsTab === 'follows' && token && (
 				<div className="settings-panel-body-fill">
-					<FollowTab token={token} />
+					<Suspense fallback={<RouteLoadingFallback />}>
+						<LazyFollowTab token={token} />
+					</Suspense>
 				</div>
 			)}
 		</>

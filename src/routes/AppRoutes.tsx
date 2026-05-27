@@ -1,11 +1,13 @@
-import { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
+import { useState, useEffect, useCallback, useMemo, Suspense, memo } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
 import { useFaceConfig } from '../contexts/FaceConfigContext';
+import { useMessengerHubGate } from '../contexts/MessengerHubGateContext';
 import { GridTopPanelProvider, type GridTopPanelState } from '../contexts/GridTopPanelContext';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
+import { ToastHost } from '../components/ToastHost/ToastHost';
+import { AiDegradedBanner } from '../components/AiDegradedBanner/AiDegradedBanner';
 import { StoriesCreateTopPanel } from '../components/StoriesCreateTopPanel';
 import { WallTicketCreateTopPanel } from '../components/WallTicketCreateTopPanel';
 import { pathnameMatchesWallPage } from '../utils/faceWallPage';
@@ -23,11 +25,16 @@ import { AppWorkspace } from '../shell/AppWorkspace';
 import { AppContentArea } from '../shell/AppContentArea';
 import { SettingsSidePanel } from '../features/settings';
 import type { SettingsTabId } from '../features/settings';
+import { resolveMessengerTabActive } from '../utils/settingsMessengerTabGate';
 import { RouteLoadingFallback } from './routeLoadingFallback';
 import { buildLanguageNestedRoutes } from './buildLanguageNestedRoutes';
 import { useFaceRouteEntries } from './useFaceRouteEntries';
 import { useTranslatedRoutePaths } from './useTranslatedRoutePaths';
-import '../styles/toast.scss';
+import type { HeaderProps } from '../components/Header/types';
+import type { FooterProps } from '../components/Footer/types';
+
+const MemoHeader = memo(Header);
+const MemoFooter = memo(Footer);
 
 /**
  * Route tree + app chrome. Depends on `FaceConfigProvider` + `AuthProvider`.
@@ -35,6 +42,7 @@ import '../styles/toast.scss';
 export function AppRoutes() {
 	const { i18n } = useTranslation('common');
 	const { isAuthenticated, token } = useAuth();
+	const { setMessengerTabActive } = useMessengerHubGate();
 	const getLocalizedPath = useLocalizedLink();
 	const { selectedFace } = useFaceConfig();
 	const [settingsOpen, setSettingsOpen] = useState(false);
@@ -61,6 +69,10 @@ export function AppRoutes() {
 	const faceRoutes = useFaceRouteEntries(selectedFace);
 	const { loginPaths, registerPaths, homepagePaths, profilePaths, usersPaths } =
 		useTranslatedRoutePaths(i18n);
+
+	useEffect(() => {
+		setMessengerTabActive(resolveMessengerTabActive(settingsOpen, settingsTab));
+	}, [settingsOpen, settingsTab, setMessengerTabActive]);
 
 	useEffect(() => {
 		if (!settingsOpen) return;
@@ -112,6 +124,69 @@ export function AppRoutes() {
 		setGridTopPanel(null);
 	}, []);
 
+	const handleSettingsToggle = useCallback(() => {
+		setGridTopPanel(null);
+		setSettingsTab('settings');
+		setSettingsOpen((s) => !s);
+	}, []);
+
+	const handleMenuToggle = useCallback(() => {
+		setGridTopPanel(null);
+		setSettingsTab('pages');
+		setSettingsOpen((s) => !s);
+	}, []);
+
+	const handleProfileClick = useCallback(() => {
+		setGridTopPanel(null);
+		setSettingsTab('profile');
+		setSettingsOpen(true);
+	}, []);
+
+	const handleStoriesCreate = useCallback(() => setStoriesCreateOpen(true), []);
+	const handleWallTicketCreate = useCallback(() => setWallCreateOpen(true), []);
+	const handleStoriesCreateClose = useCallback(() => setStoriesCreateOpen(false), []);
+	const handleWallCreateClose = useCallback(() => setWallCreateOpen(false), []);
+	const handleWallCreated = useCallback(() => setWallRefreshKey((k) => k + 1), []);
+
+	const handleMessagesClick = useCallback(() => {
+		setGridTopPanel(null);
+		setSettingsTab('messenger');
+		setSettingsOpen(true);
+	}, []);
+
+	const headerProps = useMemo((): HeaderProps => {
+		const props: HeaderProps = {
+			onSettingsToggle: handleSettingsToggle,
+			onMenuToggle: handleMenuToggle,
+		};
+		if (isAuthenticated) {
+			props.onProfileClick = handleProfileClick;
+		}
+		if (isAuthenticated && token && isStoriesPage) {
+			props.onStoriesCreate = handleStoriesCreate;
+		}
+		if (isAuthenticated && token && selectedFace && isWallPage && canShowWallCreate) {
+			props.onWallTicketCreate = handleWallTicketCreate;
+		}
+		return props;
+	}, [
+		handleSettingsToggle,
+		handleMenuToggle,
+		handleProfileClick,
+		handleStoriesCreate,
+		handleWallTicketCreate,
+		isAuthenticated,
+		token,
+		isStoriesPage,
+		selectedFace,
+		isWallPage,
+		canShowWallCreate,
+	]);
+
+	const footerProps = useMemo((): FooterProps => {
+		return isAuthenticated ? { onMessagesClick: handleMessagesClick } : {};
+	}, [isAuthenticated, handleMessagesClick]);
+
 	useEffect(() => {
 		if (!env.debugMode) return;
 		logger.info('AppRoutes state', {
@@ -124,45 +199,22 @@ export function AppRoutes() {
 	return (
 		<GridTopPanelProvider value={gridTopPanelApi}>
 			<AppWorkspace className={`app-layout ${settingsOpen ? 'app-layout--settings-open' : ''}`}>
-				<Header
-					onSettingsToggle={() => {
-						setGridTopPanel(null);
-						setSettingsTab('settings');
-						setSettingsOpen((s) => !s);
-					}}
-					onMenuToggle={() => {
-						setGridTopPanel(null);
-						setSettingsTab('pages');
-						setSettingsOpen((s) => !s);
-					}}
-					onProfileClick={() => {
-						setGridTopPanel(null);
-						setSettingsTab('profile');
-						setSettingsOpen(true);
-					}}
-					onStoriesCreate={
-						isAuthenticated && token && isStoriesPage ? () => setStoriesCreateOpen(true) : undefined
-					}
-					onWallTicketCreate={
-						isAuthenticated && token && selectedFace && isWallPage && canShowWallCreate
-							? () => setWallCreateOpen(true)
-							: undefined
-					}
-				/>
+				<AiDegradedBanner />
+				<MemoHeader {...headerProps} />
 				{isAuthenticated && token && (
 					<StoriesCreateTopPanel
 						open={storiesCreateOpen}
-						onClose={() => setStoriesCreateOpen(false)}
+						onClose={handleStoriesCreateClose}
 						token={token}
 					/>
 				)}
 				{isAuthenticated && token && selectedFace && (
 					<WallTicketCreateTopPanel
 						open={wallCreateOpen}
-						onClose={() => setWallCreateOpen(false)}
+						onClose={handleWallCreateClose}
 						token={token}
 						faceId={selectedFace.id}
-						onCreated={() => setWallRefreshKey((k) => k + 1)}
+						onCreated={handleWallCreated}
 					/>
 				)}
 				<AppContentArea>
@@ -197,29 +249,8 @@ export function AppRoutes() {
 						</Suspense>
 					</main>
 				</AppContentArea>
-				<Footer
-					onMessagesClick={
-						isAuthenticated
-							? () => {
-									setGridTopPanel(null);
-									setSettingsTab('messenger');
-									setSettingsOpen(true);
-								}
-							: undefined
-					}
-				/>
-				<ToastContainer
-					position="top-center"
-					autoClose={5000}
-					hideProgressBar={false}
-					newestOnTop={false}
-					closeOnClick
-					rtl={false}
-					pauseOnFocusLoss
-					draggable
-					pauseOnHover
-					theme="light"
-				/>
+				<MemoFooter {...footerProps} />
+				<ToastHost />
 			</AppWorkspace>
 		</GridTopPanelProvider>
 	);

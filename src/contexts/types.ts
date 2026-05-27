@@ -17,13 +17,18 @@ export interface AppProviderProps {
 
 export type AuthUser = PortalJwtUser;
 
-export interface AuthContextType {
+export interface AuthContextType extends AuthStateContextType, AuthActionsContextType {}
+
+export interface AuthStateContextType {
 	isAuthenticated: boolean;
 	isLoading: boolean;
 	/** True after the one-shot cold-start session read completes; stays true during login/logout. */
 	isSessionHydrated: boolean;
 	user: AuthUser | null;
 	token: string | null;
+}
+
+export interface AuthActionsContextType {
 	login: (
 		username: string,
 		password: string,
@@ -90,6 +95,8 @@ export interface MessengerContextValue {
 export interface MessengerProviderProps {
 	token: string | null;
 	children: ReactNode;
+	/** When false, hub lifecycle is skipped (PT-RP9). Default true. */
+	messengerEnabled?: boolean;
 }
 
 export type GridTopPanelState = null | { mode: 'create'; componentType: GridComponentType };

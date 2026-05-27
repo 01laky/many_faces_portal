@@ -2,16 +2,17 @@
  * ChatRoomGrid - Paginated grid of chat room cards (API-backed)
  */
 
-import { useState, useRef, useEffect, useCallback, useMemo, type CSSProperties } from 'react';
+import { useState, useRef, useCallback, useMemo, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
+import { useGridBlockFetchEnabled } from '../../../contexts/GridBlockFetchContext';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
+import { useChatRoomsGridQuery } from '../../../hooks/api/gridQueries';
 import { COMPONENT_TYPE_ID } from '../../../constants/componentTypeIds';
-import { listChatRooms, type FaceChatRoomDto } from '../../../api/services/ChatRoomsService';
 import { ChatRoomCard } from '../ChatRoomCard';
 import {
 	useStablePaginationEmit,
@@ -28,8 +29,13 @@ export function ChatRoomGrid({ page: controlledPage, onPageChange }: ChatRoomGri
 	const getLocalizedPath = useLocalizedLink();
 	const { token } = useAuth();
 	const { selectedFace } = useFaceConfig();
-	const [rooms, setRooms] = useState<FaceChatRoomDto[]>([]);
-	const [loading, setLoading] = useState(true);
+	const faceId = selectedFace?.id;
+	const fetchEnabled = useGridBlockFetchEnabled();
+	const { data: rooms = [], isLoading: loading } = useChatRoomsGridQuery(
+		token,
+		faceId,
+		fetchEnabled
+	);
 	const [internalPage, setInternalPage] = useState(0);
 	const isControlled = onPageChange != null;
 	const page = isControlled && controlledPage !== undefined ? controlledPage : internalPage;
@@ -40,32 +46,6 @@ export function ChatRoomGrid({ page: controlledPage, onPageChange }: ChatRoomGri
 		minColWidth: 160,
 		fixedCardHeightPx: 54,
 	});
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			await Promise.resolve();
-			if (!selectedFace || !token) {
-				if (!cancelled) {
-					setRooms([]);
-					setLoading(false);
-				}
-				return;
-			}
-			if (!cancelled) setLoading(true);
-			try {
-				const list = await listChatRooms(selectedFace.id, token);
-				if (!cancelled) setRooms(list);
-			} catch {
-				if (!cancelled) setRooms([]);
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [selectedFace, token]);
 
 	const totalPages = Math.max(1, Math.ceil(rooms.length / itemsPerPage));
 	const clampedPage = Math.min(page, Math.max(0, totalPages - 1));

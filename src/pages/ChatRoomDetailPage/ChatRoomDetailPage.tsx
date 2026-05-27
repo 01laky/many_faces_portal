@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Loader2, Send } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { resolveHubAccessToken } from '../../utils/authStorage';
-import { buildAuthenticatedHubConnection } from '../../api/signalr/buildAuthenticatedHubConnection';
+import { acquireHubConnection, releaseHubConnection } from '../../api/signalr/hubConnectionManager';
 import { shouldConnectChatRoomHub } from '../../api/signalr/hubStartPolicy';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
@@ -17,7 +17,11 @@ import {
 	type FaceChatRoomDto,
 	type FaceChatRoomMessageDto,
 } from '../../api/services/ChatRoomsService';
+import { resolveChatRoomMountMessages, resolveChatRoomMountRoom } from './chatRoomMountLogic';
+import { SimpleVirtualList } from '../../components/SimpleVirtualList/SimpleVirtualList';
 import './ChatRoomDetailPage.scss';
+
+const CHATROOM_HUB_PATH = '/hubs/chatroom';
 
 export function ChatRoomDetailPage({ roomId: roomIdProp }: { roomId: number }) {
 	const { token } = useAuth();
@@ -34,16 +38,16 @@ export function ChatRoomDetailPage({ roomId: roomIdProp }: { roomId: number }) {
 	const connRef = useRef<HubConnection | null>(null);
 
 	const loadRoom = useCallback(async () => {
-		if (!selectedFace || !token) return;
+		if (!selectedFace || !token) return null;
 		try {
 			const r = await getChatRoom(selectedFace.id, roomIdProp, token);
 			setRoom(r);
 			setLoadError(false);
+			return r;
 		} catch {
 			setLoadError(true);
 			setRoom(null);
-		} finally {
-			setLoading(false);
+			return null;
 		}
 	}, [selectedFace, token, roomIdProp]);
 
@@ -58,23 +62,30 @@ export function ChatRoomDetailPage({ roomId: roomIdProp }: { roomId: number }) {
 	}, [selectedFace, token, roomIdProp]);
 
 	useEffect(() => {
+		if (!selectedFace || !token) return;
+		let cancelled = false;
+		queueMicrotask(() => {
+			if (!cancelled) setLoading(true);
+		});
 		void (async () => {
-			await Promise.resolve();
-			setLoading(true);
-			await loadRoom();
-		})();
-	}, [loadRoom]);
-
-	useEffect(() => {
-		void (async () => {
-			await Promise.resolve();
-			if (!room || (!room.isHostViewer && !room.isMember)) {
-				setMessages([]);
-				return;
+			try {
+				const [roomResult, messagesResult] = await Promise.allSettled([
+					getChatRoom(selectedFace.id, roomIdProp, token),
+					getChatRoomMessages(selectedFace.id, roomIdProp, token, { pageSize: 80 }),
+				]);
+				if (cancelled) return;
+				const { room: r, loadError: roomError } = resolveChatRoomMountRoom(roomResult);
+				setRoom(r);
+				setLoadError(roomError);
+				setMessages(resolveChatRoomMountMessages(r, messagesResult));
+			} finally {
+				if (!cancelled) setLoading(false);
 			}
-			await loadMessages();
 		})();
-	}, [room, loadMessages]);
+		return () => {
+			cancelled = true;
+		};
+	}, [selectedFace, token, roomIdProp]);
 
 	useEffect(() => {
 		if (
@@ -86,62 +97,72 @@ export function ChatRoomDetailPage({ roomId: roomIdProp }: { roomId: number }) {
 				isHostViewer: room.isHostViewer,
 			})
 		) {
-			connRef.current?.stop();
 			connRef.current = null;
 			return;
 		}
 
 		const activeRoom = room;
+		const scopeKey = token;
 		const tokenRef = { current: token };
-		const conn = buildAuthenticatedHubConnection('/hubs/chatroom', () =>
-			resolveHubAccessToken(tokenRef.current)
-		);
+		let cancelled = false;
 
-		conn.on(
-			'ReceiveRoomMessage',
-			(
-				faceChatRoomId: number,
-				senderUserId: string,
-				_senderName: string,
-				content: string,
-				sentAt: string,
-				messageId: number
-			) => {
-				if (faceChatRoomId !== activeRoom.id) return;
-				setMessages((prev) => {
-					if (prev.some((m) => m.id === messageId)) return prev;
-					return [
-						...prev,
-						{
-							id: messageId,
-							senderUserId,
-							content,
-							sentAt,
-						},
-					];
-				});
-			}
-		);
+		const onReceiveRoomMessage = (
+			faceChatRoomId: number,
+			senderUserId: string,
+			_senderName: string,
+			content: string,
+			sentAt: string,
+			messageId: number
+		) => {
+			if (faceChatRoomId !== activeRoom.id) return;
+			setMessages((prev) => {
+				if (prev.some((m) => m.id === messageId)) return prev;
+				return [
+					...prev,
+					{
+						id: messageId,
+						senderUserId,
+						content,
+						sentAt,
+					},
+				];
+			});
+		};
 
-		conn.on('ChatRoomClosed', (closedId: number) => {
+		const onChatRoomClosed = (closedId: number) => {
 			if (closedId !== activeRoom.id) return;
 			toast.info(t('chatRoom.closed', 'This chat room was closed.'));
 			navigate(-1);
-		});
+		};
 
-		conn
-			.start()
-			.then(() => conn.invoke('JoinRoom', activeRoom.id))
-			.catch(() => {
+		void (async () => {
+			try {
+				const conn = await acquireHubConnection(CHATROOM_HUB_PATH, scopeKey, () =>
+					resolveHubAccessToken(tokenRef.current)
+				);
+				if (cancelled) {
+					await releaseHubConnection(CHATROOM_HUB_PATH, scopeKey);
+					return;
+				}
+				connRef.current = conn;
+				conn.on('ReceiveRoomMessage', onReceiveRoomMessage);
+				conn.on('ChatRoomClosed', onChatRoomClosed);
+				await conn.invoke('JoinRoom', activeRoom.id);
+			} catch {
 				toast.error(t('chatRoom.hubError', 'Could not connect to live chat.'));
-			});
-
-		connRef.current = conn;
+			}
+		})();
 
 		return () => {
-			void conn.invoke('LeaveRoom', activeRoom.id).catch(() => {});
-			void conn.stop();
+			cancelled = true;
+			const conn = connRef.current;
+			if (conn) {
+				void conn.invoke('LeaveRoom', activeRoom.id).catch(() => {});
+				conn.off('ReceiveRoomMessage', onReceiveRoomMessage);
+				conn.off('ChatRoomClosed', onChatRoomClosed);
+			}
 			connRef.current = null;
+			void releaseHubConnection(CHATROOM_HUB_PATH, scopeKey);
 		};
 	}, [token, room, navigate, t]);
 
@@ -167,6 +188,7 @@ export function ChatRoomDetailPage({ roomId: roomIdProp }: { roomId: number }) {
 		try {
 			await joinPublicChatRoom(selectedFace.id, roomIdProp, token);
 			await loadRoom();
+			await loadMessages();
 			toast.success(t('chatRoom.joined', 'You joined the room.'));
 		} catch {
 			toast.error(t('chatRoom.joinFailed', 'Could not join'));
@@ -252,9 +274,12 @@ export function ChatRoomDetailPage({ roomId: roomIdProp }: { roomId: number }) {
 			)}
 
 			{canReadMessages && (
-				<ul className="chatroom-detail-messages">
-					{messages.map((m) => (
-						<li key={m.id} className="chatroom-detail-msg">
+				<SimpleVirtualList
+					className="chatroom-detail-messages"
+					items={messages}
+					getKey={(m) => m.id}
+					renderItem={(m) => (
+						<li className="chatroom-detail-msg">
 							<span className="chatroom-detail-msg-sender">{m.senderUserId.slice(0, 8)}…</span>
 							<span className="chatroom-detail-msg-body">{m.content}</span>
 							<time className="chatroom-detail-msg-time" dateTime={m.sentAt}>
@@ -264,8 +289,8 @@ export function ChatRoomDetailPage({ roomId: roomIdProp }: { roomId: number }) {
 								})}
 							</time>
 						</li>
-					))}
-				</ul>
+					)}
+				/>
 			)}
 
 			{canType && (

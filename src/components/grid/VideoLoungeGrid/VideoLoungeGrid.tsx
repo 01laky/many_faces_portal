@@ -2,19 +2,17 @@
  * VideoLoungeGrid - Paginated grid of video lounge cards (API-backed)
  */
 
-import { useState, useRef, useEffect, useCallback, useMemo, type CSSProperties } from 'react';
+import { useState, useRef, useCallback, useMemo, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
+import { useGridBlockFetchEnabled } from '../../../contexts/GridBlockFetchContext';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
+import { useVideoLoungesGridQuery } from '../../../hooks/api/gridQueries';
 import { COMPONENT_TYPE_ID } from '../../../constants/componentTypeIds';
-import {
-	listVideoLounges,
-	type FaceVideoLoungeDto,
-} from '../../../api/services/VideoLoungesService';
 import { VideoLoungeCard } from '../VideoLoungeCard';
 import {
 	useStablePaginationEmit,
@@ -31,8 +29,13 @@ export function VideoLoungeGrid({ page: controlledPage, onPageChange }: VideoLou
 	const getLocalizedPath = useLocalizedLink();
 	const { token } = useAuth();
 	const { selectedFace } = useFaceConfig();
-	const [lounges, setLounges] = useState<FaceVideoLoungeDto[]>([]);
-	const [loading, setLoading] = useState(true);
+	const faceId = selectedFace?.id;
+	const fetchEnabled = useGridBlockFetchEnabled();
+	const { data: lounges = [], isLoading: loading } = useVideoLoungesGridQuery(
+		token,
+		faceId,
+		fetchEnabled
+	);
 	const [internalPage, setInternalPage] = useState(0);
 	const isControlled = onPageChange != null;
 	const page = isControlled && controlledPage !== undefined ? controlledPage : internalPage;
@@ -43,32 +46,6 @@ export function VideoLoungeGrid({ page: controlledPage, onPageChange }: VideoLou
 		minColWidth: 160,
 		fixedCardHeightPx: 54,
 	});
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			await Promise.resolve();
-			if (!selectedFace || !token) {
-				if (!cancelled) {
-					setLounges([]);
-					setLoading(false);
-				}
-				return;
-			}
-			if (!cancelled) setLoading(true);
-			try {
-				const list = await listVideoLounges(selectedFace.id, token);
-				if (!cancelled) setLounges(list);
-			} catch {
-				if (!cancelled) setLounges([]);
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [selectedFace, token]);
 
 	const totalPages = Math.max(1, Math.ceil(lounges.length / itemsPerPage));
 	const clampedPage = Math.min(page, Math.max(0, totalPages - 1));

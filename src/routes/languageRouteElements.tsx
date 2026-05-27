@@ -3,11 +3,13 @@ import { Route, Navigate } from 'react-router-dom';
 import { GuestRoute } from '../components/GuestRoute';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { protectedRouteElement } from './routeHelpers';
-import { HomePageProtected } from '../pages/HomePageProtected';
 import { LoginPage } from '../pages/LoginPage';
 import { RegisterPage } from '../pages/RegisterPage';
 import { RegisterCompletePage } from '../pages/RegisterCompletePage';
 import {
+	HomePage,
+	FacePageView,
+	HomePageProtected,
 	ProfilePage,
 	UsersPage,
 	UserDetailPage,
@@ -24,8 +26,6 @@ import {
 import { GuestRedirectToFaceHome, GuestRedirectToFacePath } from './GuestRedirects';
 import { SyncFaceFromProfileRoutes } from './SyncFaceFromProfileRoutes';
 import type { FaceRouteEntry, LanguageNestedRoutesProps } from './types';
-import { FacePageView } from '../components/FacePageView';
-import { HomePage } from '../pages/HomePage';
 
 export function renderGuestLanguageIndexRoute(): ReactElement {
 	return (

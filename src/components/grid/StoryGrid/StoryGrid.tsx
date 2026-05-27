@@ -3,23 +3,18 @@
  * Layout (cols, rows, thumb size, itemsPerPage) from container size — same idea as AlbumGrid.
  */
 
-import {
-	useState,
-	useRef,
-	useEffect,
-	useLayoutEffect,
-	useCallback,
-	useMemo,
-	type CSSProperties,
-} from 'react';
+import { useState, useRef, useLayoutEffect, useCallback, useMemo, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
+import { useGridBlockFetchEnabled } from '../../../contexts/GridBlockFetchContext';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
-import { fetchStoriesForFace, type StoryListItem } from '../../../api/services/storiesApi';
+import { useStoriesGridQuery } from '../../../hooks/api/gridQueries';
+import type { StoryListItem } from '../../../api/services/storiesApi';
+import { GridMediaImage } from '../../GridMediaImage/GridMediaImage';
 import {
 	useStablePaginationEmit,
 	useSyncedPaginationReport,
@@ -45,6 +40,7 @@ function StoryGridCard({
 	listHref,
 	thumbW,
 	labelPx,
+	priority = false,
 }: {
 	story: StoryListItem;
 	token: string;
@@ -52,6 +48,7 @@ function StoryGridCard({
 	listHref: string;
 	thumbW: number;
 	labelPx: number;
+	priority?: boolean;
 }) {
 	const { src, ringHandlers } = useStoryRingSlideshow(token, faceId, story);
 	const thumbH = thumbW * 2;
@@ -63,7 +60,7 @@ function StoryGridCard({
 			{...ringHandlers}
 		>
 			<div className="story-grid-thumb" style={{ width: thumbW, height: thumbH }}>
-				<img src={src} alt={story.title} loading="lazy" />
+				<GridMediaImage src={src} alt={story.title} priority={priority} />
 			</div>
 			<span className="story-grid-card-name">{story.creatorName || 'Story'}</span>
 		</Link>
@@ -75,17 +72,19 @@ function StoryGridCardFallback({
 	token,
 	faceId,
 	listHref,
+	priority = false,
 }: {
 	story: StoryListItem;
 	token: string;
 	faceId: number;
 	listHref: string;
+	priority?: boolean;
 }) {
 	const { src, ringHandlers } = useStoryRingSlideshow(token, faceId, story);
 	return (
 		<Link className="story-grid-card" to={listHref} {...ringHandlers}>
 			<div className="story-grid-thumb story-grid-thumb--fallback">
-				<img src={src} alt={story.title} loading="lazy" />
+				<GridMediaImage src={src} alt={story.title} priority={priority} />
 			</div>
 			<span className="story-grid-card-name">{story.creatorName || 'Story'}</span>
 		</Link>
@@ -101,9 +100,12 @@ export function StoryGrid({ page: controlledPage, onPageChange }: StoryGridProps
 	const faceId = selectedFace?.id;
 	const faceIndex = selectedFace?.index;
 
-	const [stories, setStories] = useState<StoryListItem[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [loadError, setLoadError] = useState(false);
+	const fetchEnabled = useGridBlockFetchEnabled();
+	const {
+		data: stories = [],
+		isLoading: loading,
+		isError: loadError,
+	} = useStoriesGridQuery(token, faceId, fetchEnabled);
 	const [internalPage, setInternalPage] = useState(0);
 	const [gridLayout, setGridLayout] = useState<StoryGridLayout | null>(null);
 
@@ -144,38 +146,6 @@ export function StoryGrid({ page: controlledPage, onPageChange }: StoryGridProps
 		ro.observe(el);
 		return () => ro.disconnect();
 	}, [observeGrid, measureGridLayout]);
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			await Promise.resolve();
-			if (!token || faceId == null) {
-				if (!cancelled) {
-					setStories([]);
-					setLoading(false);
-				}
-				return;
-			}
-			if (!cancelled) {
-				setLoading(true);
-				setLoadError(false);
-			}
-			try {
-				const list = await fetchStoriesForFace(token, faceId);
-				if (!cancelled) setStories(list);
-			} catch {
-				if (!cancelled) {
-					setLoadError(true);
-					setStories([]);
-				}
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [token, faceId]);
 
 	const itemsPerPage = gridLayout?.itemsPerPage ?? DEFAULT_ITEMS_PER_PAGE;
 
@@ -243,7 +213,7 @@ export function StoryGrid({ page: controlledPage, onPageChange }: StoryGridProps
 	return (
 		<div className="story-grid-component">
 			<div className={`story-grid-items${sizedClass}`} ref={itemsRef} style={itemsStyle}>
-				{visibleStories.map((story) =>
+				{visibleStories.map((story, index) =>
 					gridLayout ? (
 						<StoryGridCard
 							key={story.id}
@@ -253,6 +223,7 @@ export function StoryGrid({ page: controlledPage, onPageChange }: StoryGridProps
 							listHref={listHref}
 							thumbW={gridLayout.thumbW}
 							labelPx={STORY_LABEL_PX}
+							priority={index === 0}
 						/>
 					) : (
 						<StoryGridCardFallback
@@ -261,6 +232,7 @@ export function StoryGrid({ page: controlledPage, onPageChange }: StoryGridProps
 							token={token}
 							faceId={faceId}
 							listHref={listHref}
+							priority={index === 0}
 						/>
 					)
 				)}

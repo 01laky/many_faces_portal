@@ -9,9 +9,11 @@ import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
+import { useGridBlockFetchEnabled } from '../../../contexts/GridBlockFetchContext';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
-import { getAlbums, type AlbumItem } from '../../../api/services/AlbumsService';
+import { useAlbumsGridQuery } from '../../../hooks/api/gridQueries';
 import { albumCoverPlaceholderUrl } from '../gridDisplayHelpers';
+import { GridMediaImage } from '../../GridMediaImage/GridMediaImage';
 import {
 	useStablePaginationEmit,
 	useSyncedPaginationReport,
@@ -33,9 +35,12 @@ export function AlbumCarousel({
 	const { selectedFace } = useFaceConfig();
 	const faceId = selectedFace?.id;
 
-	const [albums, setAlbums] = useState<AlbumItem[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [loadError, setLoadError] = useState(false);
+	const fetchEnabled = useGridBlockFetchEnabled();
+	const {
+		data: albums = [],
+		isLoading: loading,
+		isError: loadError,
+	} = useAlbumsGridQuery(token, faceId, fetchEnabled);
 	const [visibleCount, setVisibleCount] = useState(3);
 	const [internalPage, setInternalPage] = useState(0);
 	const isControlled = onPageChange != null;
@@ -56,38 +61,6 @@ export function AlbumCarousel({
 		ro.observe(el);
 		return () => ro.disconnect();
 	}, [calcVisible]);
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			await Promise.resolve();
-			if (!token || faceId == null) {
-				if (!cancelled) {
-					setAlbums([]);
-					setLoading(false);
-				}
-				return;
-			}
-			if (!cancelled) {
-				setLoading(true);
-				setLoadError(false);
-			}
-			try {
-				const list = await getAlbums(token, faceId);
-				if (!cancelled) setAlbums(list);
-			} catch {
-				if (!cancelled) {
-					setLoadError(true);
-					setAlbums([]);
-				}
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [token, faceId]);
 
 	const totalPages = Math.max(1, Math.ceil(albums.length / visibleCount));
 	const clampedPage = Math.min(page, Math.max(0, totalPages - 1));
@@ -160,7 +133,7 @@ export function AlbumCarousel({
 			)}
 
 			<div className="album-carousel-track">
-				{visibleAlbums.map((album) => (
+				{visibleAlbums.map((album, index) => (
 					<div
 						key={album.id}
 						className="album-carousel-card"
@@ -172,7 +145,11 @@ export function AlbumCarousel({
 							if (e.key === 'Enter') navigate(getLocalizedPath(`/album/${album.id}`));
 						}}
 					>
-						<img src={albumCoverPlaceholderUrl(album.id)} alt={album.title} loading="lazy" />
+						<GridMediaImage
+							src={albumCoverPlaceholderUrl(album.id)}
+							alt={album.title}
+							priority={index === 0}
+						/>
 						<div className="album-carousel-card-info">
 							<span className="album-carousel-card-title">{album.title}</span>
 							<span className="album-carousel-card-count">

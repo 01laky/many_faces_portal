@@ -1,5 +1,14 @@
 import { lazy } from 'react';
 
+export const HomePage = lazy(() =>
+	import('../pages/HomePage').then((m) => ({ default: m.HomePage }))
+);
+export const FacePageView = lazy(() =>
+	import('../components/FacePageView').then((m) => ({ default: m.FacePageView }))
+);
+export const HomePageProtected = lazy(() =>
+	import('../pages/HomePageProtected').then((m) => ({ default: m.HomePageProtected }))
+);
 export const ProfilePage = lazy(() =>
 	import('../pages/ProfilePage').then((m) => ({ default: m.ProfilePage }))
 );

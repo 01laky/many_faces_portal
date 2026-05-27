@@ -39,12 +39,19 @@ let initPromise: Promise<void> | null = null;
 let bundleLoaded = false;
 let cachedBundle: Awaited<ReturnType<typeof fetchLocalizationBundle>> | null = null;
 
-function addAllResourceBundles(bundle: Awaited<ReturnType<typeof fetchLocalizationBundle>>): void {
-	for (const lang of supportedLanguages) {
+/** Register active language plus `en` fallback only (PT-RP18). */
+function addActiveLanguageBundles(
+	bundle: Awaited<ReturnType<typeof fetchLocalizationBundle>>,
+	activeLang: SupportedLanguage
+): void {
+	const langsToLoad = new Set<SupportedLanguage>([activeLang, 'en']);
+	for (const lang of langsToLoad) {
 		const nsMap = bundle.resources[lang];
 		if (!nsMap) continue;
 		for (const [ns, data] of Object.entries(nsMap)) {
-			i18n.addResourceBundle(lang, ns, data, true, true);
+			if (!i18n.hasResourceBundle(lang, ns)) {
+				i18n.addResourceBundle(lang, ns, data, true, true);
+			}
 		}
 	}
 }
@@ -55,7 +62,7 @@ export async function ensureLanguageLoaded(lng: SupportedLanguage): Promise<void
 		return;
 	}
 	if (!i18n.hasResourceBundle(lng, 'common') && cachedBundle) {
-		addAllResourceBundles(cachedBundle);
+		addActiveLanguageBundles(cachedBundle, lng);
 	}
 }
 
@@ -83,7 +90,7 @@ export function initI18n(): Promise<void> {
 			interpolation: { escapeValue: false },
 		});
 
-		addAllResourceBundles(bundle);
+		addActiveLanguageBundles(bundle, lng);
 		bundleLoaded = true;
 	})();
 	return initPromise;

@@ -4,8 +4,10 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import basicSsl from '@vitejs/plugin-basic-ssl';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const analyze = process.env.ANALYZE === 'true';
 
 /**
  * Prefer PEM from VITE_DEV_CERT_DIR (Docker: /certs) or repo dev/certs; else @vitejs/plugin-basic-ssl.
@@ -36,7 +38,20 @@ const httpsServer = useBasicSslPlugin ? true : httpsOpt;
 
 // https://vitejs.dev/config/server-options.html#server-https
 export default defineConfig({
-	plugins: [react(), ...(useBasicSslPlugin ? [basicSsl()] : [])],
+	plugins: [
+		react(),
+		...(useBasicSslPlugin ? [basicSsl()] : []),
+		...(analyze
+			? [
+					visualizer({
+						filename: 'dist/stats.html',
+						gzipSize: true,
+						brotliSize: true,
+						open: false,
+					}),
+				]
+			: []),
+	],
 	css: {
 		preprocessorOptions: {
 			scss: {
@@ -90,6 +105,7 @@ export default defineConfig({
 					if (id.includes('node_modules/react-dom')) return 'vendor-react-dom';
 					if (id.includes('node_modules/react-router')) return 'vendor-router';
 					if (id.includes('node_modules/@tanstack/react-query')) return 'vendor-query';
+					if (id.includes('node_modules/@tanstack/react-virtual')) return 'vendor-virtual';
 					if (id.includes('node_modules/@microsoft/signalr')) return 'vendor-signalr';
 					if (id.includes('react-quill') || id.includes('node_modules/quill'))
 						return 'vendor-quill';

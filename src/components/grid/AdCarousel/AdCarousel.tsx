@@ -8,11 +8,10 @@ import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
-import {
-	fetchAllWallTicketsForFace,
-	type WallTicketListItem,
-} from '../../../api/services/wallTicketsApi';
+import { useGridBlockFetchEnabled } from '../../../contexts/GridBlockFetchContext';
+import { useAdsGridQuery } from '../../../hooks/api/gridQueries';
 import { wallTicketListingImageUrl } from '../gridDisplayHelpers';
+import { GridMediaImage } from '../../GridMediaImage/GridMediaImage';
 import {
 	useStablePaginationEmit,
 	useSyncedPaginationReport,
@@ -32,9 +31,12 @@ export function AdCarousel({
 	const { selectedFace } = useFaceConfig();
 	const faceId = selectedFace?.id;
 
-	const [items, setItems] = useState<WallTicketListItem[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [loadError, setLoadError] = useState(false);
+	const fetchEnabled = useGridBlockFetchEnabled();
+	const {
+		data: items = [],
+		isLoading: loading,
+		isError: loadError,
+	} = useAdsGridQuery(token, faceId, fetchEnabled);
 	const [visibleCount, setVisibleCount] = useState(3);
 	const [internalPage, setInternalPage] = useState(0);
 	const isControlled = onPageChange != null;
@@ -55,38 +57,6 @@ export function AdCarousel({
 		ro.observe(el);
 		return () => ro.disconnect();
 	}, [calcVisible]);
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			await Promise.resolve();
-			if (!token || faceId == null) {
-				if (!cancelled) {
-					setItems([]);
-					setLoading(false);
-				}
-				return;
-			}
-			if (!cancelled) {
-				setLoading(true);
-				setLoadError(false);
-			}
-			try {
-				const list = await fetchAllWallTicketsForFace(token, faceId);
-				if (!cancelled) setItems(list);
-			} catch {
-				if (!cancelled) {
-					setLoadError(true);
-					setItems([]);
-				}
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [token, faceId]);
 
 	const totalPages = Math.max(1, Math.ceil(items.length / visibleCount));
 	const clampedPage = Math.min(page, Math.max(0, totalPages - 1));
@@ -150,9 +120,13 @@ export function AdCarousel({
 			)}
 
 			<div className="ad-carousel-track">
-				{visibleAds.map((ad) => (
+				{visibleAds.map((ad, index) => (
 					<div key={ad.id} className="ad-carousel-card" style={{ width: CARD_WIDTH }}>
-						<img src={wallTicketListingImageUrl(ad.id)} alt={ad.title} loading="lazy" />
+						<GridMediaImage
+							src={wallTicketListingImageUrl(ad.id)}
+							alt={ad.title}
+							priority={index === 0}
+						/>
 						<div className="ad-carousel-card-info">
 							<span className="ad-carousel-card-price">{t(k.wallLabel)}</span>
 							<span className="ad-carousel-card-title">{ad.title}</span>

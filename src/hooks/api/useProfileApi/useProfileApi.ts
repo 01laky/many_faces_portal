@@ -26,6 +26,17 @@ export function faceGridSettingsQueryKey(
  *
  * `resolvedAvatarUrl` prefers `faceAvatarUrl` (per-face override), then `globalAvatarUrl`, else `null`.
  */
+/** Global profile read (no face scope) — shared cache for bootstrap consumers (PT-RP5). */
+export function useGlobalProfile() {
+	const { token, isAuthenticated } = useAuth();
+	return useQuery({
+		queryKey: profileQueryKey(),
+		queryFn: () => profileApi.getProfile(token!),
+		enabled: Boolean(isAuthenticated && token),
+		gcTime: 15 * 60_000,
+	});
+}
+
 export function useProfile() {
 	const { token, isAuthenticated } = useAuth();
 	const { selectedFace } = useFaceConfig();

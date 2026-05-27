@@ -9,8 +9,9 @@ import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
+import { useGridBlockFetchEnabled } from '../../../contexts/GridBlockFetchContext';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
-import { getReels, type ReelItem } from '../../../api/services/ReelsService';
+import { useReelsGridQuery } from '../../../hooks/api/gridQueries';
 import {
 	useStablePaginationEmit,
 	useSyncedPaginationReport,
@@ -32,9 +33,12 @@ export function ReelCarousel({
 	const { selectedFace } = useFaceConfig();
 	const faceId = selectedFace?.id;
 
-	const [items, setItems] = useState<ReelItem[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [loadError, setLoadError] = useState(false);
+	const fetchEnabled = useGridBlockFetchEnabled();
+	const {
+		data: items = [],
+		isLoading: loading,
+		isError: loadError,
+	} = useReelsGridQuery(token, faceId, fetchEnabled);
 	const [visibleCount, setVisibleCount] = useState(3);
 	const [internalPage, setInternalPage] = useState(0);
 	const isControlled = onPageChange != null;
@@ -68,38 +72,6 @@ export function ReelCarousel({
 		ro.observe(el);
 		return () => ro.disconnect();
 	}, [calcVisible]);
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			await Promise.resolve();
-			if (!token || faceId == null) {
-				if (!cancelled) {
-					setLoading(false);
-					setItems([]);
-				}
-				return;
-			}
-			if (!cancelled) {
-				setLoading(true);
-				setLoadError(false);
-			}
-			try {
-				const data = await getReels(token, faceId);
-				if (!cancelled) setItems(data);
-			} catch {
-				if (!cancelled) {
-					setLoadError(true);
-					setItems([]);
-				}
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [token, faceId]);
 
 	const totalPages = Math.max(1, Math.ceil(items.length / visibleCount));
 	const clampedPage = Math.min(page, Math.max(0, totalPages - 1));

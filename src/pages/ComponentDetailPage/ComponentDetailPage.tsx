@@ -1,7 +1,14 @@
+import { lazy, Suspense } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChatRoomDetailPage } from '../ChatRoomDetailPage';
-import { VideoLoungeDetailPage } from '../VideoLoungeDetailPage';
+import { RouteLoadingFallback } from '../../routes/routeLoadingFallback';
+
+const LazyChatRoomDetailPage = lazy(() =>
+	import('../ChatRoomDetailPage').then((m) => ({ default: m.ChatRoomDetailPage }))
+);
+const LazyVideoLoungeDetailPage = lazy(() =>
+	import('../VideoLoungeDetailPage').then((m) => ({ default: m.VideoLoungeDetailPage }))
+);
 
 /**
  * Unified detail route: `/detail/:componentTypeId/:entityId`
@@ -26,11 +33,19 @@ export function ComponentDetailPage() {
 	}
 
 	if (typeId === 4) {
-		return <ChatRoomDetailPage roomId={entity} />;
+		return (
+			<Suspense fallback={<RouteLoadingFallback />}>
+				<LazyChatRoomDetailPage roomId={entity} />
+			</Suspense>
+		);
 	}
 
-	if (typeId === 8) {
-		return <VideoLoungeDetailPage loungeId={entity} />;
+	if (dispatch === 'videoLounge') {
+		return (
+			<Suspense fallback={<RouteLoadingFallback />}>
+				<LazyVideoLoungeDetailPage loungeId={entity} />
+			</Suspense>
+		);
 	}
 
 	return (

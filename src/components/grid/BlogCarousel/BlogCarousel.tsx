@@ -9,8 +9,11 @@ import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
+import { useGridBlockFetchEnabled } from '../../../contexts/GridBlockFetchContext';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
-import { getBlogs, type BlogItem } from '../../../api/services/BlogsService';
+import { useBlogsGridQuery } from '../../../hooks/api/gridQueries';
+import type { BlogItem } from '../../../api/services/BlogsService';
+import { GridMediaImage } from '../../GridMediaImage/GridMediaImage';
 import {
 	useStablePaginationEmit,
 	useSyncedPaginationReport,
@@ -39,9 +42,12 @@ export function BlogCarousel({
 	const { selectedFace } = useFaceConfig();
 	const faceId = selectedFace?.id;
 
-	const [posts, setPosts] = useState<BlogItem[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [loadError, setLoadError] = useState(false);
+	const fetchEnabled = useGridBlockFetchEnabled();
+	const {
+		data: posts = [],
+		isLoading: loading,
+		isError: loadError,
+	} = useBlogsGridQuery(token, faceId, fetchEnabled);
 	const [visibleCount, setVisibleCount] = useState(3);
 	const [internalPage, setInternalPage] = useState(0);
 	const isControlled = onPageChange != null;
@@ -62,38 +68,6 @@ export function BlogCarousel({
 		ro.observe(el);
 		return () => ro.disconnect();
 	}, [calcVisible]);
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			await Promise.resolve();
-			if (!token || faceId == null) {
-				if (!cancelled) {
-					setPosts([]);
-					setLoading(false);
-				}
-				return;
-			}
-			if (!cancelled) {
-				setLoading(true);
-				setLoadError(false);
-			}
-			try {
-				const list = await getBlogs(token, faceId);
-				if (!cancelled) setPosts(list);
-			} catch {
-				if (!cancelled) {
-					setLoadError(true);
-					setPosts([]);
-				}
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [token, faceId]);
 
 	const totalPages = Math.max(1, Math.ceil(posts.length / visibleCount));
 	const clampedPage = Math.min(page, Math.max(0, totalPages - 1));
@@ -157,7 +131,7 @@ export function BlogCarousel({
 			)}
 
 			<div className="blog-carousel-track">
-				{visiblePosts.map((post) => (
+				{visiblePosts.map((post, index) => (
 					<div
 						key={post.id}
 						className="blog-carousel-card"
@@ -169,7 +143,7 @@ export function BlogCarousel({
 							if (e.key === 'Enter') navigate(getLocalizedPath(`/blog/${post.id}`));
 						}}
 					>
-						<img src={blogCover(post)} alt={post.title} loading="lazy" />
+						<GridMediaImage src={blogCover(post)} alt={post.title} priority={index === 0} />
 						<div className="blog-carousel-card-info">
 							<span className="blog-carousel-card-title">{post.title}</span>
 						</div>

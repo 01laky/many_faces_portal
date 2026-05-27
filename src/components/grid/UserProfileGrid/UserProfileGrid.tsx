@@ -2,19 +2,18 @@
  * UserProfileGrid - Face profile directory (API-backed)
  */
 
-import { useState, useRef, useEffect, useCallback, useMemo, type CSSProperties } from 'react';
+import { useState, useRef, useCallback, useMemo, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
+import { useGridBlockFetchEnabled } from '../../../contexts/GridBlockFetchContext';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
-import {
-	fetchAllFaceProfilesForFace,
-	type FaceProfileListItem,
-} from '../../../api/services/faceProfilesApi';
+import { useUserProfilesGridQuery } from '../../../hooks/api/gridQueries';
 import { profileAvatarUrl } from '../gridDisplayHelpers';
+import { GridMediaImage } from '../../GridMediaImage/GridMediaImage';
 import {
 	useStablePaginationEmit,
 	useSyncedPaginationReport,
@@ -33,9 +32,12 @@ export function UserProfileGrid({ page: controlledPage, onPageChange }: UserProf
 	const faceId = selectedFace?.id;
 	const faceIndex = selectedFace?.index;
 
-	const [profiles, setProfiles] = useState<FaceProfileListItem[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [loadError, setLoadError] = useState(false);
+	const fetchEnabled = useGridBlockFetchEnabled();
+	const {
+		data: profiles = [],
+		isLoading: loading,
+		isError: loadError,
+	} = useUserProfilesGridQuery(token, faceId, fetchEnabled);
 	const [internalPage, setInternalPage] = useState(0);
 	const isControlled = onPageChange != null;
 	const page = isControlled && controlledPage !== undefined ? controlledPage : internalPage;
@@ -47,38 +49,6 @@ export function UserProfileGrid({ page: controlledPage, onPageChange }: UserProf
 		minColWidth: 120,
 		fixedCardHeightPx: 92,
 	});
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			await Promise.resolve();
-			if (faceId == null || !token) {
-				if (!cancelled) {
-					setProfiles([]);
-					setLoading(false);
-				}
-				return;
-			}
-			if (!cancelled) {
-				setLoading(true);
-				setLoadError(false);
-			}
-			try {
-				const list = await fetchAllFaceProfilesForFace(faceId, token);
-				if (!cancelled) setProfiles(list);
-			} catch {
-				if (!cancelled) {
-					setLoadError(true);
-					setProfiles([]);
-				}
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [faceId, token]);
 
 	const totalPages = Math.max(1, Math.ceil(profiles.length / itemsPerPage));
 	const clampedPage = Math.min(page, Math.max(0, totalPages - 1));
@@ -141,7 +111,7 @@ export function UserProfileGrid({ page: controlledPage, onPageChange }: UserProf
 	return (
 		<div className="userprofile-grid-component">
 			<div className="userprofile-grid-items" ref={itemsRef} style={itemsStyle}>
-				{visibleProfiles.map((profile) => {
+				{visibleProfiles.map((profile, index) => {
 					const name = profile.displayName?.trim() || t(k.profileCardRoleMember);
 					const path = getLocalizedPath(
 						`${faceIndex}/profile/${encodeURIComponent(profile.userId)}`
@@ -157,11 +127,11 @@ export function UserProfileGrid({ page: controlledPage, onPageChange }: UserProf
 								if (e.key === 'Enter') navigate(path);
 							}}
 						>
-							<img
+							<GridMediaImage
 								className="userprofile-grid-avatar"
 								src={profileAvatarUrl(profile.userId, profile.avatarUrl)}
 								alt={name}
-								loading="lazy"
+								priority={index === 0}
 							/>
 							<span className="userprofile-grid-card-name">{name}</span>
 							<span className="userprofile-grid-card-role">{t(k.profileCardRoleMember)}</span>

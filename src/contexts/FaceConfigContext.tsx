@@ -1,22 +1,15 @@
-import {
-	createContext,
-	useContext,
-	useState,
-	useEffect,
-	useCallback,
-	useMemo,
-	useRef,
-} from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import { getFacesConfig } from '../api/config/getFacesConfig';
 import { markFaceVisited } from '../api/services/faceProfilesApi';
 import * as profileApi from '../api/profile/profileApi';
+import { useGlobalProfile } from '../hooks/api/useProfileApi';
 import type { FaceConfig, FacesConfigResponse } from '../api/types/facesConfig';
 import { logger } from '../utils/logger';
 import { invalidateMemoizedFacePrefixCache } from '../api/config';
 import { buildFaceHomePath, resolvePostAuthHomePath } from '../utils/faceHomePath';
 import { supportedLanguages } from '../i18n/constants';
+import { useFacesConfigQuery, useInvalidateFacesConfig } from '../hooks/api/useFacesConfigQuery';
 import type { FaceConfigContextType, FaceConfigProviderProps } from './types';
 
 const FaceConfigContext = createContext<FaceConfigContextType | undefined>(undefined);
@@ -24,75 +17,38 @@ const FaceConfigContext = createContext<FaceConfigContextType | undefined>(undef
 export function FaceConfigProvider({ children }: FaceConfigProviderProps) {
 	const location = useLocation();
 	const { isAuthenticated, token } = useAuth();
-	const [allFaces, setAllFaces] = useState<FacesConfigResponse>([]);
+	const {
+		data: queryFaces,
+		isLoading,
+		error: queryError,
+		refetch,
+	} = useFacesConfigQuery(token, true);
+	const invalidateFacesConfig = useInvalidateFacesConfig();
 	const [selectedFaceId, setSelectedFaceId] = useState<number | null>(null);
 	const [profileLastFaceApplied, setProfileLastFaceApplied] = useState(false);
-	const [isLoading, setIsLoading] = useState(true);
-	const [error, setError] = useState<Error | null>(null);
-	const loadGenerationRef = useRef(0);
+	const { data: profile } = useGlobalProfile();
 
-	const loadConfig = useCallback(
-		async (authToken?: string | null): Promise<FacesConfigResponse> => {
-			const generation = ++loadGenerationRef.current;
-			await Promise.resolve();
-			const effectiveToken =
-				authToken !== undefined && authToken !== null
-					? authToken
-					: isAuthenticated
-						? (token ?? undefined)
-						: undefined;
-			try {
-				setIsLoading(true);
-				setError(null);
-				const config = await getFacesConfig(effectiveToken);
-				if (generation !== loadGenerationRef.current) return config;
-				setAllFaces(config);
-				logger.info('Faces config loaded', {
-					faceCount: config.length,
-					isAuthenticated: Boolean(effectiveToken),
-				});
-				return config;
-			} catch (err) {
-				if (generation !== loadGenerationRef.current) return [];
-				logger.error('Failed to load faces config', { error: err });
-				setError(err instanceof Error ? err : new Error('Unknown error'));
-				return [];
-			} finally {
-				if (generation === loadGenerationRef.current) {
-					setIsLoading(false);
-				}
-			}
-		},
-		[isAuthenticated, token]
-	);
+	const allFaces = queryFaces ?? [];
+	const error = queryError ?? null;
 
 	useEffect(() => {
-		void (async () => {
-			await Promise.resolve();
-			await loadConfig();
-		})();
-	}, [loadConfig]);
+		if (!isLoading && allFaces.length > 0) {
+			logger.info('Faces config loaded', {
+				faceCount: allFaces.length,
+				isAuthenticated: Boolean(token),
+			});
+		}
+	}, [isLoading, allFaces.length, token]);
 
 	useEffect(() => {
 		if (!isAuthenticated || !token || profileLastFaceApplied) return;
-		let cancelled = false;
-		void (async () => {
-			try {
-				const profile = await profileApi.getProfile(token);
-				if (cancelled) return;
-				if (profile.lastSelectedFaceId != null) {
-					setSelectedFaceId(profile.lastSelectedFaceId);
-				}
-			} catch {
-				// best-effort — URL / first available face still applies
-			} finally {
-				if (!cancelled) setProfileLastFaceApplied(true);
+		queueMicrotask(() => {
+			if (profile?.lastSelectedFaceId != null) {
+				setSelectedFaceId(profile.lastSelectedFaceId);
 			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [isAuthenticated, token, profileLastFaceApplied]);
+			setProfileLastFaceApplied(true);
+		});
+	}, [isAuthenticated, token, profileLastFaceApplied, profile?.lastSelectedFaceId]);
 
 	const publicFaces = useMemo(() => allFaces.filter((f) => f.isPublic), [allFaces]);
 	const privateFaces = useMemo(() => allFaces.filter((f) => !f.isPublic), [allFaces]);
@@ -125,14 +81,13 @@ export function FaceConfigProvider({ children }: FaceConfigProviderProps) {
 				try {
 					await markFaceVisited(faceId, token);
 					await profileApi.updateProfile(token, { lastSelectedFaceId: faceId });
-					const config = await getFacesConfig(token);
-					setAllFaces(config);
+					invalidateFacesConfig(token);
 				} catch {
 					// Face switch still applies locally; visit sync is best-effort
 				}
 			})();
 		},
-		[token]
+		[token, invalidateFacesConfig]
 	);
 
 	useEffect(() => {
@@ -163,6 +118,15 @@ export function FaceConfigProvider({ children }: FaceConfigProviderProps) {
 		return resolvePostAuthHomePath(availableFaces);
 	}, [availableFaces]);
 
+	const reload = useCallback(
+		async (_authToken?: string | null): Promise<FacesConfigResponse> => {
+			invalidateFacesConfig(_authToken ?? token);
+			const result = await refetch();
+			return result.data ?? [];
+		},
+		[invalidateFacesConfig, refetch, token]
+	);
+
 	const contextValue = useMemo(
 		(): FaceConfigContextType => ({
 			allFaces,
@@ -173,7 +137,7 @@ export function FaceConfigProvider({ children }: FaceConfigProviderProps) {
 			selectFace,
 			isLoading,
 			error,
-			reload: loadConfig,
+			reload,
 			getFaceHomePath,
 			getPostAuthHomePath,
 		}),
@@ -186,7 +150,7 @@ export function FaceConfigProvider({ children }: FaceConfigProviderProps) {
 			selectFace,
 			isLoading,
 			error,
-			loadConfig,
+			reload,
 			getFaceHomePath,
 			getPostAuthHomePath,
 		]

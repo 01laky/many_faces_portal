@@ -9,7 +9,6 @@
 
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import 'react-toastify/dist/ReactToastify.css';
 import './styles/appBrandFont.scss';
 import './styles/main.scss';
 import { initI18n } from './i18n/config';

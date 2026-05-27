@@ -6,7 +6,7 @@
  * Optional editAlbum/editBlog/editReel still opens the local panel for inline edit.
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, lazy, Suspense, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
 	Plus,
@@ -28,11 +28,10 @@ import { useAnimatedGradientStyle } from '../../hooks/useAnimatedGradient';
 import { useGradientAnimationPreference } from '../../contexts/GradientAnimationPreferenceContext';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import { useGridTopPanel } from '../../contexts/GridTopPanelContext';
+import { useCanCreateFromGridBlock } from '../../hooks/useCanCreateFromGridBlock';
 import { useGridComponentPreferences } from '../../hooks/useGridComponentPreferences';
 import { COMPONENT_TYPE_ID } from '../../constants/componentTypeIds';
-import { AlbumForm } from '../grid/AlbumForm';
-import { BlogForm } from '../grid/BlogForm';
-import { ReelForm } from '../grid/ReelForm';
+import { RouteLoadingFallback } from '../../routes/routeLoadingFallback';
 import type { AlbumItem } from '../../api/services/AlbumsService';
 import type { BlogItem } from '../../api/services/BlogsService';
 import type { ReelItem } from '../../api/services/ReelsService';
@@ -46,6 +45,12 @@ import {
 	VIDEO_LOUNGE_COMPONENT_TYPES,
 } from './constants';
 import type { ComponentBlockProps } from './types';
+
+const LazyAlbumForm = lazy(() =>
+	import('../grid/AlbumForm').then((m) => ({ default: m.AlbumForm }))
+);
+const LazyBlogForm = lazy(() => import('../grid/BlogForm').then((m) => ({ default: m.BlogForm })));
+const LazyReelForm = lazy(() => import('../grid/ReelForm').then((m) => ({ default: m.ReelForm })));
 
 export type { ComponentBlockProps } from './types';
 
@@ -89,45 +94,41 @@ export function ComponentBlock({
 	const isReelType = REEL_COMPONENT_TYPES.includes(componentType);
 	const isChatRoomType = CHAT_ROOM_COMPONENT_TYPES.includes(componentType);
 	const isVideoLoungeType = VIDEO_LOUNGE_COMPONENT_TYPES.includes(componentType);
-	const isFaceHost = selectedFace?.myFaceRoleName === 'FACE_HOST';
-	const canCreateChatRoom = isChatRoomType && selectedFace?.chatRoomsCreate === true && !isFaceHost;
-	const canCreateVideoLounge =
-		isVideoLoungeType && selectedFace?.videoLoungesCreate === true && !isFaceHost;
-	const unsupportedCreateType =
-		componentType === 'ad' ||
-		componentType === 'adGrid' ||
-		componentType === 'adCarousel' ||
-		componentType === 'story' ||
-		componentType === 'storyGrid' ||
-		componentType === 'storyCarousel' ||
-		componentType === 'userProfile' ||
-		componentType === 'userProfileGrid' ||
-		componentType === 'userProfileCarousel';
-	const createDisabled =
-		(isChatRoomType && !canCreateChatRoom) ||
-		(isVideoLoungeType && !canCreateVideoLounge) ||
-		unsupportedCreateType;
-	const createTitle =
-		isChatRoomType && !canCreateChatRoom
-			? isFaceHost
+	const { canCreate, reason } = useCanCreateFromGridBlock(componentType);
+	const createDisabled = !canCreate;
+	const createTitle = useMemo(() => {
+		if (reason === 'host') {
+			return isChatRoomType
 				? t('gridBlocks.actions.hostCannotCreateChatRooms', 'Hosts cannot create chat rooms')
-				: t(
-						'gridBlocks.actions.chatRoomCreationDisabled',
-						'Chat room creation is disabled for this face'
-					)
-			: isVideoLoungeType && !canCreateVideoLounge
-				? isFaceHost
+				: isVideoLoungeType
 					? t(
 							'gridBlocks.actions.hostCannotCreateVideoLounges',
 							'Hosts cannot create video lounges'
 						)
 					: t(
-							'gridBlocks.actions.videoLoungeCreationDisabled',
-							'Video lounge creation is disabled for this face'
-						)
-				: unsupportedCreateType
-					? t('gridBlocks.actions.creationUnavailable', 'Creation is not available from this block')
-					: t('gridBlocks.actions.createNew', 'Create new');
+							'gridBlocks.actions.creationUnavailable',
+							'Creation is not available from this block'
+						);
+		}
+		if (reason === 'faceFlag') {
+			return isChatRoomType
+				? t(
+						'gridBlocks.actions.chatRoomCreationDisabled',
+						'Chat room creation is disabled for this face'
+					)
+				: t(
+						'gridBlocks.actions.videoLoungeCreationDisabled',
+						'Video lounge creation is disabled for this face'
+					);
+		}
+		if (reason === 'unsupported' || reason === 'acl' || reason === 'guest') {
+			return t(
+				'gridBlocks.actions.creationUnavailable',
+				'Creation is not available from this block'
+			);
+		}
+		return t('gridBlocks.actions.createNew', 'Create new');
+	}, [reason, isChatRoomType, isVideoLoungeType, t]);
 
 	type LocalPanelMode = 'edit' | 'sort' | 'block';
 	const [localPanelOpen, setLocalPanelOpen] = useState(false);
@@ -388,18 +389,32 @@ export function ComponentBlock({
 					</button>
 				</div>
 				<div className="component-block-panel-body">
-					{localPanelMode === 'edit' && isAlbumType && (
-						<AlbumForm
-							editAlbum={editAlbum}
-							onSaved={handleAlbumSaved}
-							onCancel={closeLocalPanel}
-						/>
+					{localPanelMode === 'edit' && isAlbumType && localPanelOpen && (
+						<Suspense fallback={<RouteLoadingFallback />}>
+							<LazyAlbumForm
+								editAlbum={editAlbum}
+								onSaved={handleAlbumSaved}
+								onCancel={closeLocalPanel}
+							/>
+						</Suspense>
 					)}
-					{localPanelMode === 'edit' && isBlogType && (
-						<BlogForm editBlog={editBlog} onSaved={handleBlogSaved} onCancel={closeLocalPanel} />
+					{localPanelMode === 'edit' && isBlogType && localPanelOpen && (
+						<Suspense fallback={<RouteLoadingFallback />}>
+							<LazyBlogForm
+								editBlog={editBlog}
+								onSaved={handleBlogSaved}
+								onCancel={closeLocalPanel}
+							/>
+						</Suspense>
 					)}
-					{localPanelMode === 'edit' && isReelType && (
-						<ReelForm editReel={editReel} onSaved={handleReelSaved} onCancel={closeLocalPanel} />
+					{localPanelMode === 'edit' && isReelType && localPanelOpen && (
+						<Suspense fallback={<RouteLoadingFallback />}>
+							<LazyReelForm
+								editReel={editReel}
+								onSaved={handleReelSaved}
+								onCancel={closeLocalPanel}
+							/>
+						</Suspense>
 					)}
 					{localPanelMode === 'sort' && (
 						<div className="component-block-panel-section">

@@ -9,12 +9,10 @@ import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
+import { useGridBlockFetchEnabled } from '../../../contexts/GridBlockFetchContext';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
+import { useVideoLoungesGridQuery } from '../../../hooks/api/gridQueries';
 import { COMPONENT_TYPE_ID } from '../../../constants/componentTypeIds';
-import {
-	listVideoLounges,
-	type FaceVideoLoungeDto,
-} from '../../../api/services/VideoLoungesService';
 import { VideoLoungeCard } from '../VideoLoungeCard';
 import {
 	useStablePaginationEmit,
@@ -35,38 +33,17 @@ export function VideoLoungeCarousel({
 	const getLocalizedPath = useLocalizedLink();
 	const { token } = useAuth();
 	const { selectedFace } = useFaceConfig();
-	const [lounges, setLounges] = useState<FaceVideoLoungeDto[]>([]);
-	const [loading, setLoading] = useState(true);
+	const faceId = selectedFace?.id;
+	const fetchEnabled = useGridBlockFetchEnabled();
+	const { data: lounges = [], isLoading: loading } = useVideoLoungesGridQuery(
+		token,
+		faceId,
+		fetchEnabled
+	);
 	const [visibleCount, setVisibleCount] = useState(2);
 	const [internalPage, setInternalPage] = useState(0);
 	const isControlled = onPageChange != null;
 	const page = isControlled && controlledPage !== undefined ? controlledPage : internalPage;
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			await Promise.resolve();
-			if (!selectedFace || !token) {
-				if (!cancelled) {
-					setLounges([]);
-					setLoading(false);
-				}
-				return;
-			}
-			if (!cancelled) setLoading(true);
-			try {
-				const list = await listVideoLounges(selectedFace.id, token);
-				if (!cancelled) setLounges(list);
-			} catch {
-				if (!cancelled) setLounges([]);
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [selectedFace, token]);
 
 	const calcVisible = useCallback(() => {
 		if (!containerRef.current) return;

@@ -2,53 +2,51 @@
  * PageGridLayout - Read-only display of a page's grid layout
  *
  * Renders grid items from the page's gridSchema JSON.
- * Each item is wrapped in ComponentBlock (header, footer, slide-out) with unified style.
+ * PT-RP1: dynamic lazy grid blocks; PT-RP19: pause autoplay when tab hidden.
  */
 
-import { useMemo, useState, useEffect } from 'react';
+import { Suspense, useMemo, useState, useEffect, useCallback } from 'react';
 import { ResponsiveGridLayout, useContainerWidth, verticalCompactor } from 'react-grid-layout';
 import type { LayoutItem, ResponsiveLayouts } from 'react-grid-layout';
-import { ComponentBlock } from '../ComponentBlock';
-import {
-	Album,
-	AlbumGrid,
-	AlbumCarousel,
-	Ad,
-	AdGrid,
-	AdCarousel,
-	Blog,
-	BlogGrid,
-	BlogCarousel,
-	ChatRoom,
-	ChatRoomGrid,
-	ChatRoomCarousel,
-	UserProfile,
-	UserProfileGrid,
-	UserProfileCarousel,
-	Reel,
-	ReelGrid,
-	ReelCarousel,
-	Story,
-	StoryGrid,
-	StoryCarousel,
-	VideoLounge,
-	VideoLoungeGrid,
-	VideoLoungeCarousel,
-} from '../grid';
+import { RouteLoadingFallback } from '../../routes/routeLoadingFallback';
+import { getLazyGridBlock, isKnownGridComponentType } from '../grid/gridBlockRegistry';
 import {
 	advanceCarouselPage,
 	parsePageGridSchema,
 	readComponentBlockAutoplay,
-	type PageGridItem,
 	type PageGridSchema,
 } from '../../utils/pageGridSchema';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import './PageGridLayout.scss';
 import { HAS_FOOTER } from './constants';
+import { PageGridItemShell } from './PageGridItemShell';
 import type { PageGridLayoutProps } from './types';
 
 export type { GridComponentType } from '../../utils/pageGridSchema';
+
+function LazyGridBlock({
+	componentType,
+	props,
+}: {
+	componentType: string;
+	props: Record<string, unknown>;
+}) {
+	const LazyComp = useMemo(
+		() => (isKnownGridComponentType(componentType) ? getLazyGridBlock(componentType) : null),
+		[componentType]
+	);
+	if (!LazyComp) {
+		return <span className="page-grid-item-label">{componentType}</span>;
+	}
+	return (
+		<Suspense fallback={<RouteLoadingFallback />}>
+			{/* getLazyGridBlock returns stable cached lazy refs (PT-RP1) */}
+			{/* eslint-disable-next-line react-hooks/static-components */}
+			<LazyComp {...props} />
+		</Suspense>
+	);
+}
 
 export function PageGridLayout({ gridSchemaJson }: PageGridLayoutProps) {
 	const { width, containerRef } = useContainerWidth();
@@ -66,7 +64,7 @@ export function PageGridLayout({ gridSchemaJson }: PageGridLayoutProps) {
 			y: item.y,
 			w: item.w,
 			h: item.h,
-			static: true, // non-draggable, non-resizable
+			static: true,
 		}));
 		return {
 			lg: baseLayout,
@@ -81,6 +79,16 @@ export function PageGridLayout({ gridSchemaJson }: PageGridLayoutProps) {
 		Record<string, { page: number; totalPages: number }>
 	>({});
 	const [autoplayingItemId, setAutoplayingItemId] = useState<string | null>(null);
+	const [tabVisible, setTabVisible] = useState(
+		typeof document === 'undefined' ? true : !document.hidden
+	);
+
+	useEffect(() => {
+		if (typeof document === 'undefined') return;
+		const onVis = () => setTabVisible(!document.hidden);
+		document.addEventListener('visibilitychange', onVis);
+		return () => document.removeEventListener('visibilitychange', onVis);
+	}, []);
 
 	const pageChangeByItemId = useMemo(() => {
 		const m = new Map<string, (page: number, totalPages: number) => void>();
@@ -117,7 +125,7 @@ export function PageGridLayout({ gridSchemaJson }: PageGridLayoutProps) {
 	}, [schema]);
 
 	useEffect(() => {
-		if (!autoplayingItemId) return;
+		if (!autoplayingItemId || !tabVisible) return;
 		const id = autoplayingItemId;
 		const interval = window.setInterval(() => {
 			setPagination((prev) => {
@@ -128,63 +136,19 @@ export function PageGridLayout({ gridSchemaJson }: PageGridLayoutProps) {
 			});
 		}, 4500);
 		return () => clearInterval(interval);
-	}, [autoplayingItemId]);
+	}, [autoplayingItemId, tabVisible]);
+
+	const makePageDelta = useCallback((itemId: string, delta: number) => {
+		setPagination((prev) => {
+			const cur = prev[itemId] ?? { page: 0, totalPages: 1 };
+			const nextPage = Math.max(0, Math.min(cur.totalPages - 1, cur.page + delta));
+			if (nextPage === cur.page) return prev;
+			return { ...prev, [itemId]: { ...cur, page: nextPage } };
+		});
+	}, []);
 
 	if (!schema) {
 		return null;
-	}
-
-	function renderChild(
-		item: PageGridItem,
-		paginationState: { page: number; totalPages: number } | undefined,
-		onPageChange: ((page: number, totalPages: number) => void) | undefined
-	) {
-		const ct = item.componentType;
-		const controlled = ct && HAS_FOOTER[ct];
-		const page = paginationState?.page ?? 0;
-		const totalPages = Math.max(1, paginationState?.totalPages ?? 1);
-		const onChange = controlled && onPageChange ? onPageChange : undefined;
-		if (ct === 'album') return <Album />;
-		if (ct === 'albumGrid')
-			return <AlbumGrid page={page} totalPages={totalPages} onPageChange={onChange} />;
-		if (ct === 'albumCarousel')
-			return <AlbumCarousel page={page} totalPages={totalPages} onPageChange={onChange} />;
-		if (ct === 'ad') return <Ad />;
-		if (ct === 'adGrid')
-			return <AdGrid page={page} totalPages={totalPages} onPageChange={onChange} />;
-		if (ct === 'adCarousel')
-			return <AdCarousel page={page} totalPages={totalPages} onPageChange={onChange} />;
-		if (ct === 'blog') return <Blog />;
-		if (ct === 'blogGrid')
-			return <BlogGrid page={page} totalPages={totalPages} onPageChange={onChange} />;
-		if (ct === 'blogCarousel')
-			return <BlogCarousel page={page} totalPages={totalPages} onPageChange={onChange} />;
-		if (ct === 'chatRoom') return <ChatRoom boundChatRoomId={item.boundChatRoomId} />;
-		if (ct === 'chatRoomGrid')
-			return <ChatRoomGrid page={page} totalPages={totalPages} onPageChange={onChange} />;
-		if (ct === 'chatRoomCarousel')
-			return <ChatRoomCarousel page={page} totalPages={totalPages} onPageChange={onChange} />;
-		if (ct === 'userProfile') return <UserProfile />;
-		if (ct === 'userProfileGrid')
-			return <UserProfileGrid page={page} totalPages={totalPages} onPageChange={onChange} />;
-		if (ct === 'userProfileCarousel')
-			return <UserProfileCarousel page={page} totalPages={totalPages} onPageChange={onChange} />;
-		if (ct === 'reel') return <Reel />;
-		if (ct === 'reelGrid')
-			return <ReelGrid page={page} totalPages={totalPages} onPageChange={onChange} />;
-		if (ct === 'reelCarousel')
-			return <ReelCarousel page={page} totalPages={totalPages} onPageChange={onChange} />;
-		if (ct === 'story') return <Story />;
-		if (ct === 'storyGrid')
-			return <StoryGrid page={page} totalPages={totalPages} onPageChange={onChange} />;
-		if (ct === 'storyCarousel')
-			return <StoryCarousel page={page} totalPages={totalPages} onPageChange={onChange} />;
-		if (ct === 'videoLounge') return <VideoLounge boundVideoLoungeId={item.boundVideoLoungeId} />;
-		if (ct === 'videoLoungeGrid')
-			return <VideoLoungeGrid page={page} totalPages={totalPages} onPageChange={onChange} />;
-		if (ct === 'videoLoungeCarousel')
-			return <VideoLoungeCarousel page={page} totalPages={totalPages} onPageChange={onChange} />;
-		return <span className="page-grid-item-label">{item.label || item.i}</span>;
 	}
 
 	return (
@@ -203,17 +167,6 @@ export function PageGridLayout({ gridSchemaJson }: PageGridLayoutProps) {
 			>
 				{schema.items.map((item) => {
 					const ct = item.componentType;
-					const hasFooter = ct ? HAS_FOOTER[ct] : false;
-					const paginationState = pagination[item.i];
-					const page = paginationState?.page ?? 0;
-					const totalPages = Math.max(1, paginationState?.totalPages ?? 1);
-					const setPage = (delta: number) => {
-						setPagination((prev) => {
-							const cur = prev[item.i] ?? { page: 0, totalPages: 1 };
-							const nextPage = Math.max(0, Math.min(cur.totalPages - 1, cur.page + delta));
-							return { ...prev, [item.i]: { ...cur, page: nextPage } };
-						});
-					};
 					if (!ct) {
 						return (
 							<div key={item.i} className="page-grid-item">
@@ -221,23 +174,36 @@ export function PageGridLayout({ gridSchemaJson }: PageGridLayoutProps) {
 							</div>
 						);
 					}
+					const hasFooter = HAS_FOOTER[ct];
+					const paginationState = pagination[item.i];
+					const page = paginationState?.page ?? 0;
+					const totalPages = Math.max(1, paginationState?.totalPages ?? 1);
+
 					return (
-						<div key={item.i} className="page-grid-item">
-							<ComponentBlock
-								componentId={item.i}
+						<PageGridItemShell
+							key={item.i}
+							itemId={item.i}
+							componentType={ct}
+							title={item.title ?? item.label}
+							icon={item.icon ?? undefined}
+							page={page}
+							totalPages={totalPages}
+							onPrev={hasFooter ? () => makePageDelta(item.i, -1) : undefined}
+							onNext={hasFooter ? () => makePageDelta(item.i, 1) : undefined}
+							onPlayPause={hasFooter ? playPauseByItemId.get(item.i) : undefined}
+							autoplayFromStorage={hasFooter ? readComponentBlockAutoplay(item.i) : false}
+						>
+							<LazyGridBlock
 								componentType={ct}
-								title={item.title ?? item.label}
-								icon={item.icon}
-								page={page}
-								totalPages={totalPages}
-								onPrev={hasFooter ? () => setPage(-1) : undefined}
-								onNext={hasFooter ? () => setPage(1) : undefined}
-								onPlayPause={hasFooter ? playPauseByItemId.get(item.i) : undefined}
-								autoplayFromStorage={hasFooter ? readComponentBlockAutoplay(item.i) : false}
-							>
-								{renderChild(item, paginationState, pageChangeByItemId.get(item.i))}
-							</ComponentBlock>
-						</div>
+								props={{
+									page,
+									totalPages,
+									onPageChange: hasFooter ? pageChangeByItemId.get(item.i) : undefined,
+									...(ct === 'chatRoom' ? { boundChatRoomId: item.boundChatRoomId } : {}),
+									...(ct === 'videoLounge' ? { boundVideoLoungeId: item.boundVideoLoungeId } : {}),
+								}}
+							/>
+						</PageGridItemShell>
 					);
 				})}
 			</ResponsiveGridLayout>

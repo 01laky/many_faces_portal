@@ -15,12 +15,32 @@ Defined in `src/providers/QueryProvider.tsx`:
 
 ## Per-hook matrix (not only globals)
 
-| Hook / area         | `staleTime` | Notes                                           |
-| ------------------- | ----------- | ----------------------------------------------- |
-| `useAuthToken`      | **60s**     | Must track expiry + cross-tab sooner than lists |
-| `useMeCapabilities` | **60s**     | ACL rarely changes; bounded `gcTime`            |
-| `useProfile`        | per hook    | Avatar + profile; invalidate on face switch     |
-| Mutations           | defaults    | Explicit `invalidateQueries` after writes       |
+| Hook / area              | Query key shape                                    | `staleTime` | Notes                                           |
+| ------------------------ | -------------------------------------------------- | ----------- | ----------------------------------------------- |
+| `useAuthToken`           | `authKeys.*`                                       | **60s**     | Must track expiry + cross-tab sooner than lists |
+| `useMeCapabilities`      | `['me', 'capabilities']`                           | **60s**     | ACL rarely changes; bounded `gcTime`            |
+| `useProfile`             | `['profile']` or `['profile', faceId]`             | per hook    | Avatar + profile; invalidate on face switch     |
+| `useGlobalProfile`       | `['profile']`                                      | per hook    | Bootstrap `lastSelectedFaceId` (PT-RP5)         |
+| `useFacesConfigQuery`    | `['faces', 'config', tokenFingerprint]`            | **5 min**   | Face switch invalidates on visit (PT-RP22)      |
+| Grid list hooks (PT-RP2) | `['face', faceId, '<resource>']` — see table below | **5 min**   | Dedup across blocks; IO-gated fetch (PT-RP16)   |
+| `useWallTicketsQuery`    | `['wall', 'tickets', faceId, page, pageSize]`      | **60s**     | Shared host meta + section list (PT-RP14)       |
+| Video lounge live        | `['videoLoungeLive', faceId, loungeId, phase]`     | poll 12s    | Paused when tab hidden (PT-RP13)                |
+| Mutations                | defaults                                           | —           | Explicit `invalidateQueries` after writes       |
+
+### Grid query keys (`gridQueryKeys`)
+
+| Resource      | Key helper                           | Example                        |
+| ------------- | ------------------------------------ | ------------------------------ |
+| Albums        | `gridQueryKeys.albums(faceId)`       | `['face', 42, 'albums']`       |
+| Blogs         | `gridQueryKeys.blogs(faceId)`        | `['face', 42, 'blogs']`        |
+| Stories       | `gridQueryKeys.stories(faceId)`      | `['face', 42, 'stories']`      |
+| Reels         | `gridQueryKeys.reels(faceId)`        | `['face', 42, 'reels']`        |
+| Ads / wall    | `gridQueryKeys.ads(faceId)`          | `['face', 42, 'ads']`          |
+| User profiles | `gridQueryKeys.userProfiles(faceId)` | `['face', 42, 'userProfiles']` |
+| Chat rooms    | `gridQueryKeys.chatRooms(faceId)`    | `['face', 42, 'chatRooms']`    |
+| Video lounges | `gridQueryKeys.videoLounges(faceId)` | `['face', 42, 'videoLounges']` |
+
+**Budget:** `FACE_HOME_API_BUDGET = 8` — unique grid keys on a typical face home should stay at or below this count (PT-RP20 / PT-RP29).
 
 ## Diagram: face-scoped fetch
 
@@ -38,3 +58,4 @@ flowchart LR
 ## Related prompt
 
 - [`docs/prompts/fe-performance-and-refactor-agent-prompt.md`](../../docs/prompts/fe-performance-and-refactor-agent-prompt.md) — lazy routes, thin `App.tsx`, Query defaults (mostly implemented).
+- [`docs/runtime-performance-v1.md`](../../docs/runtime-performance-v1.md) — PT-RP1–30 index and architecture diagrams.

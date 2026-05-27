@@ -2,16 +2,19 @@
  * BlogGrid - Paginated grid of blog posts for the current face (API-backed)
  */
 
-import { useState, useRef, useEffect, useCallback, useMemo, type CSSProperties } from 'react';
+import { useState, useRef, useCallback, useMemo, memo, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
+import { useGridBlockFetchEnabled } from '../../../contexts/GridBlockFetchContext';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
-import { getBlogs, type BlogItem } from '../../../api/services/BlogsService';
+import { useBlogsGridQuery } from '../../../hooks/api/gridQueries';
+import type { BlogItem } from '../../../api/services/BlogsService';
 import { CreatorModerationBadge } from '../CreatorModerationBadge';
+import { GridMediaImage } from '../../GridMediaImage/GridMediaImage';
 import {
 	useStablePaginationEmit,
 	useSyncedPaginationReport,
@@ -20,6 +23,39 @@ import { useFillGridPagination } from '../../../hooks/useFillGridPagination';
 import { blogCoverPlaceholderUrl } from '../gridDisplayHelpers';
 import './BlogGrid.scss';
 import type { BlogGridProps } from './types';
+
+type BlogGridCardProps = {
+	post: BlogItem;
+	index: number;
+	onOpen: (postId: number) => void;
+};
+
+export const BlogGridCard = memo(function BlogGridCard({ post, index, onOpen }: BlogGridCardProps) {
+	return (
+		<div
+			className="blog-grid-card"
+			onClick={() => onOpen(post.id)}
+			role="button"
+			tabIndex={0}
+			onKeyDown={(e) => {
+				if (e.key === 'Enter') onOpen(post.id);
+			}}
+		>
+			<GridMediaImage src={blogCover(post)} alt={post.title} priority={index === 0} />
+			<div className="blog-grid-card-info">
+				<span className="blog-grid-card-date">{new Date(post.createdAt).toLocaleDateString()}</span>
+				<span className="blog-grid-card-title">{post.title}</span>
+				<CreatorModerationBadge
+					approvalStatus={post.approvalStatus}
+					aiReviewStatus={post.aiReviewStatus}
+					aiReviewUserMessage={post.aiReviewUserMessage}
+					humanDecisionReason={post.humanDecisionReason}
+				/>
+				<span className="blog-grid-card-excerpt">{excerpt(post.content)}</span>
+			</div>
+		</div>
+	);
+});
 
 function blogCover(blog: BlogItem): string {
 	const first = blog.images?.[0]?.imageUrl;
@@ -41,9 +77,12 @@ export function BlogGrid({ page: controlledPage, onPageChange }: BlogGridProps =
 	const { selectedFace } = useFaceConfig();
 	const faceId = selectedFace?.id;
 
-	const [posts, setPosts] = useState<BlogItem[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [loadError, setLoadError] = useState(false);
+	const fetchEnabled = useGridBlockFetchEnabled();
+	const {
+		data: posts = [],
+		isLoading: loading,
+		isError: loadError,
+	} = useBlogsGridQuery(token, faceId, fetchEnabled);
 	const [internalPage, setInternalPage] = useState(0);
 	const isControlled = onPageChange != null;
 	const page = isControlled && controlledPage !== undefined ? controlledPage : internalPage;
@@ -55,38 +94,6 @@ export function BlogGrid({ page: controlledPage, onPageChange }: BlogGridProps =
 		imageHeightFromCellWidth: 10 / 16,
 		infoBlockPx: 68,
 	});
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			await Promise.resolve();
-			if (!token || faceId == null) {
-				if (!cancelled) {
-					setPosts([]);
-					setLoading(false);
-				}
-				return;
-			}
-			if (!cancelled) {
-				setLoading(true);
-				setLoadError(false);
-			}
-			try {
-				const list = await getBlogs(token, faceId);
-				if (!cancelled) setPosts(list);
-			} catch {
-				if (!cancelled) {
-					setLoadError(true);
-					setPosts([]);
-				}
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [token, faceId]);
 
 	const totalPages = Math.max(1, Math.ceil(posts.length / itemsPerPage));
 	const clampedPage = Math.min(page, Math.max(0, totalPages - 1));
@@ -111,6 +118,11 @@ export function BlogGrid({ page: controlledPage, onPageChange }: BlogGridProps =
 	);
 
 	const showInternalPagination = !isControlled;
+
+	const openPost = useCallback(
+		(postId: number) => navigate(getLocalizedPath(`/blog/${postId}`)),
+		[navigate, getLocalizedPath]
+	);
 
 	if (!token || faceId == null) {
 		return (
@@ -141,32 +153,8 @@ export function BlogGrid({ page: controlledPage, onPageChange }: BlogGridProps =
 	return (
 		<div className="blog-grid-component">
 			<div className="blog-grid-items" ref={itemsRef} style={itemsStyle}>
-				{visiblePosts.map((post) => (
-					<div
-						key={post.id}
-						className="blog-grid-card"
-						onClick={() => navigate(getLocalizedPath(`/blog/${post.id}`))}
-						role="button"
-						tabIndex={0}
-						onKeyDown={(e) => {
-							if (e.key === 'Enter') navigate(getLocalizedPath(`/blog/${post.id}`));
-						}}
-					>
-						<img src={blogCover(post)} alt={post.title} loading="lazy" />
-						<div className="blog-grid-card-info">
-							<span className="blog-grid-card-date">
-								{new Date(post.createdAt).toLocaleDateString()}
-							</span>
-							<span className="blog-grid-card-title">{post.title}</span>
-							<CreatorModerationBadge
-								approvalStatus={post.approvalStatus}
-								aiReviewStatus={post.aiReviewStatus}
-								aiReviewUserMessage={post.aiReviewUserMessage}
-								humanDecisionReason={post.humanDecisionReason}
-							/>
-							<span className="blog-grid-card-excerpt">{excerpt(post.content)}</span>
-						</div>
-					</div>
+				{visiblePosts.map((post, index) => (
+					<BlogGridCard key={post.id} post={post} index={index} onOpen={openPost} />
 				))}
 			</div>
 			{posts.length === 0 && <p className="blog-grid-empty">{t(k.empty.blogs)}</p>}

@@ -17,8 +17,14 @@ import {
 	createOptimisticOutgoingMessage,
 	removeOptimisticOutgoingMessages,
 } from '../../utils/messengerMessageMerge';
+import {
+	mergeAcceptedMessageRequest,
+	patchConversationOnInboundMessage,
+	patchConversationOnOutgoingMessage,
+} from '../../utils/messengerConversationMerge';
 import { formatMessageTime } from '../../utils/formatMessageTime';
 import { useAuth } from '../../contexts/AuthContext';
+import { SimpleVirtualList } from '../SimpleVirtualList/SimpleVirtualList';
 import './MessengerTab.scss';
 import type { View } from './types';
 
@@ -50,6 +56,7 @@ export function MessengerTab({ token }: { token: string }) {
 	const [actioningRequest, setActioningRequest] = useState<string | null>(null);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const inputRef = useRef<HTMLTextAreaElement>(null);
+	const hadConnectedRef = useRef(false);
 
 	const loadData = useCallback(async () => {
 		await Promise.resolve();
@@ -69,11 +76,17 @@ export function MessengerTab({ token }: { token: string }) {
 	}, [token, t]);
 
 	useEffect(() => {
-		void (async () => {
-			await Promise.resolve();
-			await loadData();
-		})();
+		queueMicrotask(() => void loadData());
 	}, [loadData]);
+
+	useEffect(() => {
+		if (connectionState === 'Connected' && hadConnectedRef.current) {
+			void loadData();
+		}
+		if (connectionState === 'Connected') {
+			hadConnectedRef.current = true;
+		}
+	}, [connectionState, loadData]);
 
 	const currentUserId = user?.id ?? '';
 
@@ -90,8 +103,17 @@ export function MessengerTab({ token }: { token: string }) {
 					messageId,
 				})
 			);
+			setConversations((prev) =>
+				patchConversationOnInboundMessage(prev, {
+					senderId,
+					senderName: _senderName,
+					content,
+					sentAt,
+					currentUserId,
+					threadOpen: selectedUserId === senderId,
+				})
+			);
 			if (selectedUserId === senderId) markMessagesAsRead(senderId, token).catch(() => {});
-			loadData();
 		});
 		const unsubReq = onMessageRequest((senderId, senderName, content, sentAt) => {
 			setMessageRequests((prev) => {
@@ -120,10 +142,20 @@ export function MessengerTab({ token }: { token: string }) {
 					...prev,
 				];
 			});
-			loadData();
 		});
-		const unsubAccept = onMessageRequestAccepted(() => {
-			loadData();
+		const unsubAccept = onMessageRequestAccepted((accepterId, accepterName) => {
+			setMessageRequests((prev) => {
+				const req = prev.find((r) => r.senderId === accepterId);
+				setConversations((convs) =>
+					mergeAcceptedMessageRequest(convs, {
+						senderId: accepterId,
+						senderName: req?.senderName ?? accepterName,
+						lastMessage: req?.lastMessage ?? '',
+						lastMessageAt: req?.lastMessageAt ?? new Date().toISOString(),
+					})
+				);
+				return prev.filter((r) => r.senderId !== accepterId);
+			});
 			if (selectedUserId) {
 				setView('chat');
 				setMessagesLoading(true);
@@ -159,7 +191,6 @@ export function MessengerTab({ token }: { token: string }) {
 		selectedUserId,
 		currentUserId,
 		token,
-		loadData,
 		t,
 	]);
 
@@ -237,10 +268,18 @@ export function MessengerTab({ token }: { token: string }) {
 			setInputValue('');
 			setMessages((prev) => [...prev, createOptimisticOutgoingMessage(trimmed, optimisticId)]);
 
+			const sentAt = new Date().toISOString();
 			try {
 				setSending(true);
 				await sendMessage(selectedUserId, trimmed);
-				loadData();
+				setConversations((prev) =>
+					patchConversationOnOutgoingMessage(prev, {
+						receiverId: selectedUserId,
+						receiverName: selectedUserName,
+						content: trimmed,
+						sentAt,
+					})
+				);
 			} catch {
 				setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
 				toast.error(t('messenger.sendError'));
@@ -248,7 +287,7 @@ export function MessengerTab({ token }: { token: string }) {
 				setSending(false);
 			}
 		},
-		[selectedUserId, inputValue, sending, sendMessage, loadData, t]
+		[selectedUserId, selectedUserName, inputValue, sending, sendMessage, t]
 	);
 
 	useEffect(() => {
@@ -320,28 +359,32 @@ export function MessengerTab({ token }: { token: string }) {
 										<Loader2 size={24} className="spin" />
 									</div>
 								) : (
-									messages.map((m) => {
-										const isMe = m.senderId === currentUserId || m.senderId === 'me';
-										return (
-											<div
-												key={m.id}
-												className={`messenger-message ${isMe ? 'messenger-message--me' : ''}`}
-											>
-												{!isMe && <span className="messenger-message-sender">{m.senderName}</span>}
-												<span className="messenger-message-content">{m.content}</span>
-												<div className="messenger-message-meta">
-													<span className="messenger-message-time">
-														{formatMessageTime(m.sentAt)}
-													</span>
-													{isMe && m.readAt && (
-														<span className="messenger-message-read">{t('messenger.read')}</span>
+									<SimpleVirtualList
+										className="messenger-messages-virtual"
+										items={messages}
+										getKey={(m) => m.id}
+										renderItem={(m) => {
+											const isMe = m.senderId === currentUserId || m.senderId === 'me';
+											return (
+												<div className={`messenger-message ${isMe ? 'messenger-message--me' : ''}`}>
+													{!isMe && (
+														<span className="messenger-message-sender">{m.senderName}</span>
 													)}
+													<span className="messenger-message-content">{m.content}</span>
+													<div className="messenger-message-meta">
+														<span className="messenger-message-time">
+															{formatMessageTime(m.sentAt)}
+														</span>
+														{isMe && m.readAt && (
+															<span className="messenger-message-read">{t('messenger.read')}</span>
+														)}
+													</div>
 												</div>
-											</div>
-										);
-									})
+											);
+										}}
+										footer={<div ref={messagesEndRef} />}
+									/>
 								)}
-								<div ref={messagesEndRef} />
 							</div>
 							<form className="messenger-input-form" onSubmit={handleSend}>
 								<textarea
