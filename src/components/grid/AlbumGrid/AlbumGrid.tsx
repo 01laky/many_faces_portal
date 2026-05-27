@@ -33,16 +33,8 @@ import {
 	type AlbumGridLayout,
 } from '../../../utils/computeAlbumGridLayout';
 import './AlbumGrid.scss';
-import type { AlbumItem } from '../../../api/services/AlbumsService';
 import { DEFAULT_ITEMS_PER_PAGE, ALBUM_GRID_LAYOUT_OPTS } from './constants';
-import type { AlbumGridProps } from './types';
-
-type AlbumGridCardProps = {
-	album: AlbumItem;
-	index: number;
-	gridLayout: AlbumGridLayout | null;
-	onOpen: (albumId: number) => void;
-};
+import type { AlbumGridCardProps, AlbumGridProps } from './types';
 
 export const AlbumGridCard = memo(function AlbumGridCard({
 	album,

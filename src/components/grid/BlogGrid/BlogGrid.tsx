@@ -22,13 +22,7 @@ import {
 import { useFillGridPagination } from '../../../hooks/useFillGridPagination';
 import { blogCoverPlaceholderUrl } from '../gridDisplayHelpers';
 import './BlogGrid.scss';
-import type { BlogGridProps } from './types';
-
-type BlogGridCardProps = {
-	post: BlogItem;
-	index: number;
-	onOpen: (postId: number) => void;
-};
+import type { BlogGridCardProps, BlogGridProps } from './types';
 
 export const BlogGridCard = memo(function BlogGridCard({ post, index, onOpen }: BlogGridCardProps) {
 	return (

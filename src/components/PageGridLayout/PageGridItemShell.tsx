@@ -1,22 +1,8 @@
-import { memo, type ReactNode } from 'react';
+import { memo } from 'react';
 import { ComponentBlock } from '../ComponentBlock';
 import { GridBlockFetchProvider } from '../../contexts/GridBlockFetchContext';
 import { useInViewOnce } from '../../hooks/useInViewOnce';
-import type { GridComponentType } from '../../utils/pageGridSchema';
-
-export type PageGridItemShellProps = {
-	itemId: string;
-	componentType: GridComponentType;
-	title?: string;
-	icon?: string;
-	page: number;
-	totalPages: number;
-	onPrev?: () => void;
-	onNext?: () => void;
-	onPlayPause?: (playing: boolean) => void;
-	autoplayFromStorage: boolean;
-	children: ReactNode;
-};
+import type { PageGridItemShellProps } from './types';
 
 /** Memoized grid item shell — limits re-renders on sibling pagination (PT-RP24). */
 export const PageGridItemShell = memo(function PageGridItemShell({
