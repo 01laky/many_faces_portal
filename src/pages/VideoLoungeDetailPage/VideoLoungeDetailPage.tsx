@@ -157,8 +157,11 @@ export function VideoLoungeDetailPage({ loungeId: loungeIdProp }: { loungeId: nu
 	useEffect(() => {
 		if (!shouldRunVideoLoungeHeartbeat({ pageVisible, phase, faceId: faceId ?? null, token }))
 			return;
+		if (faceId == null || !token) return;
+		const fid = faceId;
+		const authToken = token;
 		const id = window.setInterval(() => {
-			void heartbeatVideoLoungeLive(faceId, loungeIdProp, token).catch(() => {});
+			void heartbeatVideoLoungeLive(fid, loungeIdProp, authToken).catch(() => {});
 		}, HEARTBEAT_INTERVAL_MS);
 		return () => clearInterval(id);
 	}, [phase, faceId, token, loungeIdProp, pageVisible]);

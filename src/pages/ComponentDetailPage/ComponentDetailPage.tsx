@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { RouteLoadingFallback } from '../../routes/routeLoadingFallback';
+import { resolveComponentDetailDispatch } from './componentDetailDispatch';
 
 const LazyChatRoomDetailPage = lazy(() =>
 	import('../ChatRoomDetailPage').then((m) => ({ default: m.ChatRoomDetailPage }))
@@ -23,8 +24,9 @@ export function ComponentDetailPage() {
 
 	const typeId = Number(componentTypeId);
 	const entity = Number(entityId);
+	const dispatch = resolveComponentDetailDispatch(typeId, entity);
 
-	if (!Number.isFinite(typeId) || !Number.isFinite(entity)) {
+	if (dispatch === 'invalid') {
 		return (
 			<div style={{ padding: 24 }}>
 				<p>{t('componentDetail.invalid', 'Invalid link.')}</p>
@@ -32,7 +34,7 @@ export function ComponentDetailPage() {
 		);
 	}
 
-	if (typeId === 4) {
+	if (dispatch === 'chatRoom') {
 		return (
 			<Suspense fallback={<RouteLoadingFallback />}>
 				<LazyChatRoomDetailPage roomId={entity} />
