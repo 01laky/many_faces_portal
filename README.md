@@ -32,8 +32,8 @@
 | Run in full stack           | `../scripts/start-all-dev.sh` from `many_faces_main`                                                                                                              |
 | Local app                   | `http://localhost:9080` / `https://localhost:9081` via portal proxy                                                                                               |
 | Global ADMIN vs SUPER_ADMIN | Portal for **`ADMIN`**; admin app requires **`SUPER_ADMIN`** — [`../docs/guides/admin-superadmin-only-access.md`](../docs/guides/admin-superadmin-only-access.md) |
-| Performance / Query         | [`docs/performance-and-query-appendix.md`](./docs/performance-and-query-appendix.md) · [`docs/runtime-performance-v1.md`](./docs/runtime-performance-v1.md) |
-| AI degraded UX (PT-RP30)    | [`docs/ai-degraded-ux.md`](./docs/ai-degraded-ux.md)                                                                                                            |
+| Performance / Query         | [`docs/performance-and-query-appendix.md`](./docs/performance-and-query-appendix.md) · [`docs/runtime-performance-v1.md`](./docs/runtime-performance-v1.md)       |
+| AI degraded UX (PT-RP30)    | [`docs/ai-degraded-ux.md`](./docs/ai-degraded-ux.md)                                                                                                              |
 | Content approval UX         | [`../docs/guides/ai-assisted-content-approval.md`](../docs/guides/ai-assisted-content-approval.md)                                                                |
 | Static i18n                 | [`../docs/guides/static-localization-and-i18n.md`](../docs/guides/static-localization-and-i18n.md)                                                                |
 
