@@ -58,4 +58,4 @@ flowchart LR
 ## Related prompt
 
 - [`docs/prompts/fe-performance-and-refactor-agent-prompt.md`](../../docs/prompts/fe-performance-and-refactor-agent-prompt.md) — lazy routes, thin `App.tsx`, Query defaults (mostly implemented).
-- [`docs/runtime-performance-v1.md`](../../docs/runtime-performance-v1.md) — PT-RP1–30 index and architecture diagrams.
+- [`docs/runtime-performance-v1.md`](./runtime-performance-v1.md) — PT-RP1–30 index and architecture diagrams.
