@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -34,8 +34,13 @@ describe('portalTypesColocationCiGate alignment', () => {
 	});
 
 	it('verify script reads paths from portalTypesColocationCiGate.ts', () => {
-		const scriptPath = path.join(portalRoot, '../scripts/verify-portal-types-colocation-tests.mjs');
-		const script = readFileSync(scriptPath, 'utf8');
+		const scriptCandidates = [
+			path.join(portalRoot, 'scripts/verify-portal-types-colocation-tests.mjs'),
+			path.join(portalRoot, '../scripts/verify-portal-types-colocation-tests.mjs'),
+		];
+		const scriptPath = scriptCandidates.find((candidate) => existsSync(candidate));
+		expect(scriptPath).toBeDefined();
+		const script = readFileSync(scriptPath!, 'utf8');
 		expect(script).toContain('portalTypesColocationCiGate.ts');
 		expect(script).toContain('matchAll');
 	});

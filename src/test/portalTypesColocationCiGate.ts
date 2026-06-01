@@ -1,5 +1,5 @@
 /**
- * Vitest types-colocation gate — keep aligned with monorepo `verify-portal-types-colocation-tests.mjs`.
+ * Vitest types-colocation gate — keep aligned with `scripts/verify-portal-types-colocation-tests.mjs`.
  */
 export const PORTAL_TYPES_COLOCATION_TEST_FILES = [
 	'src/contexts/contextTypes.colocation.edge.test.ts',
