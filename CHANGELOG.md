@@ -8,6 +8,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 | Version       | Theme                                       |
 | ------------- | ------------------------------------------- |
+| [1.0.3](#103) | Untested-utility edge tests (test-gap fill) |
 | [1.0.2](#102) | Gradient-animation preference edge tests    |
 | [1.0.1](#101) | Review pass: cache leak, profile, redaction |
 | [1.0.0](#100) | Portal runtime performance v1 (PT-RP1–30)   |
@@ -30,6 +31,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 ### Changed
 
 ### Fixed
+
+---
+
+## [1.0.3]
+
+### Added
+
+- Edge-case tests for three previously-untested utilities (unit-test-gap-fill): `formatMessageTime` (nullish/unparseable input, same-day time-only vs other-day month+time, default-now boundary), `globalPreloaderVanillaShell` (accessible status markup, exactly-three-dot spinner, `prefers-reduced-motion` guard, CSS-only head-style helper), and `portalAuthSession` (logout reset delegates to `clearLocalAuthSession`, defaults to `localStorage` + axios `setAuthToken`).
 
 ---
 
@@ -182,7 +191,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 - React/TypeScript SPA with OAuth2 and Docker dev scripts.
 
-[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.0.3...HEAD
 [0.9.2]: https://github.com/01laky/many_faces_portal/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/01laky/many_faces_portal/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/01laky/many_faces_portal/compare/v0.8.0...v0.9.0
@@ -194,5 +203,6 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 [0.3.0]: https://github.com/01laky/many_faces_portal/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/01laky/many_faces_portal/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/01laky/many_faces_portal/releases/tag/v0.1.0
+[1.0.3]: https://github.com/01laky/many_faces_portal/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/01laky/many_faces_portal/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/01laky/many_faces_portal/compare/v1.0.0...v1.0.1
