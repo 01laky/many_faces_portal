@@ -6,21 +6,22 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 ### Release index
 
-| Version       | Theme                                      |
-| ------------- | ------------------------------------------ |
+| Version       | Theme                                       |
+| ------------- | ------------------------------------------- |
+| [1.0.2](#102) | Gradient-animation preference edge tests    |
 | [1.0.1](#101) | Review pass: cache leak, profile, redaction |
-| [1.0.0](#100) | Portal runtime performance v1 (PT-RP1–30)  |
-| [0.9.3](#093) | Contexts colocation + hooks/api re-folder  |
-| [0.9.2](#092) | Types/constants colocation rollout         |
-| [0.9.0](#090) | PSH1 security hardening                    |
-| [0.8.0](#080) | VideoLounge, i18n, preloader, AI switch    |
-| [0.7.0](#070) | Moderation helpers, localization bootstrap |
-| [0.6.0](#060) | Content approval, colocation               |
-| [0.5.0](#050) | ACL, remember-me, modular routes           |
-| [0.4.0](#040) | Albums, blog, reels, chat, wall            |
-| [0.3.0](#030) | Social features and grid list              |
-| [0.2.0](#020) | Husky, face routing, Cypress E2E           |
-| [0.1.0](#010) | React SPA foundation                       |
+| [1.0.0](#100) | Portal runtime performance v1 (PT-RP1–30)   |
+| [0.9.3](#093) | Contexts colocation + hooks/api re-folder   |
+| [0.9.2](#092) | Types/constants colocation rollout          |
+| [0.9.0](#090) | PSH1 security hardening                     |
+| [0.8.0](#080) | VideoLounge, i18n, preloader, AI switch     |
+| [0.7.0](#070) | Moderation helpers, localization bootstrap  |
+| [0.6.0](#060) | Content approval, colocation                |
+| [0.5.0](#050) | ACL, remember-me, modular routes            |
+| [0.4.0](#040) | Albums, blog, reels, chat, wall             |
+| [0.3.0](#030) | Social features and grid list               |
+| [0.2.0](#020) | Husky, face routing, Cypress E2E            |
+| [0.1.0](#010) | React SPA foundation                        |
 
 ## [Unreleased]
 
@@ -29,6 +30,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 ### Changed
 
 ### Fixed
+
+---
+
+## [1.0.2]
+
+### Added
+
+- Edge-case tests closing out the gradient-animation preference feature (prompt Phase B/C/D): `GradientAnimationPreferenceContext.test.tsx` (guest vs authenticated source of truth, `prefers-reduced-motion` override, optimistic profile-cache write-back, rollback + toast on a failed save, `isUpdating`) and `AnimatedGradientToggle.test.tsx` (checked state from the raw want flag, disabled under reduced motion / while saving, hint text swap). The two previously-untested units of an otherwise-shipped feature now have coverage.
 
 ---
 
@@ -173,7 +182,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 - React/TypeScript SPA with OAuth2 and Docker dev scripts.
 
-[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.0.2...HEAD
 [0.9.2]: https://github.com/01laky/many_faces_portal/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/01laky/many_faces_portal/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/01laky/many_faces_portal/compare/v0.8.0...v0.9.0
@@ -185,4 +194,5 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 [0.3.0]: https://github.com/01laky/many_faces_portal/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/01laky/many_faces_portal/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/01laky/many_faces_portal/releases/tag/v0.1.0
+[1.0.2]: https://github.com/01laky/many_faces_portal/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/01laky/many_faces_portal/compare/v1.0.0...v1.0.1
