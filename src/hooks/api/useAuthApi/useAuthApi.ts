@@ -30,12 +30,35 @@ export const authKeys = {
 };
 
 /**
- * Drops cached auth + capabilities after refresh failure so the UI cannot loop on a dead session.
- * Same keys as logout success — security-hardening prompt §13 / §18 (FE).
+ * Per-user / per-face domain cache roots that must be dropped on logout / session expiry so a different
+ * user (or the same user after switching identity) cannot read the previous session's cached data
+ * (REQ-SECURITY-CACHE). These keys are NOT token-fingerprinted, so the in-memory cache would otherwise
+ * survive into the next session within their staleTime/gcTime window:
+ *   ['face']  — face-scoped grid + social content (albums/blogs/stories/reels/profiles/…)
+ *   ['profile'] — the signed-in user's profile (avatar, lastSelectedFaceId, prefs)
+ *   ['myContentSubmissions'] — the user's own submissions + moderation metadata
+ *   ['wall']  — face wall tickets · ['videoLoungeLive'] — live lounge state
+ *   ['facesConfig'] — token-fingerprinted, purged defensively
+ */
+const DOMAIN_QUERY_ROOTS = [
+	['face'],
+	['profile'],
+	['myContentSubmissions'],
+	['wall'],
+	['videoLoungeLive'],
+	['facesConfig'],
+] as const;
+
+/**
+ * Hard reset used on refresh failure / logout so React Query cannot resurrect a dead session — or leak the
+ * previous user's tenant data — from in-memory caches (security hardening §13 / §18; REQ-SECURITY-CACHE).
  */
 export function clearAuthAndCapabilitiesQueries(queryClient: QueryClient): void {
 	queryClient.removeQueries({ queryKey: authKeys.all });
 	queryClient.removeQueries({ queryKey: meCapabilitiesKeys.all });
+	for (const key of DOMAIN_QUERY_ROOTS) {
+		queryClient.removeQueries({ queryKey: key });
+	}
 }
 
 /**

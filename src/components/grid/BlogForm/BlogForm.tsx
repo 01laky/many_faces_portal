@@ -152,7 +152,7 @@ export function BlogForm({ editBlog, onSaved, onCancel }: BlogFormProps) {
 				<legend>Images (max {MAX_IMAGES})</legend>
 				<div className="blog-form-images">
 					{imageUrls.map((url, i) => (
-						<div key={i} className="blog-form-image-item">
+						<div key={url} className="blog-form-image-item">
 							<span className="blog-form-image-url" title={url}>
 								{url.length > 40 ? url.slice(0, 40) + '…' : url}
 							</span>

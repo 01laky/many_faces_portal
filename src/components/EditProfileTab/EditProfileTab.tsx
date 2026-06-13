@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { UserCircle, Upload, Loader2, LogOut } from 'lucide-react';
 import { useProfile } from '@/hooks/api/useProfileApi';
@@ -32,6 +32,10 @@ export function EditProfileTab() {
 
 	const [firstName, setFirstName] = useState(initialNames.first);
 	const [lastName, setLastName] = useState(initialNames.last);
+	// Once the user types into the name fields we never auto-overwrite them again. This lets the form
+	// populate from the loaded profile/user, but also lets the user CLEAR a field and keep it cleared
+	// (the previous render-phase resync snapped an emptied field back to the unsaved profile value).
+	const nameFieldsEditedRef = useRef(false);
 	const globalInputRef = useRef<HTMLInputElement>(null);
 	const faceInputRef = useRef<HTMLInputElement>(null);
 	const [exitFaceConfirming, setExitFaceConfirming] = useState(false);
@@ -44,14 +48,14 @@ export function EditProfileTab() {
 		selectedFace.myFaceRoleName !== 'FACE_HOST'
 	);
 
-	// Sync state when source data changes (profile loaded or user changes)
-	if (profile && firstName === '' && (profile.firstName || profile.lastName)) {
-		setFirstName(profile.firstName ?? '');
-		setLastName(profile.lastName ?? '');
-	} else if (!profile && user && firstName === '' && (user.firstName || user.lastName)) {
-		setFirstName(user.firstName ?? '');
-		setLastName(user.lastName ?? '');
-	}
+	// Populate the fields when the source data changes (profile loads / user changes), but only until the
+	// user has started editing — see nameFieldsEditedRef. This replaces a render-phase setState that resynced
+	// whenever the field was empty, which made the field impossible to clear.
+	useEffect(() => {
+		if (nameFieldsEditedRef.current) return;
+		setFirstName(initialNames.first);
+		setLastName(initialNames.last);
+	}, [initialNames]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -173,7 +177,10 @@ export function EditProfileTab() {
 						type="text"
 						className="edit-profile-tab__input"
 						value={firstName}
-						onChange={(e) => setFirstName(e.target.value)}
+						onChange={(e) => {
+							nameFieldsEditedRef.current = true;
+							setFirstName(e.target.value);
+						}}
 						placeholder={t('editProfile.firstNamePlaceholder', 'First name')}
 					/>
 				</div>
@@ -185,7 +192,10 @@ export function EditProfileTab() {
 						type="text"
 						className="edit-profile-tab__input"
 						value={lastName}
-						onChange={(e) => setLastName(e.target.value)}
+						onChange={(e) => {
+							nameFieldsEditedRef.current = true;
+							setLastName(e.target.value);
+						}}
 						placeholder={t('editProfile.lastNamePlaceholder', 'Last name')}
 					/>
 				</div>

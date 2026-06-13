@@ -8,6 +8,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 | Version       | Theme                                      |
 | ------------- | ------------------------------------------ |
+| [1.0.1](#101) | Review pass: cache leak, profile, redaction |
 | [1.0.0](#100) | Portal runtime performance v1 (PT-RP1–30)  |
 | [0.9.3](#093) | Contexts colocation + hooks/api re-folder  |
 | [0.9.2](#092) | Types/constants colocation rollout         |
@@ -28,6 +29,23 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 ### Changed
 
 ### Fixed
+
+---
+
+## [1.0.1]
+
+### Changed
+
+- Hardened `logRedaction`: it now recurses into nested objects/arrays (with a depth guard) so a token under `{ headers: { authorization } }` is redacted, and the free-text redactor catches `refresh_token=`/`token=`/`id_token=`/`api_key=`/`Bearer <jwt>` (previously only `access_token=`).
+- Cleaned the public `HomePage` guest landing — removed the leftover `"Show All Toast Types"` debug button and `"hello fe"` placeholder, and i18n'd the title/greeting via the `t(key, fallback)` pattern.
+
+### Fixed
+
+- **Logout cache leak**: `clearAuthAndCapabilitiesQueries` only purged `['auth']`/`['meCapabilities']`, so the non-fingerprinted per-user/per-face roots (`['face']` grid + social, `['profile']`, `['myContentSubmissions']`, `['wall']`, `['videoLoungeLive']`, `['facesConfig']`) survived logout and a new session could read the previous one's data. They are now all dropped (REQ-SECURITY-CACHE).
+- `EditProfileTab` name fields could not be cleared: a render-phase `setState` resynced the field from the unsaved profile whenever it was empty, so it snapped back. Replaced with an effect gated by a "user has edited" ref.
+- `LoginPage` called `navigate()` during render (a side-effect anti-pattern, and dead because `GuestRoute` already redirects); replaced with a declarative `<Navigate>`.
+- `usePrefetchFaceHomeQueries` never reset its in-flight guard except via `cancelPrefetch`, so re-warming the same face was skipped forever; it now resets once the prefetch batch settles.
+- `BlogForm` image list used an array index as the React key while items are deletable; keyed by URL instead.
 
 ---
 
@@ -155,7 +173,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 - React/TypeScript SPA with OAuth2 and Docker dev scripts.
 
-[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v0.9.2...HEAD
+[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.0.1...HEAD
 [0.9.2]: https://github.com/01laky/many_faces_portal/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/01laky/many_faces_portal/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/01laky/many_faces_portal/compare/v0.8.0...v0.9.0
@@ -167,3 +185,4 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 [0.3.0]: https://github.com/01laky/many_faces_portal/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/01laky/many_faces_portal/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/01laky/many_faces_portal/releases/tag/v0.1.0
+[1.0.1]: https://github.com/01laky/many_faces_portal/compare/v1.0.0...v1.0.1

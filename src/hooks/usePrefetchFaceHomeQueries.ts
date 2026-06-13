@@ -98,17 +98,27 @@ export function usePrefetchFaceHomeQueries(token: string | null | undefined) {
 			inflightRef.current = face.id;
 
 			const types = collectGridTypesForFace(face).slice(0, MAX_PREFETCH);
+			const prefetches: Promise<unknown>[] = [];
 			for (const type of types) {
 				const keyFn = GRID_TYPE_TO_KEY[type];
 				const fetchFn = GRID_TYPE_TO_FN[type];
 				if (!keyFn || !fetchFn) continue;
 				const queryKey = keyFn(face.id);
-				void queryClient.prefetchQuery({
-					queryKey,
-					queryFn: () => fetchFn(token, face.id),
-					staleTime: GRID_LIST_STALE_MS,
-				});
+				prefetches.push(
+					queryClient.prefetchQuery({
+						queryKey,
+						queryFn: () => fetchFn(token, face.id),
+						staleTime: GRID_LIST_STALE_MS,
+					})
+				);
 			}
+
+			// Clear the in-flight guard once this batch settles so the same face can be re-warmed later
+			// (e.g. after its cache goes stale). Previously the guard was only reset by cancelPrefetch, so a
+			// re-hover of the same face was silently skipped forever.
+			void Promise.allSettled(prefetches).finally(() => {
+				if (inflightRef.current === face.id) inflightRef.current = null;
+			});
 		},
 		[queryClient, token]
 	);

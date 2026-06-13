@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { Container, Row, Col } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
@@ -54,9 +54,10 @@ export function LoginPage() {
 	const defaultAfterAuth = getLocalizedPath(getPostAuthHomePath());
 	const safeFrom = resolveSafeInternalRedirectPath(rawFrom, defaultAfterAuth);
 
+	// Declarative redirect (no imperative navigate() during render). GuestRoute already redirects an
+	// authenticated user before this renders; this is the same behaviour expressed safely as a fallback.
 	if (isAuthenticated) {
-		navigate(safeFrom, { replace: true });
-		return null;
+		return <Navigate to={safeFrom} replace />;
 	}
 
 	const onSubmit = async (data: LoginFormData) => {
