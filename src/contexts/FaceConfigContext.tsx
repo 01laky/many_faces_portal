@@ -9,7 +9,14 @@ import { logger } from '../utils/logger';
 import { invalidateMemoizedFacePrefixCache } from '../api/config';
 import { buildFaceHomePath, resolvePostAuthHomePath } from '../utils/faceHomePath';
 import { supportedLanguages } from '../i18n/constants';
-import { useFacesConfigQuery, useInvalidateFacesConfig } from '../hooks/api/useFacesConfigQuery';
+import {
+	facesConfigKeys,
+	useFacesConfigQuery,
+	useInvalidateFacesConfig,
+} from '../hooks/api/useFacesConfigQuery';
+import { useQueryClient } from '@tanstack/react-query';
+import { getFacesConfig } from '../api/config/getFacesConfig';
+import { meCapabilitiesTokenFingerprint } from '../hooks/api/useMeCapabilities';
 import type { FaceConfigContextType, FaceConfigProviderProps } from './types';
 
 const FaceConfigContext = createContext<FaceConfigContextType | undefined>(undefined);
@@ -17,13 +24,9 @@ const FaceConfigContext = createContext<FaceConfigContextType | undefined>(undef
 export function FaceConfigProvider({ children }: FaceConfigProviderProps) {
 	const location = useLocation();
 	const { isAuthenticated, token } = useAuth();
-	const {
-		data: queryFaces,
-		isLoading,
-		error: queryError,
-		refetch,
-	} = useFacesConfigQuery(token, true);
+	const { data: queryFaces, isLoading, error: queryError } = useFacesConfigQuery(token, true);
 	const invalidateFacesConfig = useInvalidateFacesConfig();
+	const queryClient = useQueryClient();
 	const [selectedFaceId, setSelectedFaceId] = useState<number | null>(null);
 	const [profileLastFaceApplied, setProfileLastFaceApplied] = useState(false);
 	const { data: profile } = useGlobalProfile();
@@ -120,11 +123,21 @@ export function FaceConfigProvider({ children }: FaceConfigProviderProps) {
 
 	const reload = useCallback(
 		async (_authToken?: string | null): Promise<FacesConfigResponse> => {
-			invalidateFacesConfig(_authToken ?? token);
-			const result = await refetch();
-			return result.data ?? [];
+			// Fetch with the EXPLICIT token (e.g. the freshly-issued one right after login), NOT via the query's
+			// `refetch()`. `refetch` is bound to the closure token from the previous render — still null at login
+			// time — so it returned public-only faces, the preferred private face was never picked, and the user
+			// stayed stuck on /public/home. We fetch directly with the effective token and seed the cache under
+			// that token's key so the provider's `useFacesConfigQuery(token)` has the authenticated list the moment
+			// it re-renders with the new token.
+			const effectiveToken = _authToken ?? token;
+			const faces = await getFacesConfig(effectiveToken ?? undefined);
+			queryClient.setQueryData(
+				facesConfigKeys.session(meCapabilitiesTokenFingerprint(effectiveToken)),
+				faces
+			);
+			return faces;
 		},
-		[invalidateFacesConfig, refetch, token]
+		[token, queryClient]
 	);
 
 	const contextValue = useMemo(

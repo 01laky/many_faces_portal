@@ -6,23 +6,24 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 ### Release index
 
-| Version       | Theme                                       |
-| ------------- | ------------------------------------------- |
-| [1.0.3](#103) | Untested-utility edge tests (test-gap fill) |
-| [1.0.2](#102) | Gradient-animation preference edge tests    |
-| [1.0.1](#101) | Review pass: cache leak, profile, redaction |
-| [1.0.0](#100) | Portal runtime performance v1 (PT-RP1–30)   |
-| [0.9.3](#093) | Contexts colocation + hooks/api re-folder   |
-| [0.9.2](#092) | Types/constants colocation rollout          |
-| [0.9.0](#090) | PSH1 security hardening                     |
-| [0.8.0](#080) | VideoLounge, i18n, preloader, AI switch     |
-| [0.7.0](#070) | Moderation helpers, localization bootstrap  |
-| [0.6.0](#060) | Content approval, colocation                |
-| [0.5.0](#050) | ACL, remember-me, modular routes            |
-| [0.4.0](#040) | Albums, blog, reels, chat, wall             |
-| [0.3.0](#030) | Social features and grid list               |
-| [0.2.0](#020) | Husky, face routing, Cypress E2E            |
-| [0.1.0](#010) | React SPA foundation                        |
+| Version       | Theme                                           |
+| ------------- | ----------------------------------------------- |
+| [1.0.4](#104) | Fix post-login faces reload using a stale token |
+| [1.0.3](#103) | Untested-utility edge tests (test-gap fill)     |
+| [1.0.2](#102) | Gradient-animation preference edge tests        |
+| [1.0.1](#101) | Review pass: cache leak, profile, redaction     |
+| [1.0.0](#100) | Portal runtime performance v1 (PT-RP1–30)       |
+| [0.9.3](#093) | Contexts colocation + hooks/api re-folder       |
+| [0.9.2](#092) | Types/constants colocation rollout              |
+| [0.9.0](#090) | PSH1 security hardening                         |
+| [0.8.0](#080) | VideoLounge, i18n, preloader, AI switch         |
+| [0.7.0](#070) | Moderation helpers, localization bootstrap      |
+| [0.6.0](#060) | Content approval, colocation                    |
+| [0.5.0](#050) | ACL, remember-me, modular routes                |
+| [0.4.0](#040) | Albums, blog, reels, chat, wall                 |
+| [0.3.0](#030) | Social features and grid list                   |
+| [0.2.0](#020) | Husky, face routing, Cypress E2E                |
+| [0.1.0](#010) | React SPA foundation                            |
 
 ## [Unreleased]
 
@@ -31,6 +32,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 ### Changed
 
 ### Fixed
+
+---
+
+## [1.0.4]
+
+### Fixed
+
+- **Post-login faces reload used a stale token.** `FaceConfigContext.reload()` called the query's `refetch()`, which is bound to the closure token from the previous render — still `null` immediately after login — so it fetched the public-only faces list, the preferred private face was never picked, and the redirect stayed on `/public/home`. It now fetches `getFacesConfig()` with the explicit effective token (e.g. the freshly-issued one passed by `LoginPage`) and seeds the React Query cache under that token's fingerprint key, so `useFacesConfigQuery(token)` already has the authenticated list the moment the provider re-renders with the new token. (Complements the backend seeder fix that makes private faces available in the first place.)
 
 ---
 
@@ -191,7 +200,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 - React/TypeScript SPA with OAuth2 and Docker dev scripts.
 
-[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.0.4...HEAD
 [0.9.2]: https://github.com/01laky/many_faces_portal/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/01laky/many_faces_portal/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/01laky/many_faces_portal/compare/v0.8.0...v0.9.0
@@ -203,6 +212,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 [0.3.0]: https://github.com/01laky/many_faces_portal/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/01laky/many_faces_portal/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/01laky/many_faces_portal/releases/tag/v0.1.0
+[1.0.4]: https://github.com/01laky/many_faces_portal/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/01laky/many_faces_portal/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/01laky/many_faces_portal/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/01laky/many_faces_portal/compare/v1.0.0...v1.0.1
