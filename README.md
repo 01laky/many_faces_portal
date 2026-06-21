@@ -2,7 +2,7 @@
 
 <!-- readme-badges:start -->
 
-[![version](https://img.shields.io/badge/version-1.0.4-blue)](./VERSION)
+[![version](https://img.shields.io/badge/version-1.0.5-blue)](./VERSION)
 ![React](https://img.shields.io/badge/React-19-61DAFB)
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF)
 ![Node](https://img.shields.io/badge/Node-22+-339933)
@@ -12,7 +12,7 @@
 
 <!-- readme-badges:end -->
 
-**Version:** [`1.0.4`](./VERSION) · [Changelog](./CHANGELOG.md)
+**Version:** [`1.0.5`](./VERSION) · [Changelog](./CHANGELOG.md)
 
 **Author:** Ladislav Kostolny · [01laky@gmail.com](mailto:01laky@gmail.com)
 
