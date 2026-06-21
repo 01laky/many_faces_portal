@@ -8,6 +8,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 | Version       | Theme                                           |
 | ------------- | ----------------------------------------------- |
+| [1.0.5](#105) | Fix face page grid losing its responsive layout |
 | [1.0.4](#104) | Fix post-login faces reload using a stale token |
 | [1.0.3](#103) | Untested-utility edge tests (test-gap fill)     |
 | [1.0.2](#102) | Gradient-animation preference edge tests        |
@@ -32,6 +33,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 ### Changed
 
 ### Fixed
+
+---
+
+## [1.0.5]
+
+### Fixed
+
+- **Face page grid rendered every block full-width and stacked instead of the admin-defined responsive layout.** `PageGridItemShell` was a plain (non-`forwardRef`) component with a fixed prop signature, so it silently dropped the `style` (absolute position + size), `className` (`react-grid-item …`) and `ref` that `react-grid-layout` injects into each grid item via `cloneElement`. Without those the items lost their absolute placement and reflowed to the full container width. The shell is now a `forwardRef` that forwards the injected props onto its root node — merging the injected class with `page-grid-item` and composing react-grid-layout's measuring ref with the lazy-load in-view ref so both keep working.
 
 ---
 
@@ -200,7 +209,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 - React/TypeScript SPA with OAuth2 and Docker dev scripts.
 
-[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.0.4...HEAD
+[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.0.5...HEAD
 [0.9.2]: https://github.com/01laky/many_faces_portal/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/01laky/many_faces_portal/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/01laky/many_faces_portal/compare/v0.8.0...v0.9.0
@@ -212,6 +221,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 [0.3.0]: https://github.com/01laky/many_faces_portal/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/01laky/many_faces_portal/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/01laky/many_faces_portal/releases/tag/v0.1.0
+[1.0.5]: https://github.com/01laky/many_faces_portal/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/01laky/many_faces_portal/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/01laky/many_faces_portal/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/01laky/many_faces_portal/compare/v1.0.1...v1.0.2
