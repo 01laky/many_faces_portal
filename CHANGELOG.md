@@ -6,29 +6,30 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 ### Release index
 
-| Version       | Theme                                           |
-| ------------- | ----------------------------------------------- |
-| [1.1.3](#113) | Clear high-severity dependency advisories       |
-| [1.1.2](#112) | API image URLs through HTTPS allow-list         |
-| [1.1.1](#111) | Reel media URLs through HTTPS allow-list        |
-| [1.1.0](#110) | CSP + Referrer-Policy baseline on nginx host    |
-| [1.0.5](#105) | Fix face page grid losing its responsive layout |
-| [1.0.4](#104) | Fix post-login faces reload using a stale token |
-| [1.0.3](#103) | Untested-utility edge tests (test-gap fill)     |
-| [1.0.2](#102) | Gradient-animation preference edge tests        |
-| [1.0.1](#101) | Review pass: cache leak, profile, redaction     |
-| [1.0.0](#100) | Portal runtime performance v1 (PT-RP1–30)       |
-| [0.9.3](#093) | Contexts colocation + hooks/api re-folder       |
-| [0.9.2](#092) | Types/constants colocation rollout              |
-| [0.9.0](#090) | PSH1 security hardening                         |
-| [0.8.0](#080) | VideoLounge, i18n, preloader, AI switch         |
-| [0.7.0](#070) | Moderation helpers, localization bootstrap      |
-| [0.6.0](#060) | Content approval, colocation                    |
-| [0.5.0](#050) | ACL, remember-me, modular routes                |
-| [0.4.0](#040) | Albums, blog, reels, chat, wall                 |
-| [0.3.0](#030) | Social features and grid list                   |
-| [0.2.0](#020) | Husky, face routing, Cypress E2E                |
-| [0.1.0](#010) | React SPA foundation                            |
+| Version       | Theme                                            |
+| ------------- | ------------------------------------------------ |
+| [1.1.4](#114) | REF-F / REF-X test families + display-prefs link |
+| [1.1.3](#113) | Clear high-severity dependency advisories        |
+| [1.1.2](#112) | API image URLs through HTTPS allow-list          |
+| [1.1.1](#111) | Reel media URLs through HTTPS allow-list         |
+| [1.1.0](#110) | CSP + Referrer-Policy baseline on nginx host     |
+| [1.0.5](#105) | Fix face page grid losing its responsive layout  |
+| [1.0.4](#104) | Fix post-login faces reload using a stale token  |
+| [1.0.3](#103) | Untested-utility edge tests (test-gap fill)      |
+| [1.0.2](#102) | Gradient-animation preference edge tests         |
+| [1.0.1](#101) | Review pass: cache leak, profile, redaction      |
+| [1.0.0](#100) | Portal runtime performance v1 (PT-RP1–30)        |
+| [0.9.3](#093) | Contexts colocation + hooks/api re-folder        |
+| [0.9.2](#092) | Types/constants colocation rollout               |
+| [0.9.0](#090) | PSH1 security hardening                          |
+| [0.8.0](#080) | VideoLounge, i18n, preloader, AI switch          |
+| [0.7.0](#070) | Moderation helpers, localization bootstrap       |
+| [0.6.0](#060) | Content approval, colocation                     |
+| [0.5.0](#050) | ACL, remember-me, modular routes                 |
+| [0.4.0](#040) | Albums, blog, reels, chat, wall                  |
+| [0.3.0](#030) | Social features and grid list                    |
+| [0.2.0](#020) | Husky, face routing, Cypress E2E                 |
+| [0.1.0](#010) | React SPA foundation                             |
 
 ## [Unreleased]
 
@@ -37,6 +38,20 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 ### Changed
 
 ### Fixed
+
+---
+
+## [1.1.4]
+
+### Added
+
+- **Face selection edge tests (`REF-F1…F6`)** — `src/contexts/__tests__/FaceConfigContext.faceSelection.test.tsx` closes the last missing family from the Phase A refactor matrix: URL-driven face sync with zero `localStorage` writes, the authenticated `lastSelectedFaceId` cold-start hint, fallback to the first available face when the stored id is stale, the guest `/homepage` no-persistence rule, and the `markFaceVisited` + profile `PUT` side effects of `selectFace`. The real `useFacesConfigQuery` runs against a real `QueryClient` so the faces list arrives asynchronously as it does in the browser — a synchronous stub hides the mount-ordering the family exists to pin.
+- **Context memoisation edge tests (`REF-X1…X2`)** — `FaceConfigContext.memoisation.test.tsx` and `features/profileDetail/context/__tests__/FaceMemberDetailProvider.test.tsx` assert referential stability of the provider values and the render count of a `React.memo` consumer, plus a sensitivity case proving a genuine dependency change still propagates.
+- **Documentation cross-link** — the README documentation table now points at [`docs/guides/fe-portal-display-preferences.md`](../docs/guides/fe-portal-display-preferences.md) (storage policy and one-time legacy migration).
+
+### Fixed
+
+- **`useInvalidateFacesConfig` returned a new function on every render**, which defeated the Phase A provider memo it feeds: the callback is a dependency of `FaceConfigContext.selectFace`, which is in turn a dependency of the memoised context value, so the whole face-config context object was rebuilt on every parent render and every consumer re-rendered with it. The callback is now wrapped in `useCallback` keyed on the (stable) `queryClient`. Behavior of the invalidation itself is unchanged; `REF-X1` fails without this fix.
 
 ---
 
@@ -251,7 +266,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 - React/TypeScript SPA with OAuth2 and Docker dev scripts.
 
-[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.1.3...HEAD
+[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.1.4...HEAD
 [0.9.2]: https://github.com/01laky/many_faces_portal/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/01laky/many_faces_portal/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/01laky/many_faces_portal/compare/v0.8.0...v0.9.0
@@ -263,6 +278,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 [0.3.0]: https://github.com/01laky/many_faces_portal/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/01laky/many_faces_portal/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/01laky/many_faces_portal/releases/tag/v0.1.0
+[1.1.4]: https://github.com/01laky/many_faces_portal/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/01laky/many_faces_portal/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/01laky/many_faces_portal/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/01laky/many_faces_portal/compare/v1.1.0...v1.1.1

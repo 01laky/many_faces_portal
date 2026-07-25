@@ -2,7 +2,7 @@
 
 <!-- readme-badges:start -->
 
-[![version](https://img.shields.io/badge/version-1.1.3-blue)](./VERSION)
+[![version](https://img.shields.io/badge/version-1.1.4-blue)](./VERSION)
 ![React](https://img.shields.io/badge/React-19-61DAFB)
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF)
 ![Node](https://img.shields.io/badge/Node-22+-339933)
@@ -12,7 +12,7 @@
 
 <!-- readme-badges:end -->
 
-**Version:** [`1.1.3`](./VERSION) · [Changelog](./CHANGELOG.md)
+**Version:** [`1.1.4`](./VERSION) · [Changelog](./CHANGELOG.md)
 
 **Author:** Ladislav Kostolny · [01laky@gmail.com](mailto:01laky@gmail.com)
 
@@ -343,6 +343,7 @@ yarn validate     # lint + type-check + format:check
 | **Performance**            | [`docs/performance-and-query-appendix.md`](./docs/performance-and-query-appendix.md) · [`docs/runtime-performance-v1.md`](./docs/runtime-performance-v1.md) |
 | **AI degraded UX**         | [`docs/ai-degraded-ux.md`](./docs/ai-degraded-ux.md)                                                                                                        |
 | **Content approval guide** | [`../docs/guides/ai-assisted-content-approval.md`](../docs/guides/ai-assisted-content-approval.md)                                                          |
+| **Display preferences**    | [`../docs/guides/fe-portal-display-preferences.md`](../docs/guides/fe-portal-display-preferences.md)                                                        |
 | **Static i18n**            | [`../docs/guides/static-localization-and-i18n.md`](../docs/guides/static-localization-and-i18n.md)                                                          |
 | **Local HTTPS**            | [`../docs/guides/dev-https.md`](../docs/guides/dev-https.md)                                                                                                |
 | **Admin (SUPER_ADMIN)**    | [`../docs/guides/admin-superadmin-only-access.md`](../docs/guides/admin-superadmin-only-access.md)                                                          |
