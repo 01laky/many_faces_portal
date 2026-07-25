@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type HTMLAttributes } from 'react';
 import { fetchStorySlideshowImageUrls, type StoryListItem } from '../api/services/storiesApi';
 import { storyRingImageUrl } from '../components/grid/gridDisplayHelpers';
+import { sanitizeMediaUrl } from '../utils/safeUrl';
 
 const SLIDE_MS = 1600;
 
@@ -76,7 +77,12 @@ export function useStoryRingSlideshow(
 		return () => document.removeEventListener('visibilitychange', onVisibility);
 	}, [stop]);
 
-	const src = urls && urls.length > 0 ? urls[Math.abs(idx) % urls.length] : defaultSrc;
+	// PSH1-D3 / FE-P3 — slideshow frames come from `GET /api/stories/{id}` and are bound to an
+	// `<img src>`, so each one goes through the shared media allow-list; a rejected frame falls back
+	// to the (already sanitized) default cover instead of reaching the DOM.
+	const slideshowSrc =
+		urls && urls.length > 0 ? sanitizeMediaUrl(urls[Math.abs(idx) % urls.length]) : '';
+	const src = slideshowSrc || defaultSrc;
 
 	const ringHandlers = useMemo(
 		() => ({

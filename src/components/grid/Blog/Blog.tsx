@@ -12,10 +12,16 @@ import { useFaceConfig } from '../../../contexts/FaceConfigContext';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
 import { getBlogs, type BlogItem } from '../../../api/services/BlogsService';
 import { blogCoverPlaceholderUrl } from '../gridDisplayHelpers';
+import { sanitizeMediaUrl } from '../../../utils/safeUrl';
 import './Blog.scss';
 
+/**
+ * PSH1-D3 / FE-P3 — the first blog image is an API value bound to `<img src>`, so it goes through
+ * the shared media allow-list; a rejected cover degrades to the neutral placeholder already used
+ * for posts without images (same rule as `BlogDetailPage`).
+ */
 function blogCover(blog: BlogItem): string {
-	const first = blog.images?.[0]?.imageUrl;
+	const first = sanitizeMediaUrl(blog.images?.[0]?.imageUrl);
 	if (first) return first;
 	return blogCoverPlaceholderUrl();
 }

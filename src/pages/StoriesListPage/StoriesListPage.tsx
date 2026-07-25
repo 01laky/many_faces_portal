@@ -5,6 +5,7 @@ import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { env } from '../../config/env';
 import { fetchStoriesForFace, type StoryListItem } from '../../api/services/storiesApi';
+import { MediaImage } from '../../components/MediaImage';
 import './StoriesListPage.scss';
 
 export function StoriesListPage() {
@@ -60,14 +61,13 @@ export function StoriesListPage() {
 				{items.map((row) => (
 					<li key={row.id} className="stories-list-page__card">
 						<div className="stories-list-page__thumb">
-							{row.coverUrl ? (
-								<img
-									src={row.coverUrl.startsWith('/') ? `${env.apiUrl}${row.coverUrl}` : row.coverUrl}
-									alt=""
-								/>
-							) : (
-								<ImageIcon size={40} strokeWidth={1.25} />
-							)}
+							<MediaImage
+								mediaUrl={
+									row.coverUrl?.startsWith('/') ? `${env.apiUrl}${row.coverUrl}` : row.coverUrl
+								}
+								alt=""
+								fallback={<ImageIcon size={40} strokeWidth={1.25} />}
+							/>
 						</div>
 						<div className="stories-list-page__meta">
 							<span className="stories-list-page__title">{row.title}</span>

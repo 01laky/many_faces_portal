@@ -21,6 +21,7 @@ import {
 } from '../../../hooks/usePaginationParentSync';
 import { useFillGridPagination } from '../../../hooks/useFillGridPagination';
 import { blogCoverPlaceholderUrl } from '../gridDisplayHelpers';
+import { sanitizeMediaUrl } from '../../../utils/safeUrl';
 import './BlogGrid.scss';
 import type { BlogGridCardProps, BlogGridProps } from './types';
 
@@ -51,8 +52,13 @@ export const BlogGridCard = memo(function BlogGridCard({ post, index, onOpen }: 
 	);
 });
 
+/**
+ * PSH1-D3 / FE-P3 — the first blog image is an API value bound to `<img src>`, so it goes through
+ * the shared media allow-list; a rejected cover degrades to the neutral placeholder already used
+ * for posts without images (same rule as `BlogDetailPage`).
+ */
 function blogCover(blog: BlogItem): string {
-	const first = blog.images?.[0]?.imageUrl;
+	const first = sanitizeMediaUrl(blog.images?.[0]?.imageUrl);
 	if (first) return first;
 	return blogCoverPlaceholderUrl();
 }

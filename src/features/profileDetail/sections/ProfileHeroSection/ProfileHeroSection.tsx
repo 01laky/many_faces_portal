@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { UserCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { likeFaceProfile, unlikeFaceProfile } from '../../../../api/services/faceProfilesApi';
+import { MediaImage } from '../../../../components/MediaImage';
 import { useFaceMemberDetail } from '../../context/useFaceMemberDetail';
 import type { ProfileHeroSectionProps } from './types';
 
@@ -26,11 +27,11 @@ export function ProfileHeroSection({
 	return (
 		<div className="face-profile-detail-page__hero">
 			<div className="face-profile-detail-page__avatar">
-				{detail.avatarUrl ? (
-					<img src={detail.avatarUrl} alt="" />
-				) : (
-					<UserCircle size={96} strokeWidth={1.25} />
-				)}
+				<MediaImage
+					mediaUrl={detail.avatarUrl}
+					alt=""
+					fallback={<UserCircle size={96} strokeWidth={1.25} />}
+				/>
 			</div>
 			<h1>{detail.displayName || detail.nickname || userId}</h1>
 			{includeMeta && (

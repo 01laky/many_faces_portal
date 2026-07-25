@@ -6,6 +6,7 @@ import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import { fetchFaceProfiles, type FaceProfileListItem } from '../../api/services/faceProfilesApi';
+import { MediaImage } from '../../components/MediaImage';
 import './FaceProfilesListPage.scss';
 
 export function FaceProfilesListPage() {
@@ -68,11 +69,11 @@ export function FaceProfilesListPage() {
 							className="face-profiles-list-page__card"
 						>
 							<div className="face-profiles-list-page__avatar">
-								{row.avatarUrl ? (
-									<img src={row.avatarUrl} alt="" />
-								) : (
-									<UserCircle size={48} strokeWidth={1.25} />
-								)}
+								<MediaImage
+									mediaUrl={row.avatarUrl}
+									alt=""
+									fallback={<UserCircle size={48} strokeWidth={1.25} />}
+								/>
 							</div>
 							<span className="face-profiles-list-page__name">
 								{row.displayName || row.userId.slice(0, 8)}

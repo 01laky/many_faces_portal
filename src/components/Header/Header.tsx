@@ -6,6 +6,7 @@ import { useProfile } from '@/hooks/api/useProfileApi';
 import { useAnimatedGradientStyle } from '../../hooks/useAnimatedGradient';
 import { useGradientAnimationPreference } from '../../contexts/GradientAnimationPreferenceContext';
 import { MainLogo } from '../MainLogo';
+import { MediaImage } from '../MediaImage';
 import { AppBrandTitle } from '../AppBrandTitle/AppBrandTitle';
 import { useLocalizedLink } from '../../hooks/useLocalizedLink';
 import {
@@ -235,11 +236,12 @@ export function Header({
 									<span className="header-profile-status">Online</span>
 								</div>
 								<div className="header-profile-avatar">
-									{resolvedAvatarUrl ? (
-										<img src={resolvedAvatarUrl} alt="" className="header-profile-avatar-img" />
-									) : (
-										<UserCircle size={40} strokeWidth={1.5} />
-									)}
+									<MediaImage
+										mediaUrl={resolvedAvatarUrl}
+										alt=""
+										className="header-profile-avatar-img"
+										fallback={<UserCircle size={40} strokeWidth={1.5} />}
+									/>
 								</div>
 							</button>
 						) : (
@@ -253,11 +255,12 @@ export function Header({
 									<span className="header-profile-status">Online</span>
 								</div>
 								<div className="header-profile-avatar">
-									{resolvedAvatarUrl ? (
-										<img src={resolvedAvatarUrl} alt="" className="header-profile-avatar-img" />
-									) : (
-										<UserCircle size={40} strokeWidth={1.5} />
-									)}
+									<MediaImage
+										mediaUrl={resolvedAvatarUrl}
+										alt=""
+										className="header-profile-avatar-img"
+										fallback={<UserCircle size={40} strokeWidth={1.5} />}
+									/>
 								</div>
 							</Link>
 						)

@@ -8,6 +8,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 | Version       | Theme                                           |
 | ------------- | ----------------------------------------------- |
+| [1.1.2](#112) | API image URLs through HTTPS allow-list         |
 | [1.1.1](#111) | Reel media URLs through HTTPS allow-list        |
 | [1.1.0](#110) | CSP + Referrer-Policy baseline on nginx host    |
 | [1.0.5](#105) | Fix face page grid losing its responsive layout |
@@ -35,6 +36,20 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 ### Changed
 
 ### Fixed
+
+---
+
+## [1.1.2]
+
+### Fixed
+
+- **API-supplied image URLs reached `<img src>` without the HTTPS allow-list (PSH1-D3, FE-P3).** `avatarUrl` (member avatars), `coverUrl` (story covers) and the first blog `imageUrl` come straight from the API but were bound directly to an image `src`, so a hostile or misconfigured response could inject an arbitrary URL (`javascript:`, `data:`, a plain-`http:` tracker) into the DOM on a page that also holds the user's session — only `BlogDetailPage` and the reel surfaces went through `sanitizeMediaUrl`. Every remaining sink now uses the same shared allow-list (HTTPS origins plus backend-signed `/api/uploads/serve` links carrying `sig`/`exp`):
+  - a new shared `MediaImage` component covers the raw `<img src={apiUrl}>` sites (`ProfileHeroSection`, `Header` profile panel ×2, `EditProfileTab` global/face avatar previews, `FaceProfilesListPage`, `StoriesListPage`). `MediaImageProps` omits `src` from the passthrough `<img>` attributes, so a future call site cannot bypass sanitization; on a rejected URL it renders the call site's existing "no image" fallback (the same `UserCircle` / `ImageIcon` glyph already shown for a missing avatar or cover), so a blocked image is indistinguishable from an absent one and no layout hole appears.
+  - `profileAvatarUrl()` and `storyRingImageUrl()` in `gridDisplayHelpers` now sanitize before returning, which covers every grid surface at once (`UserProfile`, `UserProfileGrid`, `UserProfileCarousel`, `Story`, `StoryGrid`, `StoryCarousel`, `ChatRoomCard`, `VideoLoungeCard`, `LivePanel`, `LobbyPanel`). A rejected URL degrades to the neutral initials / "Story" placeholder those helpers already return when the API sends no image.
+  - the duplicated `blogCover()` helpers in `Blog`, `BlogGrid` and `BlogCarousel` sanitize the first blog image and fall back to the existing blog placeholder, matching `BlogDetailPage`.
+  - `useStoryRingSlideshow` sanitizes each hover-slideshow frame from `GET /api/stories/{id}` and falls back to the (already sanitized) default cover.
+
+  `GridMediaImage` is deliberately left accepting a raw `src`: it also carries locally generated `data:` placeholders (`albumCoverPlaceholderUrl`, `wallTicketListingImageUrl`) that the allow-list must not see. Covered by `PSH1-T-D15 … D19c` in `src/components/MediaImage/__tests__/MediaImage.security.test.ts` (asserted against the rendered DOM) and `PSH1-T-D20 … D23b` in `src/components/grid/gridDisplayHelpers/__tests__/gridDisplayHelpers.security.test.ts`.
 
 ---
 
@@ -227,7 +242,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 - React/TypeScript SPA with OAuth2 and Docker dev scripts.
 
-[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.1.2...HEAD
 [0.9.2]: https://github.com/01laky/many_faces_portal/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/01laky/many_faces_portal/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/01laky/many_faces_portal/compare/v0.8.0...v0.9.0
@@ -239,6 +254,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 [0.3.0]: https://github.com/01laky/many_faces_portal/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/01laky/many_faces_portal/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/01laky/many_faces_portal/releases/tag/v0.1.0
+[1.1.2]: https://github.com/01laky/many_faces_portal/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/01laky/many_faces_portal/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/01laky/many_faces_portal/compare/v1.0.5...v1.1.0
 [1.0.5]: https://github.com/01laky/many_faces_portal/compare/v1.0.4...v1.0.5

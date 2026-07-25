@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useFaceConfig } from '../../contexts/FaceConfigContext';
 import { toast } from 'react-toastify';
 import { exitFace } from '../../api/services/faceProfilesApi';
+import { MediaImage } from '../MediaImage';
 import './EditProfileTab.scss';
 
 export function EditProfileTab() {
@@ -220,11 +221,11 @@ export function EditProfileTab() {
 				</p>
 				<div className="edit-profile-tab__avatar-row">
 					<div className="edit-profile-tab__avatar-preview">
-						{globalUrl ? (
-							<img src={globalUrl} alt="Global avatar" />
-						) : (
-							<UserCircle size={64} strokeWidth={1.5} />
-						)}
+						<MediaImage
+							mediaUrl={globalUrl}
+							alt="Global avatar"
+							fallback={<UserCircle size={64} strokeWidth={1.5} />}
+						/>
 					</div>
 					<div className="edit-profile-tab__avatar-actions">
 						<input
@@ -260,11 +261,11 @@ export function EditProfileTab() {
 					</p>
 					<div className="edit-profile-tab__avatar-row">
 						<div className="edit-profile-tab__avatar-preview">
-							{faceUrl ? (
-								<img src={faceUrl} alt="Face avatar" />
-							) : (
-								<UserCircle size={64} strokeWidth={1.5} />
-							)}
+							<MediaImage
+								mediaUrl={faceUrl}
+								alt="Face avatar"
+								fallback={<UserCircle size={64} strokeWidth={1.5} />}
+							/>
 						</div>
 						<div className="edit-profile-tab__avatar-actions">
 							<input

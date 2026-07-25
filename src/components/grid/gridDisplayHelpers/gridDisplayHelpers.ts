@@ -1,3 +1,5 @@
+import { sanitizeMediaUrl } from '../../../utils/safeUrl';
+
 function neutralSvgDataUri(label: string, width: number, height: number): string {
 	const safeLabel = label.replace(/[&<>"']/g, (ch) => {
 		switch (ch) {
@@ -36,12 +38,28 @@ export function blogCoverPlaceholderUrl(): string {
 	return neutralSvgDataUri('No blog image', 600, 400);
 }
 
+/**
+ * PSH1-D3 / FE-P3 — story ring/thumbnail source.
+ *
+ * `coverUrl` is an API value that ends up in an `<img src>` (Story card, StoryGrid, StoryCarousel),
+ * so it goes through the shared media allow-list first. A rejected cover degrades to the same
+ * neutral "Story" placeholder already used when the API sends no cover at all.
+ */
 export function storyRingImageUrl(_storyId: number, coverUrl: string | null): string {
-	return coverUrl ?? neutralSvgDataUri('Story', 200, 200);
+	return sanitizeMediaUrl(coverUrl) || neutralSvgDataUri('Story', 200, 200);
 }
 
+/**
+ * PSH1-D3 / FE-P3 — member avatar source for every grid/carousel/roster card.
+ *
+ * `avatarUrl` is an API value bound to `<img src>` / `<GridMediaImage src>`, so it goes through the
+ * shared media allow-list (HTTPS origins plus backend-signed `/api/uploads/serve` links) before it
+ * can reach the DOM. A rejected avatar falls back to the initials placeholder that is already
+ * rendered when the API sends no avatar, so a blocked URL looks exactly like a missing one.
+ */
 export function profileAvatarUrl(userId: string, avatarUrl: string | null): string {
-	if (avatarUrl) return avatarUrl;
+	const safeAvatarUrl = sanitizeMediaUrl(avatarUrl);
+	if (safeAvatarUrl) return safeAvatarUrl;
 	const initials = userId
 		.split(/[^a-zA-Z0-9]+/)
 		.filter(Boolean)
