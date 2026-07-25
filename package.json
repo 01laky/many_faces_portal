@@ -14,7 +14,7 @@
 		"format:check": "prettier --check .",
 		"format:api": "prettier --write \"src/api/**/*.{ts,tsx}\"",
 		"fix": "eslint . --fix && prettier --write .",
-		"type-check": "tsc --noEmit",
+		"type-check": "tsc --build --noEmit",
 		"validate": "yarn type-check && yarn lint && yarn format:check",
 		"check-node": "node scripts/check-node.mjs",
 		"favicon:generate": "node ../scripts/generate-brand-favicons.mjs",

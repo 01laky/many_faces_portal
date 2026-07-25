@@ -8,6 +8,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 | Version       | Theme                                            |
 | ------------- | ------------------------------------------------ |
+| [1.1.5](#115) | Fix the no-op TypeScript gate                    |
 | [1.1.4](#114) | REF-F / REF-X test families + display-prefs link |
 | [1.1.3](#113) | Clear high-severity dependency advisories        |
 | [1.1.2](#112) | API image URLs through HTTPS allow-list          |
@@ -38,6 +39,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 ### Changed
 
 ### Fixed
+
+---
+
+## [1.1.5]
+
+### Fixed
+
+- **`yarn type-check` was a no-op — the portal had no TypeScript gate at all.** The script ran `tsc --noEmit`, but the root `tsconfig.json` is `"files": []` with project references, so plain `tsc` (without `--build`) checked the root project — which contains zero files — and exited 0 while the referenced `tsconfig.app.json`/`tsconfig.node.json` were never visited. Proven by injecting `const x: number = 'nope'` into `src/App.tsx`: `yarn type-check` still exited 0. Since `vite build` does not type-check either, nothing in `yarn validate` or CI was checking types. The script is now `tsc --build --noEmit`, which visits the referenced projects; re-running the same probe exits 2 as it should. The source tree needed no changes — it type-checks clean today — so this closes the hole without a fix backlog. Note that `tsconfig.app.json` still excludes `__tests__`/`*.test.*`, so test files remain outside the gate; that is the pre-existing convention and is left as-is.
 
 ---
 
@@ -266,7 +275,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 - React/TypeScript SPA with OAuth2 and Docker dev scripts.
 
-[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.1.4...HEAD
+[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.1.5...HEAD
 [0.9.2]: https://github.com/01laky/many_faces_portal/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/01laky/many_faces_portal/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/01laky/many_faces_portal/compare/v0.8.0...v0.9.0
@@ -278,6 +287,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 [0.3.0]: https://github.com/01laky/many_faces_portal/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/01laky/many_faces_portal/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/01laky/many_faces_portal/releases/tag/v0.1.0
+[1.1.5]: https://github.com/01laky/many_faces_portal/compare/v1.1.4...v1.1.5
 [1.1.4]: https://github.com/01laky/many_faces_portal/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/01laky/many_faces_portal/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/01laky/many_faces_portal/compare/v1.1.1...v1.1.2
