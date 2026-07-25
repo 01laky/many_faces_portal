@@ -8,6 +8,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 | Version       | Theme                                            |
 | ------------- | ------------------------------------------------ |
+| [1.2.0](#120) | GPL-19 test, preloader docs, grid form i18n      |
 | [1.1.5](#115) | Fix the no-op TypeScript gate                    |
 | [1.1.4](#114) | REF-F / REF-X test families + display-prefs link |
 | [1.1.3](#113) | Clear high-severity dependency advisories        |
@@ -39,6 +40,20 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 ### Changed
 
 ### Fixed
+
+---
+
+## [1.2.0]
+
+### Added
+
+- **GPL-19 — the missing portal case in the global-app-preloader test bundle.** `src/components/LanguageRouter/__tests__/LanguageRouter.test.tsx` renders the real `AppBootstrapGate` around the real `LanguageRouter` on a deep localized entry (`/en/homepage`, `/sk/homepage`) and pins the two rules from §3.6.2 of the preloader prompt: while faces config is still loading there is **exactly one** full-viewport loader and the routed page is not mounted; once the gate opens the page renders and **no** second full-screen loader replaces it — no `global-app-preloader`, no `role="status"`, and none of the legacy `Loading routes configuration...` / `Loading...` shells. The second case proves the gate does not aggregate URL language sync: with `ensureLanguageLoaded('sk')` left pending forever, the deep-linked page is already on screen and `changeLanguage` has not run.
+- **Bootstrap / global preloader section in the shared localization guide** (`many_faces_main/docs/guides/static-localization-and-i18n.md`) — the localization fetch is the first mandatory cold-start step, so it now sits in context: the two-stage shell (pre-React `index.html` markup re-emitted by `renderBootstrapLoading`, then `AppBootstrapGate` inside React), a Mermaid flow of the whole cold start including the i18n-error retry path, the readiness-flag table (`i18nReady` always true inside the tree, the `isSessionHydrated` latch, `faceConfigReady`, the error branch), and links to the preloader prompt and tokens guide.
+- **Cold-start section with a bootstrap Mermaid diagram in the portal README** — first-paint handover, the `AppBootstrapGate` readiness inputs, the faces-config error branch, and the fact that `LanguageRouter` runs after the gate.
+
+### Changed
+
+- **Grid form and card copy moved off hardcoded English** — `AlbumForm`, `BlogForm` and `ChatRoomCard` now render every user-visible string through `t()` instead of literals, matching their already-localized siblings. Covers headings, field labels, placeholders, select options, the images legend, cancel/create/update actions, save-failure fallbacks, and the chat-room member count, visibility badges and last-activity line. Keys are declared in `src/components/grid/gridBlockI18n.ts` under `form.*`, `albumForm.*`, `blogForm.*` and `chatRoomCard.*`; `AlbumForm`'s `ALBUM_TYPES` / `MEDIA_TYPES` constants now carry `labelKey` + `defaultLabel` instead of a baked-in `label` so option copy is translated at render time. Every call site uses the repo-wide `t(key, 'English fallback')` form, so the UI keeps rendering the same English until the matching `PortalResources.resx` entries land backend-side, then picks up sk/cz with no further frontend change. This closes the `[ ] i18n` rows the grid face-scope rollout prompt left open for these three components.
 
 ---
 
@@ -275,7 +290,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 - React/TypeScript SPA with OAuth2 and Docker dev scripts.
 
-[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.1.5...HEAD
+[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.2.0...HEAD
 [0.9.2]: https://github.com/01laky/many_faces_portal/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/01laky/many_faces_portal/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/01laky/many_faces_portal/compare/v0.8.0...v0.9.0
@@ -287,6 +302,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 [0.3.0]: https://github.com/01laky/many_faces_portal/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/01laky/many_faces_portal/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/01laky/many_faces_portal/releases/tag/v0.1.0
+[1.2.0]: https://github.com/01laky/many_faces_portal/compare/v1.1.5...v1.2.0
 [1.1.5]: https://github.com/01laky/many_faces_portal/compare/v1.1.4...v1.1.5
 [1.1.4]: https://github.com/01laky/many_faces_portal/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/01laky/many_faces_portal/compare/v1.1.2...v1.1.3

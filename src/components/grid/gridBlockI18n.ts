@@ -1,6 +1,11 @@
 /**
  * i18n keys for grid block UI copy (`PortalResources` → `gridBlocks.*` in `common` namespace).
  * Use with `useTranslation('common')` and `t(key)`.
+ *
+ * Keys under `form.*`, `albumForm.*`, `blogForm.*` and `chatRoomCard.*` are the form/card copy
+ * sweep. They are still awaiting their `PortalResources.resx` entries, so every call site passes
+ * the English string as the `t(key, fallback)` default (repo-wide convention) — the UI keeps
+ * rendering English until the backend keys land, then picks up sk/cz automatically.
  */
 export const gridBlockI18nKeys = {
 	guest: {
@@ -50,4 +55,45 @@ export const gridBlockI18nKeys = {
 	loadingEditor: 'gridBlocks.loadingEditor',
 	formFacesLegend: 'gridBlocks.form.facesLegend',
 	formNoFaces: 'gridBlocks.form.noFaces',
+	/** Shared field labels and actions reused by every grid create/edit form. */
+	form: {
+		title: 'gridBlocks.form.title',
+		description: 'gridBlocks.form.description',
+		cancel: 'gridBlocks.form.cancel',
+		create: 'gridBlocks.form.create',
+		update: 'gridBlocks.form.update',
+	},
+	albumForm: {
+		headingCreate: 'gridBlocks.form.album.headingCreate',
+		headingEdit: 'gridBlocks.form.album.headingEdit',
+		titlePlaceholder: 'gridBlocks.form.album.titlePlaceholder',
+		descriptionPlaceholder: 'gridBlocks.form.album.descriptionPlaceholder',
+		albumType: 'gridBlocks.form.album.albumType',
+		mediaType: 'gridBlocks.form.album.mediaType',
+		typePublic: 'gridBlocks.form.album.typePublic',
+		typePrivate: 'gridBlocks.form.album.typePrivate',
+		typePaid: 'gridBlocks.form.album.typePaid',
+		mediaImage: 'gridBlocks.form.album.mediaImage',
+		mediaVideo: 'gridBlocks.form.album.mediaVideo',
+		saveError: 'gridBlocks.form.album.saveError',
+	},
+	blogForm: {
+		headingCreate: 'gridBlocks.form.blog.headingCreate',
+		headingEdit: 'gridBlocks.form.blog.headingEdit',
+		titlePlaceholder: 'gridBlocks.form.blog.titlePlaceholder',
+		face: 'gridBlocks.form.blog.face',
+		selectFace: 'gridBlocks.form.blog.selectFace',
+		content: 'gridBlocks.form.blog.content',
+		contentPlaceholder: 'gridBlocks.form.blog.contentPlaceholder',
+		imagesLegend: 'gridBlocks.form.blog.imagesLegend',
+		imageUrlPlaceholder: 'gridBlocks.form.blog.imageUrlPlaceholder',
+		saveError: 'gridBlocks.form.blog.saveError',
+	},
+	chatRoomCard: {
+		badgeSystem: 'gridBlocks.chatRoomCard.badgeSystem',
+		badgePublic: 'gridBlocks.chatRoomCard.badgePublic',
+		badgePrivate: 'gridBlocks.chatRoomCard.badgePrivate',
+		members: 'gridBlocks.chatRoomCard.members',
+		lastActivity: 'gridBlocks.chatRoomCard.lastActivity',
+	},
 } as const;

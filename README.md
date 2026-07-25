@@ -2,7 +2,7 @@
 
 <!-- readme-badges:start -->
 
-[![version](https://img.shields.io/badge/version-1.1.5-blue)](./VERSION)
+[![version](https://img.shields.io/badge/version-1.2.0-blue)](./VERSION)
 ![React](https://img.shields.io/badge/React-19-61DAFB)
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF)
 ![Node](https://img.shields.io/badge/Node-22+-339933)
@@ -12,7 +12,7 @@
 
 <!-- readme-badges:end -->
 
-**Version:** [`1.1.5`](./VERSION) · [Changelog](./CHANGELOG.md)
+**Version:** [`1.2.0`](./VERSION) · [Changelog](./CHANGELOG.md)
 
 **Author:** Ladislav Kostolny · [01laky@gmail.com](mailto:01laky@gmail.com)
 
@@ -48,6 +48,31 @@ flowchart LR
     face --> grid["PageGridLayout<br/>admin-managed schema"]
     grid --> blocks["albums · blogs · reels · stories · chats · profiles"]
 ```
+
+### Cold start and the global preloader
+
+A refresh shows **one** branded screen — kitsune logo, “Many Faces” title, three bouncing dots — from the very first paint until the app is usable. The pre-React markup in `index.html` and the React `GlobalAppPreloader` render the same layout from the same tokens, so the handover is seamless.
+
+`AppBootstrapGate` wraps `AppRoutes` and blocks on `useAppBootstrapReady`: the auth **session hydrate latch** (`isSessionHydrated`, so sign-in never re-covers the app) and **faces config**. A faces-config failure swaps the dots for `GlobalAppBootstrapError` with a retry — never an endless spinner. `LanguageRouter` runs **after** the gate, so URL language sync never re-opens a full-screen loader.
+
+```mermaid
+flowchart TD
+    html["index.html #root<br/>vanilla preloader markup"] --> boot["main.tsx bootstrap<br/>renderBootstrapLoading"]
+    boot --> i18n["initI18n<br/>GET /api/localization/portal"]
+    i18n -->|fetch fails| i18nErr["renderBootstrapError<br/>logo + Retry"]
+    i18nErr -->|Retry| i18n
+    i18n -->|bundle ready| mount["createRoot<br/>QueryProvider + App providers"]
+    mount --> gate["AppBootstrapGate<br/>useAppBootstrapReady"]
+
+    gate --> auth["authSessionReady<br/>AuthContext.isSessionHydrated latch"]
+    gate --> faces["faceConfigReady<br/>FaceConfigContext.isLoading"]
+
+    gate -->|blocking| pre["GlobalAppPreloader<br/>logo, title, CSS dots"]
+    gate -->|faces config error| gateErr["GlobalAppBootstrapError<br/>retry reloads faces config"]
+    gate -->|ready| routes["AppRoutes<br/>header, footer, LanguageRouter"]
+```
+
+**Guides:** [`../docs/guides/static-localization-and-i18n.md`](../docs/guides/static-localization-and-i18n.md) · [`../docs/guides/fe-global-preloader-tokens.md`](../docs/guides/fe-global-preloader-tokens.md)
 
 ### Route and grid rendering
 

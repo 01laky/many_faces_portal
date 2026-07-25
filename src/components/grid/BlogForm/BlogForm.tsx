@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Save, Loader2, Plus, X } from 'lucide-react';
+import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { BlogQuillEditor } from '../BlogQuillEditor';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
@@ -17,6 +19,7 @@ import type { BlogFormProps } from './types';
 import { MAX_IMAGES, QUILL_FORMATS, QUILL_MODULES } from './constants';
 
 export function BlogForm({ editBlog, onSaved, onCancel }: BlogFormProps) {
+	const { t } = useTranslation('common');
 	const { token } = useAuth();
 	const { allFaces, selectedFace } = useFaceConfig();
 	const quillRef = useRef<unknown>(null);
@@ -88,7 +91,7 @@ export function BlogForm({ editBlog, onSaved, onCancel }: BlogFormProps) {
 			}
 			onSaved?.(result);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Failed to save blog');
+			setError(err instanceof Error ? err.message : t(k.blogForm.saveError, 'Failed to save blog'));
 		} finally {
 			setSaving(false);
 		}
@@ -96,26 +99,30 @@ export function BlogForm({ editBlog, onSaved, onCancel }: BlogFormProps) {
 
 	return (
 		<form className="blog-form" onSubmit={handleSubmit}>
-			<h3 className="blog-form-heading">{isEdit ? 'Edit Blog' : 'Create Blog'}</h3>
+			<h3 className="blog-form-heading">
+				{isEdit
+					? t(k.blogForm.headingEdit, 'Edit Blog')
+					: t(k.blogForm.headingCreate, 'Create Blog')}
+			</h3>
 
 			{error && <div className="blog-form-error">{error}</div>}
 			{success && <div className="blog-form-success">{success}</div>}
 
 			<label className="blog-form-label">
-				Title
+				{t(k.form.title, 'Title')}
 				<input
 					type="text"
 					className="blog-form-input"
 					value={title}
 					onChange={(e) => setTitle(e.target.value)}
-					placeholder="Blog title"
+					placeholder={t(k.blogForm.titlePlaceholder, 'Blog title')}
 					maxLength={200}
 					required
 				/>
 			</label>
 
 			<label className="blog-form-label">
-				Face
+				{t(k.blogForm.face, 'Face')}
 				<select
 					className="blog-form-select"
 					value={faceId}
@@ -123,7 +130,7 @@ export function BlogForm({ editBlog, onSaved, onCancel }: BlogFormProps) {
 					required
 				>
 					<option value={0} disabled>
-						Select face
+						{t(k.blogForm.selectFace, 'Select face')}
 					</option>
 					{allFaces.map((face) => (
 						<option key={face.id} value={face.id}>
@@ -134,7 +141,7 @@ export function BlogForm({ editBlog, onSaved, onCancel }: BlogFormProps) {
 			</label>
 
 			<div className="blog-form-label">
-				Content
+				{t(k.blogForm.content, 'Content')}
 				<div className="blog-form-editor-wrapper">
 					<BlogQuillEditor
 						ref={quillRef}
@@ -143,13 +150,13 @@ export function BlogForm({ editBlog, onSaved, onCancel }: BlogFormProps) {
 						onChange={setContent}
 						modules={QUILL_MODULES}
 						formats={QUILL_FORMATS}
-						placeholder="Write your blog content..."
+						placeholder={t(k.blogForm.contentPlaceholder, 'Write your blog content...')}
 					/>
 				</div>
 			</div>
 
 			<fieldset className="blog-form-fieldset">
-				<legend>Images (max {MAX_IMAGES})</legend>
+				<legend>{t(k.blogForm.imagesLegend, 'Images (max {{max}})', { max: MAX_IMAGES })}</legend>
 				<div className="blog-form-images">
 					{imageUrls.map((url, i) => (
 						<div key={url} className="blog-form-image-item">
@@ -172,7 +179,7 @@ export function BlogForm({ editBlog, onSaved, onCancel }: BlogFormProps) {
 								className="blog-form-input"
 								value={newImageUrl}
 								onChange={(e) => setNewImageUrl(e.target.value)}
-								placeholder="Image URL"
+								placeholder={t(k.blogForm.imageUrlPlaceholder, 'Image URL')}
 								onKeyDown={(e) => {
 									if (e.key === 'Enter') {
 										e.preventDefault();
@@ -196,7 +203,7 @@ export function BlogForm({ editBlog, onSaved, onCancel }: BlogFormProps) {
 			<div className="blog-form-actions">
 				{onCancel && (
 					<button type="button" className="blog-form-btn blog-form-btn--cancel" onClick={onCancel}>
-						Cancel
+						{t(k.form.cancel, 'Cancel')}
 					</button>
 				)}
 				<button
@@ -205,7 +212,7 @@ export function BlogForm({ editBlog, onSaved, onCancel }: BlogFormProps) {
 					disabled={saving || !title.trim() || !content.trim() || !faceId}
 				>
 					{saving ? <Loader2 size={16} className="blog-form-spinner" /> : <Save size={16} />}
-					<span>{isEdit ? 'Update' : 'Create'}</span>
+					<span>{isEdit ? t(k.form.update, 'Update') : t(k.form.create, 'Create')}</span>
 				</button>
 			</div>
 		</form>

@@ -82,7 +82,9 @@ export function AlbumForm({ editAlbum, onSaved, onCancel }: AlbumFormProps) {
 			}
 			onSaved?.(result);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Failed to save album');
+			setError(
+				err instanceof Error ? err.message : t(k.albumForm.saveError, 'Failed to save album')
+			);
 		} finally {
 			setSaving(false);
 		}
@@ -90,61 +92,65 @@ export function AlbumForm({ editAlbum, onSaved, onCancel }: AlbumFormProps) {
 
 	return (
 		<form className="album-form" onSubmit={handleSubmit}>
-			<h3 className="album-form-heading">{isEdit ? 'Edit Album' : 'Create Album'}</h3>
+			<h3 className="album-form-heading">
+				{isEdit
+					? t(k.albumForm.headingEdit, 'Edit Album')
+					: t(k.albumForm.headingCreate, 'Create Album')}
+			</h3>
 
 			{error && <div className="album-form-error">{error}</div>}
 			{success && <div className="album-form-success">{success}</div>}
 
 			<label className="album-form-label">
-				Title
+				{t(k.form.title, 'Title')}
 				<input
 					type="text"
 					className="album-form-input"
 					value={title}
 					onChange={(e) => setTitle(e.target.value)}
-					placeholder="Album title"
+					placeholder={t(k.albumForm.titlePlaceholder, 'Album title')}
 					maxLength={200}
 					required
 				/>
 			</label>
 
 			<label className="album-form-label">
-				Description
+				{t(k.form.description, 'Description')}
 				<textarea
 					className="album-form-textarea"
 					value={description}
 					onChange={(e) => setDescription(e.target.value)}
-					placeholder="Optional description"
+					placeholder={t(k.albumForm.descriptionPlaceholder, 'Optional description')}
 					maxLength={2000}
 					rows={3}
 				/>
 			</label>
 
 			<label className="album-form-label">
-				Album Type
+				{t(k.albumForm.albumType, 'Album Type')}
 				<select
 					className="album-form-select"
 					value={albumType}
 					onChange={(e) => setAlbumType(Number(e.target.value))}
 				>
-					{ALBUM_TYPES.map((t) => (
-						<option key={t.value} value={t.value}>
-							{t.label}
+					{ALBUM_TYPES.map((option) => (
+						<option key={option.value} value={option.value}>
+							{t(option.labelKey, option.defaultLabel)}
 						</option>
 					))}
 				</select>
 			</label>
 
 			<label className="album-form-label">
-				Media Type
+				{t(k.albumForm.mediaType, 'Media Type')}
 				<select
 					className="album-form-select"
 					value={mediaType}
 					onChange={(e) => setMediaType(Number(e.target.value))}
 				>
-					{MEDIA_TYPES.map((t) => (
-						<option key={t.value} value={t.value}>
-							{t.label}
+					{MEDIA_TYPES.map((option) => (
+						<option key={option.value} value={option.value}>
+							{t(option.labelKey, option.defaultLabel)}
 						</option>
 					))}
 				</select>
@@ -174,7 +180,7 @@ export function AlbumForm({ editAlbum, onSaved, onCancel }: AlbumFormProps) {
 						className="album-form-btn album-form-btn--cancel"
 						onClick={onCancel}
 					>
-						Cancel
+						{t(k.form.cancel, 'Cancel')}
 					</button>
 				)}
 				<button
@@ -183,7 +189,7 @@ export function AlbumForm({ editAlbum, onSaved, onCancel }: AlbumFormProps) {
 					disabled={saving || !title.trim()}
 				>
 					{saving ? <Loader2 size={16} className="album-form-spinner" /> : <Save size={16} />}
-					<span>{isEdit ? 'Update' : 'Create'}</span>
+					<span>{isEdit ? t(k.form.update, 'Update') : t(k.form.create, 'Create')}</span>
 				</button>
 			</div>
 		</form>
