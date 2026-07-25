@@ -12,6 +12,7 @@ import { useFaceConfig } from '../../../contexts/FaceConfigContext';
 import { useGridBlockFetchEnabled } from '../../../contexts/GridBlockFetchContext';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
 import { useReelsGridQuery } from '../../../hooks/api/gridQueries';
+import { ReelVideo } from '../ReelVideo';
 import {
 	useStablePaginationEmit,
 	useSyncedPaginationReport,
@@ -151,13 +152,13 @@ export function ReelCarousel({
 						onFocus={playPreview}
 						onBlur={stopPreview}
 					>
-						<video
+						<ReelVideo
 							className="reel-carousel-card-video"
 							muted
 							playsInline
 							loop
 							preload="metadata"
-							src={reel.videoUrl}
+							videoUrl={reel.videoUrl}
 						/>
 						<div className="reel-carousel-card-overlay">
 							<span className="reel-carousel-card-title">{reel.title}</span>

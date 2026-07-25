@@ -11,6 +11,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
 import { getReels, type ReelItem } from '../../../api/services/ReelsService';
+import { ReelVideo } from '../ReelVideo';
 import './Reel.scss';
 
 export function Reel() {
@@ -76,7 +77,13 @@ export function Reel() {
 	return (
 		<div className="reel-component">
 			<Link className="reel-component-link" to={getLocalizedPath(`/reel/${item.id}`)}>
-				<video className="reel-video" muted playsInline preload="metadata" src={item.videoUrl} />
+				<ReelVideo
+					className="reel-video"
+					muted
+					playsInline
+					preload="metadata"
+					videoUrl={item.videoUrl}
+				/>
 				<div className="reel-play-overlay">▶</div>
 				<div className="reel-overlay">
 					<div className="reel-engagement">

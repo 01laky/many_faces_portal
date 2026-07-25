@@ -18,6 +18,7 @@ import {
 	type ReelComment,
 } from '../../api/services/ReelsService';
 import { ReelForm } from '../../components/grid/ReelForm';
+import { ReelVideo } from '../../components/grid/ReelVideo';
 import { useContentDetailAutoEdit } from '../../hooks/useContentDetailAutoEdit';
 import { getContentDetailOwnerFlags } from '../../utils/contentDetailPage';
 import { formatContentDate } from '../../utils/contentDetailFormat';
@@ -217,7 +218,7 @@ export function ReelDetailPage() {
 			)}
 
 			<div className="reel-detail-video-wrap">
-				<video className="reel-detail-video" controls playsInline src={reel.videoUrl} />
+				<ReelVideo className="reel-detail-video" controls playsInline videoUrl={reel.videoUrl} />
 			</div>
 
 			<div className="album-detail-info">

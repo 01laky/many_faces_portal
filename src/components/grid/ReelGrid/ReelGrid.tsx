@@ -20,6 +20,7 @@ import { useGridBlockFetchEnabled } from '../../../contexts/GridBlockFetchContex
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
 import { useReelsGridQuery } from '../../../hooks/api/gridQueries';
 import { CreatorModerationBadge } from '../CreatorModerationBadge';
+import { ReelVideo } from '../ReelVideo';
 import {
 	useStablePaginationEmit,
 	useSyncedPaginationReport,
@@ -136,13 +137,13 @@ export function ReelGrid({ page: controlledPage, onPageChange }: ReelGridProps =
 						onFocus={playPreview}
 						onBlur={stopPreview}
 					>
-						<video
+						<ReelVideo
 							className="reel-grid-card-video"
 							muted
 							playsInline
 							loop
 							preload="metadata"
-							src={reel.videoUrl}
+							videoUrl={reel.videoUrl}
 						/>
 						<div className="reel-grid-card-overlay">
 							<span className="reel-grid-card-title">{reel.title}</span>

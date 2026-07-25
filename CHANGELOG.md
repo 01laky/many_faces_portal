@@ -8,6 +8,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 | Version       | Theme                                           |
 | ------------- | ----------------------------------------------- |
+| [1.1.1](#111) | Reel media URLs through HTTPS allow-list        |
 | [1.1.0](#110) | CSP + Referrer-Policy baseline on nginx host    |
 | [1.0.5](#105) | Fix face page grid losing its responsive layout |
 | [1.0.4](#104) | Fix post-login faces reload using a stale token |
@@ -34,6 +35,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 ### Changed
 
 ### Fixed
+
+---
+
+## [1.1.1]
+
+### Fixed
+
+- **Reel media URLs from the API were rendered without the HTTPS allow-list (PSH1-D3, FE-P3).** `ReelItem.videoUrl` comes straight from `GET /{face}/api/Reels` but was bound directly to `<video src>` in `Reel`, `ReelGrid`, `ReelCarousel` and `ReelDetailPage`, so a hostile or misconfigured API response could inject an arbitrary URL (`javascript:`, `data:`, a plain-`http:` tracker) into the DOM — album and blog media already went through `sanitizeMediaUrl`. All four reel surfaces now render through a new shared `ReelVideo` component that passes the value through the existing `sanitizeMediaUrl` allow-list (HTTPS origins plus backend-signed `/api/uploads/serve` links with `sig`/`exp`) and renders nothing when the URL is rejected, matching the blog image behaviour in `BlogDetailPage`. `ReelVideoProps` omits `src` from the passthrough `<video>` attributes so a future call site cannot bypass sanitization. Covered by `PSH1-T-D10 … D14` in `src/components/grid/ReelVideo/__tests__/ReelVideo.security.test.ts`, which asserts against the rendered DOM.
 
 ---
 
@@ -218,7 +227,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 - React/TypeScript SPA with OAuth2 and Docker dev scripts.
 
-[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.1.1...HEAD
 [0.9.2]: https://github.com/01laky/many_faces_portal/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/01laky/many_faces_portal/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/01laky/many_faces_portal/compare/v0.8.0...v0.9.0
@@ -230,6 +239,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 [0.3.0]: https://github.com/01laky/many_faces_portal/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/01laky/many_faces_portal/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/01laky/many_faces_portal/releases/tag/v0.1.0
+[1.1.1]: https://github.com/01laky/many_faces_portal/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/01laky/many_faces_portal/compare/v1.0.5...v1.1.0
 [1.0.5]: https://github.com/01laky/many_faces_portal/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/01laky/many_faces_portal/compare/v1.0.3...v1.0.4
