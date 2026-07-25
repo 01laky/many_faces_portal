@@ -8,7 +8,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 | Version       | Theme                                            |
 | ------------- | ------------------------------------------------ |
-| [1.2.1](#121) | Sync package.json version and enforce it |
+| [1.2.2](#122) | GPL-22 inline lazy-route preloader               |
+| [1.2.1](#121) | Sync package.json version and enforce it         |
 | [1.2.0](#120) | GPL-19 test, preloader docs, grid form i18n      |
 | [1.1.5](#115) | Fix the no-op TypeScript gate                    |
 | [1.1.4](#114) | REF-F / REF-X test families + display-prefs link |
@@ -41,6 +42,18 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 ### Changed
 
 ### Fixed
+
+---
+
+## [1.2.2]
+
+### Added
+
+- **GPL-22 test — `src/routes/__tests__/routeLoadingFallback.test.tsx`.** Mounts a real `Suspense` boundary whose lazy chunk never resolves, so the fallback that a code-split navigation actually shows is the thing under assertion: it must carry `global-app-preloader--route-fallback` and **not** `--bootstrap`, must drop the oversized brand wordmark and the CSS bootstrap dots, and must keep the `Loading page` label. Vitest does not evaluate SCSS, so a second case reads `globalAppPreloader.scss` and pins the position contract at source — only the `--bootstrap` block carries `position: fixed` / `inset: 0` / `min-height: 100dvh`, while `--route-fallback` is `position: static` with the 64px `ROUTE_FALLBACK_*` logo token. Mutation-checked: dropping `variant="route-fallback"` from the call site fails the first case.
+
+### Changed
+
+- **`RouteLoadingFallback` renders the small inline preloader instead of the full-viewport bootstrap shell (GPL-22, §3.6.3 tier C).** The call site passed no `variant`, so it defaulted to `bootstrap` — meaning every code-split navigation (the top-level `AppRoutes` `Suspense`, `PageGridLayout`, `ComponentBlock`, the settings side panel, `ComponentDetailPage`) repainted the fixed, full-viewport, 408px-logo brand animation on top of the app and made an ordinary chunk load look like a cold start. The `route-fallback` variant and its `ROUTE_FALLBACK_*` tokens (64px logo, 16px `ThreeDot`, 32px spinner slot, `position: static`, transparent background, no wordmark) already shipped in 1.2.0; only the call site was wrong, so the fix is the one missing prop plus a comment explaining why the variant matters.
 
 ---
 
@@ -299,7 +312,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 - React/TypeScript SPA with OAuth2 and Docker dev scripts.
 
-[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.2.2...HEAD
 [0.9.2]: https://github.com/01laky/many_faces_portal/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/01laky/many_faces_portal/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/01laky/many_faces_portal/compare/v0.8.0...v0.9.0
@@ -311,6 +324,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 [0.3.0]: https://github.com/01laky/many_faces_portal/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/01laky/many_faces_portal/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/01laky/many_faces_portal/releases/tag/v0.1.0
+[1.2.2]: https://github.com/01laky/many_faces_portal/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/01laky/many_faces_portal/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/01laky/many_faces_portal/compare/v1.1.5...v1.2.0
 [1.1.5]: https://github.com/01laky/many_faces_portal/compare/v1.1.4...v1.1.5
