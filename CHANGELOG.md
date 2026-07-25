@@ -8,6 +8,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 | Version       | Theme                                           |
 | ------------- | ----------------------------------------------- |
+| [1.1.3](#113) | Clear high-severity dependency advisories       |
 | [1.1.2](#112) | API image URLs through HTTPS allow-list         |
 | [1.1.1](#111) | Reel media URLs through HTTPS allow-list        |
 | [1.1.0](#110) | CSP + Referrer-Policy baseline on nginx host    |
@@ -36,6 +37,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 ### Changed
 
 ### Fixed
+
+---
+
+## [1.1.3]
+
+### Fixed
+
+- **Cleared every high-severity `yarn npm audit` advisory.** Three direct dependencies were raised to the first release carrying the fix, each staying inside its current major: `vite` `^8.0.13` → `^8.0.16` (resolves 8.1.5) for [GHSA-fx2h-pf6j-xcff](https://github.com/advisories/GHSA-fx2h-pf6j-xcff), a `server.fs.deny` bypass via Windows alternate path forms (vulnerable `>=8.0.0 <=8.0.15`, dev-server only); `axios` `^1.16.1` → `^1.18.0` (resolves 1.18.1) for [GHSA-gcfj-64vw-6mp9](https://github.com/advisories/GHSA-gcfj-64vw-6mp9), where the Node HTTP adapter could reuse an inherited proxy after interceptor config cloning; and `form-data` `^4.0.5` → `^4.0.6` for [GHSA-hmw2-7cc7-3qxx](https://github.com/advisories/GHSA-hmw2-7cc7-3qxx), CRLF injection through unescaped multipart field names. Raising the declared floor (rather than pinning) means the vulnerable range can never be re-resolved. All three are direct dependencies, so no `resolutions` entry was needed. `yarn npm audit --severity high` now reports "No audit suggestions"; validate, 617 tests and build are green on the new versions with no source changes. This unblocks the CI audit gate (SHV2 CI-1), which can only fail the build on high/critical once no such advisory is outstanding.
 
 ---
 
@@ -242,7 +251,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 - React/TypeScript SPA with OAuth2 and Docker dev scripts.
 
-[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.1.2...HEAD
+[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.1.3...HEAD
 [0.9.2]: https://github.com/01laky/many_faces_portal/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/01laky/many_faces_portal/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/01laky/many_faces_portal/compare/v0.8.0...v0.9.0
@@ -254,6 +263,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 [0.3.0]: https://github.com/01laky/many_faces_portal/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/01laky/many_faces_portal/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/01laky/many_faces_portal/releases/tag/v0.1.0
+[1.1.3]: https://github.com/01laky/many_faces_portal/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/01laky/many_faces_portal/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/01laky/many_faces_portal/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/01laky/many_faces_portal/compare/v1.0.5...v1.1.0
