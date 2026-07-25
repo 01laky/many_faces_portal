@@ -8,6 +8,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 | Version       | Theme                                            |
 | ------------- | ------------------------------------------------ |
+| [1.2.1](#121) | Sync package.json version and enforce it |
 | [1.2.0](#120) | GPL-19 test, preloader docs, grid form i18n      |
 | [1.1.5](#115) | Fix the no-op TypeScript gate                    |
 | [1.1.4](#114) | REF-F / REF-X test families + display-prefs link |
@@ -40,6 +41,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 ### Changed
 
 ### Fixed
+
+---
+
+## [1.2.1]
+
+### Fixed
+
+- **`package.json` `version` had drifted from `VERSION`, and nothing checked it.** CLAUDE.md requires the frontends to keep the two in sync; portal and admin had never been synced (`0.0.0` against a `VERSION` well past 1.x) and mobile sat one patch behind, because `scripts/bump-version.sh` does not touch `package.json`. `scripts/verify-version-files.sh` only compared `VERSION` against the newest CHANGELOG heading, so the rule lived as prose and prose does not fail a build. The script now also asserts `package.json` version equals `VERSION`, with an error naming the likely cause. Verified both ways: setting `package.json` to `9.9.9` fails the gate, restoring it passes. `yarn install --immutable` stays clean, so the version change does not dirty the lockfile.
 
 ---
 
@@ -290,7 +299,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 - React/TypeScript SPA with OAuth2 and Docker dev scripts.
 
-[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.2.1...HEAD
 [0.9.2]: https://github.com/01laky/many_faces_portal/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/01laky/many_faces_portal/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/01laky/many_faces_portal/compare/v0.8.0...v0.9.0
@@ -302,6 +311,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 [0.3.0]: https://github.com/01laky/many_faces_portal/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/01laky/many_faces_portal/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/01laky/many_faces_portal/releases/tag/v0.1.0
+[1.2.1]: https://github.com/01laky/many_faces_portal/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/01laky/many_faces_portal/compare/v1.1.5...v1.2.0
 [1.1.5]: https://github.com/01laky/many_faces_portal/compare/v1.1.4...v1.1.5
 [1.1.4]: https://github.com/01laky/many_faces_portal/compare/v1.1.3...v1.1.4
