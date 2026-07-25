@@ -1,5 +1,6 @@
 export { gridQueryKeys, FACE_HOME_API_BUDGET } from './gridQueryKeys';
 export { useFaceGridListQuery } from './useFaceGridListQuery';
+export { useFaceGridItemQuery } from './useFaceGridItemQuery';
 export {
 	useAlbumsGridQuery,
 	useBlogsGridQuery,
@@ -9,4 +10,6 @@ export {
 	useUserProfilesGridQuery,
 	useChatRoomsGridQuery,
 	useVideoLoungesGridQuery,
+	useChatRoomBoundGridQuery,
+	useVideoLoungeBoundGridQuery,
 } from './gridQueryHooks';

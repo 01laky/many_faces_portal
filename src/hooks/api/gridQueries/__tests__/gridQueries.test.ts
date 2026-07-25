@@ -34,4 +34,17 @@ describe('gridQueryKeys (PT-RP2)', () => {
 	it('PT-RP2-U6: pagination is client-side — list keys omit page param', () => {
 		expect(gridQueryKeys.reels(faceA).length).toBe(3);
 	});
+
+	it('PT-RP2-U7: bound single-item keys are children of their list keys', () => {
+		expect(gridQueryKeys.chatRoom(faceA, 5)).toEqual([...gridQueryKeys.chatRooms(faceA), 5]);
+		expect(gridQueryKeys.videoLounge(faceA, 6)).toEqual([...gridQueryKeys.videoLounges(faceA), 6]);
+	});
+
+	it('PT-RP2-U8: bound single-item keys differ per bound id and per face', () => {
+		expect(gridQueryKeys.chatRoom(faceA, 1)).not.toEqual(gridQueryKeys.chatRoom(faceA, 2));
+		expect(gridQueryKeys.chatRoom(faceA, 1)).not.toEqual(gridQueryKeys.chatRoom(faceB, 1));
+		expect(JSON.stringify(gridQueryKeys.chatRoom(faceA, 1))).not.toBe(
+			JSON.stringify(gridQueryKeys.chatRooms(faceA))
+		);
+	});
 });

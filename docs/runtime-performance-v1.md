@@ -82,6 +82,49 @@ sequenceDiagram
 3. Vitest: `src/__tests__/perf/faceHomeFetchBudget.test.ts`.
 4. Cypress: `cypress/e2e/perf-face-home.cy.js`.
 
+## Measured baseline (2026-07-25)
+
+First recorded PT-RP17 baseline. Environment: **local build** on macOS (darwin), Node
+**v20.18.3** (Vite 8.1.5 warns it wants 20.19+/22.12+ but builds fine), Yarn 4.12.0,
+`yarn build` + `node scripts/portal-perf-baseline.mjs` (raw + gzip via `zlib.gzipSync`,
+sizes below in KiB). Chunk hashes are per-build; compare by chunk name.
+
+**Totals** (`dist/perf-baseline.json`, `generatedAt 2026-07-25T18:37:19.899Z`):
+
+| Metric     | Count | Raw KiB | Gzip KiB |
+| ---------- | ----- | ------- | -------- |
+| All assets | 149   | 1593.0  | 473.8    |
+| JS chunks  | 95    | 1345.1  | 418.5    |
+| CSS chunks | 54    | 247.9   | 55.3     |
+
+**Top chunks by gzip size** (from the same `perf-baseline.json`):
+
+| Chunk                         | Raw KiB | Gzip KiB |
+| ----------------------------- | ------- | -------- |
+| `vendor-SuVN_ZDk.js`          | 338.3   | 93.4     |
+| `vendor-react-dom-….js`       | 170.7   | 53.2     |
+| `vendor-quill-….js`           | 134.4   | 38.2     |
+| `index-….js` (entry)          | 89.6    | 24.2     |
+| `vendor-forms-….js`           | 61.1    | 20.0     |
+| `index-….css` (global styles) | 115.3   | 17.7     |
+| `vendor-axios-….js`           | 43.7    | 16.5     |
+| `vendor-grid-layout-….js`     | 52.7    | 15.6     |
+| `vendor-i18n-….js`            | 46.0    | 14.8     |
+| `vendor-router-….js`          | 41.3    | 14.6     |
+| `vendor-signalr-….js`         | 53.6    | 13.6     |
+| `vendor-radix-….js`           | 39.8    | 12.4     |
+
+Notes from this run:
+
+- `yarn build:analyze` now really produces `dist/stats.html` (1.3 MB treemap) — the
+  script previously set `ANALYZE=true` on the `tsc -b` step only, so the visualizer
+  plugin never activated; fixed in `package.json`.
+- Build warning to keep an eye on: `HomePage` is both statically imported
+  (`GuestRedirects.tsx`) and lazily imported (`lazyPages.tsx`), so its dynamic import
+  cannot split a chunk (`INEFFECTIVE_DYNAMIC_IMPORT`).
+- Grid blocks stay small: every grid Grid/Carousel/single-tile chunk is ≤ 4.8 KiB raw
+  (≤ 2.1 KiB gzip).
+
 ## Related docs
 
 - [`performance-and-query-appendix.md`](./performance-and-query-appendix.md)

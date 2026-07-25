@@ -8,6 +8,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 | Version       | Theme                                            |
 | ------------- | ------------------------------------------------ |
+| [1.3.0](#130) | Grid single tiles on Query + perf baseline       |
 | [1.2.2](#122) | GPL-22 inline lazy-route preloader               |
 | [1.2.1](#121) | Sync package.json version and enforce it         |
 | [1.2.0](#120) | GPL-19 test, preloader docs, grid form i18n      |
@@ -42,6 +43,26 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 ### Changed
 
 ### Fixed
+
+---
+
+## [1.3.0]
+
+### Added
+
+- **Bound single-item grid query hooks.** `useFaceGridItemQuery` (same 5-min `staleTime` / 20-min `gcTime` / `retry: 1` contract as `useFaceGridListQuery`), `gridQueryKeys.chatRoom(faceId, roomId)` / `gridQueryKeys.videoLounge(faceId, loungeId)` child keys, and `useChatRoomBoundGridQuery` / `useVideoLoungeBoundGridQuery` for tiles pinned via `boundChatRoomId` / `boundVideoLoungeId` in the page grid JSON. The bound hooks are disabled entirely when no binding id, token, or faceId is present, and are documented in `docs/performance-and-query-appendix.md` next to the list keys.
+- **Measured PT-RP17 baseline recorded in `docs/runtime-performance-v1.md`.** First real numbers instead of "script exists": 2026-07-25 local build (macOS, Node v20.18.3, Vite 8.1.5), 149 assets — 95 JS (1345.1 KiB raw / 418.5 KiB gzip) + 54 CSS (247.9 KiB raw / 55.3 KiB gzip), 473.8 KiB gzip total — plus the top-12-chunks-by-gzip table from `dist/perf-baseline.json` and the `INEFFECTIVE_DYNAMIC_IMPORT` warning for `HomePage` worth tracking.
+- **Build decisions recorded in `docs/performance-and-query-appendix.md`.** (1) `build.modulePreload` stays at the Vite default: all 28 `modulepreload` links in `dist/index.html` point at the entry's static import graph, which the browser must fetch at bootstrap anyway — removing them would only reintroduce a discovery waterfall. (2) `react-toastify` CSS waiver with measured numbers: the Toastify rules occupy ~10.3 kB raw (≈ 1.9 kB gzip share) of the eagerly-linked 14.1 kB / 2.65 kB-gzip vendor CSS chunk — under the 5 kB-gzip threshold, so the PT-RP27 deferral machinery is left as is.
+- **Tests for the single-tile migration (631 → 648).** `singleTileGridBlocks.test.tsx` renders the real `Album` / `ChatRoom` / `Story` blocks through `QueryClientProvider` + `GridBlockFetchProvider` and asserts: two Album tiles dedupe to one `getAlbums` call, guest state fetches nothing, `fetchEnabled=false` defers the fetch (PT-RP16), bound ChatRoom calls `getChatRoom(faceId, boundId, token)` without touching the list endpoint, unbound ChatRoom uses only the shared list query, and a Story query error maps to its dedicated load-error message. Bound-hook enabled-gate tests join `gridQueries.integration.test.tsx`, key-shape tests join `gridQueries.test.ts`, and `faceHomeFetchBudget.test.ts` now counts single tiles against the same budget keys as their Grid/Carousel siblings.
+- **`schemas.ts` row in `src/components/README.md`.** The convention table and the new-component skeleton now document the optional per-module `schemas.ts` (Yup/resolver validation schemas, inferred types staying in `types.ts`, never exported from `index.ts`) per the types-colocation prompt §2.11/§13.5.
+
+### Changed
+
+- **Single-tile grid blocks fetch through the shared TanStack Query hooks (last non-Query fetching in the grid system removed).** `Album`, `Blog`, `Reel`, `Story`, `Ad`, `UserProfile`, `ChatRoom`, and `VideoLounge` dropped their hand-rolled `useEffect` + `useState` fetching for the exact hooks their Grid/Carousel siblings use (`useAlbumsGridQuery`, …), so a single tile and a grid of the same resource now share one cache entry and one request per face (PT-RP2), honour the `GridBlockFetchProvider` visibility gate instead of fetching offscreen (PT-RP16), and refetch on face switch via the `['face', faceId, resource]` key. Guest guards, loading spinners, and empty states are unchanged; a failed request still degrades to the empty message (Story keeps its dedicated load-error copy via `isError`), with the hook-level `retry: 1` now applying uniformly.
+
+### Fixed
+
+- **`yarn build:analyze` never produced `dist/stats.html`.** The script set `ANALYZE=true` on the `tsc -b` step only (`ANALYZE=true tsc -b && vite build`), so the `rollup-plugin-visualizer` condition in `vite.config.ts` never saw the flag. The env var now rides on the `vite build` step and the treemap is actually emitted.
 
 ---
 
@@ -312,7 +333,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 
 - React/TypeScript SPA with OAuth2 and Docker dev scripts.
 
-[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.2.2...HEAD
+[Unreleased]: https://github.com/01laky/many_faces_portal/compare/v1.3.0...HEAD
 [0.9.2]: https://github.com/01laky/many_faces_portal/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/01laky/many_faces_portal/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/01laky/many_faces_portal/compare/v0.8.0...v0.9.0
@@ -324,6 +345,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — **version h
 [0.3.0]: https://github.com/01laky/many_faces_portal/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/01laky/many_faces_portal/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/01laky/many_faces_portal/releases/tag/v0.1.0
+[1.3.0]: https://github.com/01laky/many_faces_portal/compare/v1.2.2...v1.3.0
 [1.2.2]: https://github.com/01laky/many_faces_portal/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/01laky/many_faces_portal/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/01laky/many_faces_portal/compare/v1.1.5...v1.2.0

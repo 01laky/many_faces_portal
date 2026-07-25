@@ -2,15 +2,15 @@
  * Reel - Shows the first reel for the current face with link to detail.
  */
 
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
+import { useGridBlockFetchEnabled } from '../../../contexts/GridBlockFetchContext';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
-import { getReels, type ReelItem } from '../../../api/services/ReelsService';
+import { useReelsGridQuery } from '../../../hooks/api/gridQueries';
 import { ReelVideo } from '../ReelVideo';
 import './Reel.scss';
 
@@ -21,34 +21,12 @@ export function Reel() {
 	const getLocalizedPath = useLocalizedLink();
 	const faceId = selectedFace?.id;
 
-	const [item, setItem] = useState<ReelItem | null>(null);
-	const [loading, setLoading] = useState(true);
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			await Promise.resolve();
-			if (!token || faceId == null) {
-				if (!cancelled) {
-					setLoading(false);
-					setItem(null);
-				}
-				return;
-			}
-			if (!cancelled) setLoading(true);
-			try {
-				const list = await getReels(token, faceId);
-				if (!cancelled) setItem(list[0] ?? null);
-			} catch {
-				if (!cancelled) setItem(null);
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [token, faceId]);
+	// Same TanStack Query hook as ReelGrid/ReelCarousel: shared per-face cache (PT-RP2)
+	// and IO-gated fetch (PT-RP16). Errors leave `data` undefined → empty state, matching
+	// the previous useEffect version which nulled the item on failure.
+	const fetchEnabled = useGridBlockFetchEnabled();
+	const { data: reels = [], isLoading: loading } = useReelsGridQuery(token, faceId, fetchEnabled);
+	const item = reels[0] ?? null;
 
 	if (!token || faceId == null) {
 		return (

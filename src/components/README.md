@@ -4,14 +4,15 @@ Each UI block lives in its own folder next to its styles and barrel export.
 
 ## Convention
 
-| Area            | Path pattern                                                       |
-| --------------- | ------------------------------------------------------------------ |
-| Root components | `src/components/<Name>/…` + optional SCSS + `index.ts`             |
-| Split files     | Optional `types.ts`, `enums.ts`, `constants.ts` per module folder  |
-| Grid blocks     | `src/components/grid/<Name>/…` + optional split files + `index.ts` |
-| Radix wrappers  | `src/components/radix/<Name>/…`                                    |
-| Pages           | `src/pages/<Name>/<Name>.tsx` + optional SCSS + `index.ts`         |
-| Settings        | `src/features/settings/<Name>/…`                                   |
+| Area            | Path pattern                                                                                                                  |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Root components | `src/components/<Name>/…` + optional SCSS + `index.ts`                                                                        |
+| Split files     | Optional `types.ts`, `enums.ts`, `constants.ts` per module folder                                                             |
+| `schemas.ts`    | Optional per module folder — Yup/resolver validation schemas; inferred types stay in `types.ts`; not exported from `index.ts` |
+| Grid blocks     | `src/components/grid/<Name>/…` + optional split files + `index.ts`                                                            |
+| Radix wrappers  | `src/components/radix/<Name>/…`                                                                                               |
+| Pages           | `src/pages/<Name>/<Name>.tsx` + optional SCSS + `index.ts`                                                                    |
+| Settings        | `src/features/settings/<Name>/…`                                                                                              |
 
 ## New component
 
@@ -20,6 +21,7 @@ src/components/<Name>/<Name>.tsx
 src/components/<Name>/<Name>.scss
 src/components/<Name>/types.ts       # optional — props, form types, local unions
 src/components/<Name>/constants.ts  # optional — module-level const values
+src/components/<Name>/schemas.ts    # optional — Yup validation schemas (types via inference in types.ts)
 src/components/<Name>/index.ts      → export { Name } from './Name'
 ```
 

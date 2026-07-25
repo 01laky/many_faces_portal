@@ -1,6 +1,8 @@
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 
-const GRID_LIST_STALE_MS = 5 * 60_000;
+/** Shared cache windows for face-scoped grid data (PT-RP2) — list and single-item hooks. */
+export const GRID_LIST_STALE_MS = 5 * 60_000;
+export const GRID_LIST_GC_MS = 20 * 60_000;
 
 export function useFaceGridListQuery<T>(
 	queryKey: readonly unknown[],
@@ -12,7 +14,7 @@ export function useFaceGridListQuery<T>(
 		queryFn,
 		enabled,
 		staleTime: GRID_LIST_STALE_MS,
-		gcTime: 20 * 60_000,
+		gcTime: GRID_LIST_GC_MS,
 		retry: 1,
 	});
 }

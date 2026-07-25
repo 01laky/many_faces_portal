@@ -6,14 +6,25 @@ function uniqueGridKeysFromSchema(schemaJson: string, faceId: number): Set<strin
 	const schema = parsePageGridSchema(schemaJson);
 	if (!schema) return new Set();
 	const map: Record<string, (id: number) => readonly unknown[]> = {
+		// Single tiles share the SAME list keys as their Grid/Carousel siblings
+		// since the useEffect → TanStack Query migration (unbound tiles only —
+		// `bound*Id` tiles use narrow child keys and are rare pinned exceptions).
+		album: gridQueryKeys.albums,
 		albumGrid: gridQueryKeys.albums,
 		albumCarousel: gridQueryKeys.albums,
+		blog: gridQueryKeys.blogs,
 		blogGrid: gridQueryKeys.blogs,
+		story: gridQueryKeys.stories,
 		storyGrid: gridQueryKeys.stories,
+		reel: gridQueryKeys.reels,
 		reelGrid: gridQueryKeys.reels,
+		ad: gridQueryKeys.ads,
 		adGrid: gridQueryKeys.ads,
+		userProfile: gridQueryKeys.userProfiles,
 		userProfileGrid: gridQueryKeys.userProfiles,
+		chatRoom: gridQueryKeys.chatRooms,
 		chatRoomGrid: gridQueryKeys.chatRooms,
+		videoLounge: gridQueryKeys.videoLounges,
 		videoLoungeGrid: gridQueryKeys.videoLounges,
 	};
 	const keys = new Set<string>();
@@ -94,5 +105,24 @@ describe('faceHomeFetchBudget (PT-RP20)', () => {
 			faceId
 		);
 		expect(keys.size).toBe(1);
+	});
+
+	it('single tile and grid of the same resource share one key (useEffect migration)', () => {
+		const faceId = 4;
+		const keys = uniqueGridKeysFromSchema(
+			JSON.stringify({
+				items: [
+					{ i: '1', componentType: 'album', x: 0, y: 0, w: 3, h: 4 },
+					{ i: '2', componentType: 'albumGrid', x: 3, y: 0, w: 6, h: 4 },
+					{ i: '3', componentType: 'chatRoom', x: 0, y: 4, w: 3, h: 4 },
+					{ i: '4', componentType: 'chatRoomGrid', x: 3, y: 4, w: 6, h: 4 },
+				],
+				breakpoints: { lg: 1200 },
+				cols: { lg: 12 },
+				rowHeight: 30,
+			}),
+			faceId
+		);
+		expect(keys.size).toBe(2);
 	});
 });

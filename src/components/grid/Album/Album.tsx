@@ -2,14 +2,14 @@
  * Album - First album for the current face (API-backed preview)
  */
 
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
+import { useGridBlockFetchEnabled } from '../../../contexts/GridBlockFetchContext';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
-import { getAlbums, type AlbumItem } from '../../../api/services/AlbumsService';
+import { useAlbumsGridQuery } from '../../../hooks/api/gridQueries';
 import { albumCoverPlaceholderUrl, albumThumbnailPlaceholderUrl } from '../gridDisplayHelpers';
 import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import './Album.scss';
@@ -21,34 +21,13 @@ export function Album() {
 	const getLocalizedPath = useLocalizedLink();
 	const faceId = selectedFace?.id;
 
-	const [album, setAlbum] = useState<AlbumItem | null>(null);
-	const [loading, setLoading] = useState(true);
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			await Promise.resolve();
-			if (!token || faceId == null) {
-				if (!cancelled) {
-					setLoading(false);
-					setAlbum(null);
-				}
-				return;
-			}
-			if (!cancelled) setLoading(true);
-			try {
-				const list = await getAlbums(token, faceId);
-				if (!cancelled) setAlbum(list[0] ?? null);
-			} catch {
-				if (!cancelled) setAlbum(null);
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [token, faceId]);
+	// Same TanStack Query hook as AlbumGrid/AlbumCarousel: one shared cache entry per
+	// face (PT-RP2 dedup) and fetch deferred until the tile is visible (PT-RP16).
+	// A load error leaves `data` undefined, so the tile degrades to the empty state —
+	// identical to the previous useEffect version which nulled the item on failure.
+	const fetchEnabled = useGridBlockFetchEnabled();
+	const { data: albums = [], isLoading: loading } = useAlbumsGridQuery(token, faceId, fetchEnabled);
+	const album = albums[0] ?? null;
 
 	if (!token || faceId == null) {
 		return (

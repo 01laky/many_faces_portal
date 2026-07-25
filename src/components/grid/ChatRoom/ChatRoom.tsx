@@ -2,20 +2,17 @@
  * Single chat room tile: bound to a specific room from grid JSON, or first room in the face.
  */
 
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
+import { useGridBlockFetchEnabled } from '../../../contexts/GridBlockFetchContext';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
 import { COMPONENT_TYPE_ID } from '../../../constants/componentTypeIds';
-import {
-	getChatRoom,
-	listChatRooms,
-	type FaceChatRoomDto,
-} from '../../../api/services/ChatRoomsService';
+import { useChatRoomsGridQuery, useChatRoomBoundGridQuery } from '../../../hooks/api/gridQueries';
 import { ChatRoomCard } from '../ChatRoomCard';
 import './ChatRoom.scss';
 import type { ChatRoomProps } from './types';
@@ -26,8 +23,19 @@ export function ChatRoom({ boundChatRoomId }: ChatRoomProps) {
 	const { selectedFace } = useFaceConfig();
 	const navigate = useNavigate();
 	const getLocalizedPath = useLocalizedLink();
-	const [room, setRoom] = useState<FaceChatRoomDto | null>(null);
-	const [loading, setLoading] = useState(true);
+	const faceId = selectedFace?.id;
+
+	// TanStack Query migration (PT-RP2 + PT-RP16): an unbound tile reuses the SAME list
+	// hook/key as ChatRoomGrid/ChatRoomCarousel (dedup) and shows the first room; a tile
+	// bound via `boundChatRoomId` uses the narrow single-item hook instead. Exactly one
+	// of the two queries is enabled. Errors leave `data` undefined → empty state,
+	// matching the previous useEffect version which nulled the room on failure.
+	const fetchEnabled = useGridBlockFetchEnabled();
+	const bound = boundChatRoomId != null;
+	const listQuery = useChatRoomsGridQuery(token, faceId, fetchEnabled && !bound);
+	const boundQuery = useChatRoomBoundGridQuery(token, faceId, boundChatRoomId, fetchEnabled);
+	const room = bound ? (boundQuery.data ?? null) : (listQuery.data?.[0] ?? null);
+	const loading = bound ? boundQuery.isLoading : listQuery.isLoading;
 
 	const goDetail = useCallback(
 		(id: number) => {
@@ -35,36 +43,6 @@ export function ChatRoom({ boundChatRoomId }: ChatRoomProps) {
 		},
 		[navigate, getLocalizedPath]
 	);
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			await Promise.resolve();
-			if (!selectedFace || !token) {
-				if (!cancelled) setLoading(false);
-				return;
-			}
-
-			if (!cancelled) setLoading(true);
-			try {
-				if (boundChatRoomId != null) {
-					const r = await getChatRoom(selectedFace.id, boundChatRoomId, token);
-					if (!cancelled) setRoom(r);
-				} else {
-					const list = await listChatRooms(selectedFace.id, token);
-					if (!cancelled) setRoom(list[0] ?? null);
-				}
-			} catch {
-				if (!cancelled) setRoom(null);
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-
-		return () => {
-			cancelled = true;
-		};
-	}, [selectedFace, token, boundChatRoomId]);
 
 	if (!selectedFace || !token) {
 		return (

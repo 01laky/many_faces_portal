@@ -2,15 +2,16 @@
  * Blog - Latest blog post for the current face (API-backed)
  */
 
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
+import { useGridBlockFetchEnabled } from '../../../contexts/GridBlockFetchContext';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
-import { getBlogs, type BlogItem } from '../../../api/services/BlogsService';
+import { useBlogsGridQuery } from '../../../hooks/api/gridQueries';
+import type { BlogItem } from '../../../api/services/BlogsService';
 import { blogCoverPlaceholderUrl } from '../gridDisplayHelpers';
 import { sanitizeMediaUrl } from '../../../utils/safeUrl';
 import './Blog.scss';
@@ -38,34 +39,12 @@ export function Blog() {
 	const getLocalizedPath = useLocalizedLink();
 	const faceId = selectedFace?.id;
 
-	const [post, setPost] = useState<BlogItem | null>(null);
-	const [loading, setLoading] = useState(true);
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			await Promise.resolve();
-			if (!token || faceId == null) {
-				if (!cancelled) {
-					setLoading(false);
-					setPost(null);
-				}
-				return;
-			}
-			if (!cancelled) setLoading(true);
-			try {
-				const list = await getBlogs(token, faceId);
-				if (!cancelled) setPost(list[0] ?? null);
-			} catch {
-				if (!cancelled) setPost(null);
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [token, faceId]);
+	// Same TanStack Query hook as BlogGrid/BlogCarousel: shared per-face cache (PT-RP2)
+	// and IO-gated fetch (PT-RP16). Errors leave `data` undefined → empty state, matching
+	// the previous useEffect version which nulled the post on failure.
+	const fetchEnabled = useGridBlockFetchEnabled();
+	const { data: blogs = [], isLoading: loading } = useBlogsGridQuery(token, faceId, fetchEnabled);
+	const post = blogs[0] ?? null;
 
 	if (!token || faceId == null) {
 		return (

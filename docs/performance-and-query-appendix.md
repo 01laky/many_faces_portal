@@ -40,7 +40,26 @@ Defined in `src/providers/QueryProvider.tsx`:
 | Chat rooms    | `gridQueryKeys.chatRooms(faceId)`    | `['face', 42, 'chatRooms']`    |
 | Video lounges | `gridQueryKeys.videoLounges(faceId)` | `['face', 42, 'videoLounges']` |
 
+Bound single tiles (`boundChatRoomId` / `boundVideoLoungeId` in the grid JSON) use narrow child keys of the list keys via `useFaceGridItemQuery`:
+
+| Resource        | Key helper                                    | Example                           |
+| --------------- | --------------------------------------------- | --------------------------------- |
+| Bound chat room | `gridQueryKeys.chatRoom(faceId, roomId)`      | `['face', 42, 'chatRooms', 7]`    |
+| Bound lounge    | `gridQueryKeys.videoLounge(faceId, loungeId)` | `['face', 42, 'videoLounges', 7]` |
+
+Unbound single tiles (`album`, `blog`, `story`, `reel`, `ad`, `userProfile`, and unbound `chatRoom` / `videoLounge`) reuse the **same list hooks/keys** as their Grid/Carousel siblings and render the first item — no extra request when a list block for the same resource is on the page.
+
 **Budget:** `FACE_HOME_API_BUDGET = 8` — unique grid keys on a typical face home should stay at or below this count (PT-RP20 / PT-RP29).
+
+## Build decisions (recorded 2026-07-25)
+
+### `build.modulePreload` — keep Vite default
+
+**Decision: keep the default** (no `build.modulePreload` entry in `vite.config.ts`). The 2026-07-25 build emits **28 `<link rel="modulepreload">`** entries in `dist/index.html`, all pointing at chunks that are **statically imported** by the entry (`vendor-*`, `AuthContext`, API service chunks, form chunks) — i.e. modules the browser must fetch at bootstrap anyway before the app can render. The preload list lets those requests start in parallel with HTML parsing instead of being discovered link-by-link through the module graph; disabling it would only save the tiny preload polyfill while re-introducing a request waterfall across the ~28-chunk eager graph. Lazy route/grid chunks are not preloaded (route-intent prefetch, PT-RP25, covers those deliberately). Revisit only if the eager static graph shrinks to a handful of chunks.
+
+### `react-toastify` CSS — measured waiver
+
+`ReactToastify.css` is only imported **dynamically** (lazy `ToastHost`, PT-RP27) — nothing imports it in `main.tsx`. The `manualChunks` catch-all does fold it into the shared `vendor` CSS chunk (eagerly linked in `index.html`), but the measured cost in the 2026-07-25 build is trivial: the whole vendor CSS chunk is **14.1 kB raw / 2.65 kB gzip**, of which the Toastify rules are ~10.3 kB raw (**≈ 1.9 kB gzip share**; the standalone source file is 17.4 kB raw / 2.94 kB gzip). That is far under the 5 kB-gzip threshold for restructuring, so no chunking change is made — recorded here as a waiver. Re-measure if react-toastify is upgraded or the vendor CSS chunk grows.
 
 ## Diagram: face-scoped fetch
 

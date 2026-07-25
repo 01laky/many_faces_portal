@@ -4,10 +4,11 @@ import { getReels } from '@/api/services/ReelsService';
 import { fetchStoriesForFace } from '@/api/services/storiesApi';
 import { fetchAllWallTicketsForFace } from '@/api/services/wallTicketsApi';
 import { fetchAllFaceProfilesForFace } from '@/api/services/faceProfilesApi';
-import { listChatRooms } from '@/api/services/ChatRoomsService';
-import { listVideoLounges } from '@/api/services/VideoLoungesService';
+import { getChatRoom, listChatRooms } from '@/api/services/ChatRoomsService';
+import { getVideoLounge, listVideoLounges } from '@/api/services/VideoLoungesService';
 import { gridQueryKeys } from './gridQueryKeys';
 import { useFaceGridListQuery } from './useFaceGridListQuery';
+import { useFaceGridItemQuery } from './useFaceGridItemQuery';
 
 function gridEnabled(
 	token: string | null | undefined,
@@ -117,6 +118,43 @@ export function useVideoLoungesGridQuery(
 	return useFaceGridListQuery(
 		gridQueryKeys.videoLounges(faceId ?? 0),
 		() => listVideoLounges(faceId!, token!),
+		enabled
+	);
+}
+
+/**
+ * Single chat room for a tile bound via `boundChatRoomId` in the grid JSON.
+ * Disabled entirely when no binding id is present — unbound tiles reuse
+ * `useChatRoomsGridQuery` (shared list key) and show the first room instead.
+ */
+export function useChatRoomBoundGridQuery(
+	token: string | null | undefined,
+	faceId: number | null | undefined,
+	chatRoomId: number | null | undefined,
+	fetchEnabled = true
+) {
+	const enabled = gridEnabled(token, faceId, fetchEnabled) && chatRoomId != null;
+	return useFaceGridItemQuery(
+		gridQueryKeys.chatRoom(faceId ?? 0, chatRoomId ?? 0),
+		() => getChatRoom(faceId!, chatRoomId!, token!),
+		enabled
+	);
+}
+
+/**
+ * Single video lounge for a tile bound via `boundVideoLoungeId` in the grid JSON.
+ * Mirrors `useChatRoomBoundGridQuery` — see that hook for the enabled contract.
+ */
+export function useVideoLoungeBoundGridQuery(
+	token: string | null | undefined,
+	faceId: number | null | undefined,
+	videoLoungeId: number | null | undefined,
+	fetchEnabled = true
+) {
+	const enabled = gridEnabled(token, faceId, fetchEnabled) && videoLoungeId != null;
+	return useFaceGridItemQuery(
+		gridQueryKeys.videoLounge(faceId ?? 0, videoLoungeId ?? 0),
+		() => getVideoLounge(faceId!, videoLoungeId!, token!),
 		enabled
 	);
 }

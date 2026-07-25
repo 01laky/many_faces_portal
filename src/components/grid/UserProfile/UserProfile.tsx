@@ -2,18 +2,15 @@
  * UserProfile - First face profile in directory (non-host users, API-backed)
  */
 
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
+import { useGridBlockFetchEnabled } from '../../../contexts/GridBlockFetchContext';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
-import {
-	fetchAllFaceProfilesForFace,
-	type FaceProfileListItem,
-} from '../../../api/services/faceProfilesApi';
+import { useUserProfilesGridQuery } from '../../../hooks/api/gridQueries';
 import { profileAvatarUrl } from '../gridDisplayHelpers';
 import './UserProfile.scss';
 
@@ -25,34 +22,16 @@ export function UserProfile() {
 	const faceId = selectedFace?.id;
 	const faceIndex = selectedFace?.index;
 
-	const [profile, setProfile] = useState<FaceProfileListItem | null>(null);
-	const [loading, setLoading] = useState(true);
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			await Promise.resolve();
-			if (faceId == null || !token) {
-				if (!cancelled) {
-					setLoading(false);
-					setProfile(null);
-				}
-				return;
-			}
-			if (!cancelled) setLoading(true);
-			try {
-				const list = await fetchAllFaceProfilesForFace(faceId, token);
-				if (!cancelled) setProfile(list[0] ?? null);
-			} catch {
-				if (!cancelled) setProfile(null);
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [faceId, token]);
+	// Same TanStack Query hook as UserProfileGrid/UserProfileCarousel: shared per-face
+	// cache (PT-RP2) and IO-gated fetch (PT-RP16). Errors leave `data` undefined → empty
+	// state, matching the previous useEffect version which nulled the profile on failure.
+	const fetchEnabled = useGridBlockFetchEnabled();
+	const { data: profiles = [], isLoading: loading } = useUserProfilesGridQuery(
+		token,
+		faceId,
+		fetchEnabled
+	);
+	const profile = profiles[0] ?? null;
 
 	if (faceId == null || !faceIndex) {
 		return (

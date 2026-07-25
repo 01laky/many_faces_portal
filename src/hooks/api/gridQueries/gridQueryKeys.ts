@@ -10,6 +10,12 @@ export const gridQueryKeys = {
 	userProfiles: (faceId: number) => [...gridQueryKeys.face(faceId), 'userProfiles'] as const,
 	chatRooms: (faceId: number) => [...gridQueryKeys.face(faceId), 'chatRooms'] as const,
 	videoLounges: (faceId: number) => [...gridQueryKeys.face(faceId), 'videoLounges'] as const,
+	/** Single room bound to a grid tile via `boundChatRoomId` — child of the list key. */
+	chatRoom: (faceId: number, chatRoomId: number) =>
+		[...gridQueryKeys.chatRooms(faceId), chatRoomId] as const,
+	/** Single lounge bound to a grid tile via `boundVideoLoungeId` — child of the list key. */
+	videoLounge: (faceId: number, videoLoungeId: number) =>
+		[...gridQueryKeys.videoLounges(faceId), videoLoungeId] as const,
 };
 
 /** Max parallel REST calls on face home (PT-RP20 / PT-RP29 budget). */

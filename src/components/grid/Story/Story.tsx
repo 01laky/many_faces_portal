@@ -2,15 +2,15 @@
  * Story - First published story bubble for the current face (API-backed)
  */
 
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { gridBlockI18nKeys as k } from '../gridBlockI18n';
 import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useFaceConfig } from '../../../contexts/FaceConfigContext';
+import { useGridBlockFetchEnabled } from '../../../contexts/GridBlockFetchContext';
 import { useLocalizedLink } from '../../../hooks/useLocalizedLink';
-import { fetchStoriesForFace, type StoryListItem } from '../../../api/services/storiesApi';
+import { useStoriesGridQuery } from '../../../hooks/api/gridQueries';
 import { storyRingImageUrl } from '../gridDisplayHelpers';
 import './Story.scss';
 
@@ -22,45 +22,16 @@ export function Story() {
 	const faceId = selectedFace?.id;
 	const faceIndex = selectedFace?.index;
 
-	const [story, setStory] = useState<StoryListItem | null>(null);
-	const [loading, setLoading] = useState(true);
-	const [loadError, setLoadError] = useState(false);
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			await Promise.resolve();
-			if (!token || faceId == null) {
-				if (!cancelled) {
-					setLoading(false);
-					setStory(null);
-					setLoadError(false);
-				}
-				return;
-			}
-			if (!cancelled) {
-				setLoading(true);
-				setLoadError(false);
-			}
-			try {
-				const list = await fetchStoriesForFace(token, faceId);
-				if (!cancelled) {
-					setStory(list[0] ?? null);
-					setLoadError(false);
-				}
-			} catch {
-				if (!cancelled) {
-					setStory(null);
-					setLoadError(true);
-				}
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [token, faceId]);
+	// Same TanStack Query hook as StoryGrid/StoryCarousel: shared per-face cache (PT-RP2)
+	// and IO-gated fetch (PT-RP16). Unlike the other single tiles this block keeps its
+	// distinct load-error message, so `isError` maps to the old `loadError` state.
+	const fetchEnabled = useGridBlockFetchEnabled();
+	const {
+		data: stories = [],
+		isLoading: loading,
+		isError: loadError,
+	} = useStoriesGridQuery(token, faceId, fetchEnabled);
+	const story = stories[0] ?? null;
 
 	if (!token || faceId == null || !faceIndex) {
 		return (
